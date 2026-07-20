@@ -1,0 +1,17 @@
+# Card image libraries (large binary sets — keep out of git)
+/[0-9]* - */
+/Card_Backs/
+
+# Generated build output
+mpc_manifest.json
+*.mpc_manifest.json
+/builds/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/

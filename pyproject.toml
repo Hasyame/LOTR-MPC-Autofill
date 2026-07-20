@@ -1,0 +1,21 @@
+[project]
+name = "lotr-autofill"
+version = "0.1.0"
+description = "Build MPC (MakePlayingCards) proxy orders for The Lord of the Rings LCG."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+# Stage 2 (upload) drives MakePlayingCards with a browser. Stage 1 stays dep-free.
+upload = ["playwright>=1.40"]
+
+[project.scripts]
+lotr-autofill = "lotrautofill.cli:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["lotrautofill", "lotrautofill.upload"]
