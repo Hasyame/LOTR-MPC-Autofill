@@ -282,10 +282,14 @@ The GUI is a **shop-style flow**:
   is checked against the local library; found cards go to the cart, missing ones
   are reported. (RingsDB dropped — its images are low resolution.)
 - [x] **Code review + sub-package restructure** (see `lotrautofill/` layout).
+- [x] **i18n:** GUI and CLI in **English, French, Spanish, Chinese**. The GUI has
+  a language picker (top-right; remembered in the browser, defaults to the
+  browser language). The CLI takes a global `--lang en|fr|es|zh`, otherwise it
+  reads `$LOTR_LANG` / `$LANG` (default English). Strings live in
+  `lotrautofill/i18n.py` (Python) and the `I18N` table in `web/page.py` (GUI).
 
 ## Planned
-- [ ] **i18n:** GUI and CLI in **English, French, Spanish, Chinese** (a small
-  per-language string table + a language switcher / `--lang`).
+- _Nothing queued — open an issue for the next feature._
 
 ## Development
 

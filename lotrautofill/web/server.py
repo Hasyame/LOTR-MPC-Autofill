@@ -2,7 +2,8 @@
 
 Serves a single-page UI and a small JSON API that reuses the CLI's building
 blocks: browse the card library, generate ``order.xml`` for chosen
-sets/chapters, and import a RingsDB deck. Bind to localhost only.
+sets/chapters, and resolve a manual card list against the local library. Bind
+to localhost only.
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from .. import i18n
 from ..library.build import BuildOptions, build
 from ..catalog.database import build_database
 from ..library.sets import default_library_root, discover_chapters, discover_sets
@@ -37,22 +39,24 @@ _MAX_BODY = 4 * 1024 * 1024  # cap request bodies (cart/manual list) at 4 MB
 
 def run_server(root: Path | None = None, host: str = "127.0.0.1",
                port: int = 8765, out_dir: Path | None = None,
-               open_browser: bool = True) -> None:
+               open_browser: bool = True, lang: str | None = None) -> None:
     root = Path(root) if root else default_library_root()
     out_dir = Path(out_dir) if out_dir else Path("MPC_XML")
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    lang = i18n.resolve_lang(lang)
     handler = _make_handler(root.resolve(), out_dir.resolve())
     httpd = ThreadingHTTPServer((host, port), handler)
     url = f"http://{host}:{port}/"
-    print(f"LOTRAutofill GUI running at {url}\nLibrary: {root.resolve()}\n"
-          "Press Ctrl+C to stop.")
+    print(i18n.t("gui_running", lang=lang, url=url))
+    print(i18n.t("gui_library", lang=lang, path=root.resolve()))
+    print(i18n.t("gui_stop_hint", lang=lang))
     if open_browser:
         threading.Timer(0.5, lambda: webbrowser.open(url)).start()
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print("\nStopping.")
+        print("\n" + i18n.t("gui_stopping", lang=lang))
         httpd.shutdown()
 
 
@@ -352,7 +356,7 @@ def _autofill(body: dict) -> dict:
 
     xml = body.get("order_xml")
     if not xml or not Path(xml).is_file():
-        return {"error": "order.xml not found"}
+        return {"error": i18n.t("srv_order_not_found", lang=i18n.resolve_lang(body.get("lang")))}
     message = launch_autofill_terminal(Path(xml))
     return {"launched": True, "message": message}
 
@@ -429,7 +433,7 @@ def _cart_export(root: Path, out_dir: Path, body: dict) -> dict:
             chosen[str(e.front)] = e
 
     if not chosen:
-        return {"error": "Cart is empty (nothing resolved)."}
+        return {"error": i18n.t("srv_cart_empty", lang=i18n.resolve_lang(body.get("lang")))}
 
     manifest = {"root": str(root), "cards": [
         {"front": str(e.front), "back": str(e.back) if e.back else None,
