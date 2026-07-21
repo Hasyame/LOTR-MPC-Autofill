@@ -147,15 +147,18 @@ def _self_command() -> list[str]:
     return [sys.executable, "-m", "lotrautofill"]
 
 
-def launch_autofill_terminal(order_xml: Path, browser: str = "chrome") -> str:
+def launch_autofill_terminal(order_xml: Path, browser: str = "chrome",
+                             export_pdf: bool = False) -> str:
     """Launch `autofill <order_xml>` in a NEW console window.
 
-    The desktop tool has an interactive console UI (login, review) and must run
-    in a real terminal — so the web GUI spawns it in its own window rather than
-    capturing it. Returns a human-readable status message.
+    The desktop tool has an interactive console UI (login, review, or the PDF
+    layout questions) and must run in a real terminal — so the web GUI spawns it
+    in its own window rather than capturing it. Returns a status message.
     """
     order_xml = Path(order_xml).resolve()
     cmd = _self_command() + ["autofill", str(order_xml), "--browser", browser]
+    if export_pdf:
+        cmd.append("--pdf")
 
     if os.name == "nt":
         creationflags = getattr(subprocess, "CREATE_NEW_CONSOLE", 0)

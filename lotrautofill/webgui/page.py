@@ -18,341 +18,283 @@ PAGE = r"""<!doctype html>
     color:var(--fg); font:15px/1.55 "Palatino Linotype","Book Antiqua",Georgia,serif; }
   h1,h2,h3 { font-family:"Trajan Pro","Palatino Linotype",Georgia,serif;
     letter-spacing:.5px; font-weight:600; }
-  header { padding:18px 24px 14px; text-align:center;
-    border-bottom:1px solid var(--border);
-    background:linear-gradient(#1e1509,#160f07); }
-  header h1 { margin:0; font-size:24px; color:var(--gold);
-    text-shadow:0 1px 0 #000, 0 0 18px rgba(200,161,58,.25); }
-  header .lib { color:var(--muted); font-size:12px; margin-top:2px; }
-  .rule { height:2px; margin:0; border:0;
-    background:linear-gradient(90deg,transparent,var(--gold-soft),transparent); }
-  .tabs { display:flex; gap:6px; justify-content:center; padding:12px 0 0; }
-  .tabs button { border:1px solid var(--border); background:var(--card);
-    color:var(--muted); padding:7px 16px; border-radius:8px 8px 0 0; cursor:pointer;
-    font-family:inherit; }
-  .tabs button.active { color:var(--gold); border-bottom-color:var(--card);
-    font-weight:600; }
-  main { padding:16px 24px 150px; max-width:920px; margin:0 auto; }
-  .bar { display:flex; gap:16px; align-items:center; flex-wrap:wrap;
-    margin-bottom:16px; background:var(--card); border:1px solid var(--border);
-    border-radius:10px; padding:12px 14px; }
-  .bar label { font-size:13px; color:var(--muted); display:flex; gap:6px;
-    align-items:center; }
-  select, input[type=text], textarea { font:inherit; font-size:14px; color:var(--fg);
-    background:var(--bg2); border:1px solid var(--border); border-radius:7px;
-    padding:6px 8px; }
-  textarea { width:100%; min-height:150px; resize:vertical; font-family:inherit; }
-  .set { background:var(--card); border:1px solid var(--border); border-radius:10px;
-    margin-bottom:8px; overflow:hidden; }
-  .set.unavailable { opacity:.5; }
-  .set > .row { display:flex; align-items:center; gap:10px; padding:10px 12px; }
-  .set .name { font-weight:600; flex:1; color:var(--fg); }
-  .count { color:var(--muted); font-size:13px; }
-  .badge { font-size:11px; border-radius:20px; padding:1px 8px; cursor:pointer;
-    color:var(--warn); border:1px solid var(--gold-soft); }
-  .badge.grey { color:var(--muted); border-color:var(--border); cursor:default; }
-  .toggle { cursor:pointer; user-select:none; width:16px; color:var(--gold); }
-  .panel { padding:0 12px 10px 42px; display:none; }
-  .panel.open { display:block; }
-  .panel label.ch { display:flex; align-items:center; gap:8px; padding:3px 0; }
-  input[type=checkbox] { accent-color:var(--accent); width:15px; height:15px; }
-  .miss { color:var(--warn); font-size:12px; margin:4px 0 6px; }
-  .miss ul { margin:4px 0 4px 16px; padding:0; columns:2; }
-  .prev { font-size:12px; color:var(--gold); cursor:pointer; user-select:none; }
-  .thumbs { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0; max-height:360px;
-    overflow:auto; padding:4px; background:var(--bg2); border-radius:8px; }
-  .thumb { width:84px; text-align:center; }
-  .thumb img { width:84px; height:auto; border-radius:4px; border:1px solid var(--border);
-    background:#0d0906; }
-  .thumb .cap { font-size:10px; color:var(--muted); line-height:1.2;
-    overflow:hidden; max-height:24px; }
-  .footer { position:fixed; bottom:0; left:0; right:0; background:#140e06;
-    border-top:1px solid var(--gold-soft); padding:12px 24px; display:flex;
-    align-items:center; gap:12px; flex-wrap:wrap; }
+  a { color:var(--gold); }
+  header { padding:14px 24px; display:flex; align-items:center; gap:16px;
+    border-bottom:1px solid var(--border); background:linear-gradient(#1e1509,#160f07);
+    position:sticky; top:0; z-index:10; }
+  header h1 { margin:0; font-size:20px; color:var(--gold); flex:1;
+    text-shadow:0 1px 0 #000, 0 0 18px rgba(200,161,58,.25); cursor:pointer; }
+  header nav button, .cartbtn { border:1px solid var(--border); background:var(--card);
+    color:var(--muted); padding:7px 14px; border-radius:8px; cursor:pointer;
+    font-family:inherit; font-size:14px; }
+  header nav button.active { color:var(--gold); border-color:var(--gold-soft); }
+  .cartbtn { color:var(--gold); border-color:var(--gold-soft); font-weight:600; }
+  .cartbtn .n { background:var(--gold); color:#20180a; border-radius:20px;
+    padding:0 7px; margin-left:6px; font-weight:700; }
+  main { padding:20px 24px 60px; max-width:1000px; margin:0 auto; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+    gap:16px; }
+  .tile { background:var(--card); border:1px solid var(--border); border-radius:12px;
+    overflow:hidden; display:flex; flex-direction:column; }
+  .tile.dim { opacity:.45; }
+  .tile .art { height:170px; background:#0d0906 center/contain no-repeat;
+    cursor:pointer; display:flex; align-items:flex-end; }
+  .tile .art .miss { margin:6px; font-size:11px; color:#20180a; background:var(--warn);
+    border-radius:20px; padding:1px 8px; }
+  .tile .body { padding:10px 12px; display:flex; flex-direction:column; gap:8px; flex:1; }
+  .tile .nm { font-weight:600; cursor:pointer; }
+  .tile .sub { color:var(--muted); font-size:12px; flex:1; }
   button.go { background:linear-gradient(#c8a13a,#9c7c26); color:#20180a;
-    border:1px solid #6f5716; border-radius:9px; padding:10px 16px; font:inherit;
+    border:1px solid #6f5716; border-radius:9px; padding:8px 12px; font:inherit;
     font-weight:700; cursor:pointer; }
   button.go.ghost { background:transparent; color:var(--gold);
     border:1px solid var(--gold-soft); font-weight:600; }
   button.go:disabled { opacity:.45; cursor:default; }
-  button.mini { font-size:12px; padding:5px 10px; }
-  .results { margin-top:18px; }
-  .result { background:var(--card); border:1px solid var(--border);
-    border-radius:8px; padding:10px 12px; margin-bottom:8px; font-size:14px;
-    display:flex; align-items:center; gap:12px; justify-content:space-between; }
+  button.mini { font-size:12px; padding:5px 9px; }
+  .back { color:var(--gold); cursor:pointer; user-select:none; margin-bottom:12px;
+    display:inline-block; }
+  .row { display:flex; align-items:center; gap:10px; padding:9px 0;
+    border-bottom:1px solid var(--border); }
+  .row .grow { flex:1; }
+  .count { color:var(--muted); font-size:13px; }
+  .miss-badge { font-size:11px; color:var(--warn); border:1px solid var(--gold-soft);
+    border-radius:20px; padding:1px 8px; cursor:pointer; }
+  .miss { color:var(--warn); font-size:12px; margin:4px 0; }
+  .miss ul { margin:4px 0 4px 16px; columns:2; }
+  .thumbs { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; max-height:420px;
+    overflow:auto; padding:6px; background:var(--bg2); border-radius:8px; }
+  .thumb { width:96px; text-align:center; position:relative; }
+  .thumb img { width:96px; border-radius:4px; border:1px solid var(--border);
+    background:#0d0906; }
+  .thumb .cap { font-size:10px; color:var(--muted); max-height:24px; overflow:hidden; }
+  .thumb .add { position:absolute; top:2px; right:2px; background:var(--gold);
+    color:#20180a; border:none; border-radius:6px; width:22px; height:22px;
+    font-weight:800; cursor:pointer; }
+  .thumb.in .add { background:var(--accent); color:#fff; }
+  .bar { display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin:14px 0;
+    background:var(--card); border:1px solid var(--border); border-radius:10px;
+    padding:12px 14px; }
+  .bar label { font-size:13px; color:var(--muted); display:flex; gap:6px; align-items:center; }
+  select, input[type=text], textarea { font:inherit; font-size:14px; color:var(--fg);
+    background:var(--bg2); border:1px solid var(--border); border-radius:7px; padding:6px 8px; }
+  textarea { width:100%; min-height:150px; resize:vertical; font-family:inherit; }
+  .cartitem { display:flex; align-items:center; gap:10px; padding:9px 12px;
+    background:var(--card); border:1px solid var(--border); border-radius:8px; margin-bottom:6px; }
+  .cartitem .x { color:var(--err); cursor:pointer; font-weight:700; }
+  .kind { font-size:11px; color:var(--muted); border:1px solid var(--border);
+    border-radius:20px; padding:0 8px; }
+  .result { background:var(--card); border:1px solid var(--border); border-radius:8px;
+    padding:10px 12px; margin-top:10px; font-size:14px; }
   .result code { font-size:12px; color:var(--muted); word-break:break-all; }
-  .hidden { display:none; }
-  .muted { color:var(--muted); }
-  .err { color:var(--err); }
+  .muted { color:var(--muted); } .err { color:var(--err); } .hidden { display:none; }
   .pagefoot { text-align:center; color:var(--gold-soft); font-size:12px;
-    padding:22px 0 6px; letter-spacing:1px; }
+    padding:26px 0 6px; letter-spacing:1px; }
 </style>
 </head>
 <body>
 <header>
-  <h1>The One Deck · LOTRAutofill</h1>
-  <div class="lib" id="lib"></div>
+  <h1 onclick="showView('shop')">⛰️ LOTRAutofill</h1>
+  <nav>
+    <button id="nav-shop" class="active" onclick="showView('shop')">Sets</button>
+    <button id="nav-deck" onclick="showView('deck')">Manual List</button>
+  </nav>
+  <button class="cartbtn" onclick="showView('cart')">🛒 Cart<span class="n" id="cartN">0</span></button>
 </header>
-<hr class="rule">
-<div class="tabs">
-  <button id="tab-lib" class="active" onclick="showTab('lib')">Library</button>
-  <button id="tab-deck" onclick="showTab('deck')">RingsDB Deck</button>
-</div>
 
 <main>
-  <div class="bar">
-    <label>Card stock
-      <select id="stock">
-        <option>(S33) Superior Smooth</option>
-        <option>(S30) Standard Smooth</option>
-        <option>(S27) Smooth</option>
-        <option>(M31) Linen</option>
-        <option>(P10) Plastic</option>
-      </select>
-    </label>
-    <label>Encounter back <select id="encBack"></select></label>
-    <label>Player back <select id="plyBack"></select></label>
-    <label><input type="checkbox" id="foil"> Foil</label>
+  <div id="view-shop"><div id="shop" class="muted">Loading the archives of Middle-earth…</div></div>
+  <div id="view-detail" class="hidden"></div>
+
+  <div id="view-cart" class="hidden">
+    <h2>Your cart</h2>
+    <div id="cart-list"></div>
+    <div class="bar" id="cart-opts">
+      <label>Card stock <select id="stock">
+        <option>(S33) Superior Smooth</option><option>(S30) Standard Smooth</option>
+        <option>(S27) Smooth</option><option>(M31) Linen</option><option>(P10) Plastic</option>
+      </select></label>
+      <label>Encounter back <select id="encBack"></select></label>
+      <label>Player back <select id="plyBack"></select></label>
+      <label><input type="checkbox" id="foil"> Foil</label>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap">
+      <button class="go" onclick="exportCart('xml')">Export order.xml</button>
+      <button class="go ghost" onclick="exportCart('pdf')">Export PDF</button>
+      <button class="go ghost" onclick="exportCart('mpc')">Create MPC project</button>
+      <button class="go ghost" onclick="clearCart()">Empty cart</button>
+    </div>
+    <div id="cart-result"></div>
   </div>
 
-  <section id="view-lib">
-    <div id="sets" class="muted">Loading the archives of Middle-earth…</div>
-    <div id="lib-results" class="results"></div>
-  </section>
-
-  <section id="view-deck" class="hidden">
+  <div id="view-deck" class="hidden">
+    <h2>Manual list</h2>
     <p class="muted">Paste a decklist (one card per line, e.g. <code>3x Gandalf</code>)
       or a RingsDB decklist id / URL:</p>
     <textarea id="deck-src" placeholder="3x Gandalf&#10;2 Steward of Gondor&#10;…"></textarea>
-    <div style="margin-top:10px">
-      <button class="go" onclick="importDeck()">Import deck → order.xml</button>
-    </div>
-    <div id="deck-results" class="results"></div>
-  </section>
+    <div style="margin-top:10px"><button class="go" onclick="importDeck()">Import → order.xml</button></div>
+    <div id="deck-results"></div>
+  </div>
 
   <div class="pagefoot">⚔ &nbsp; by hasyame — for personal use only &nbsp; ⚔</div>
 </main>
 
-<div class="footer" id="footer">
-  <button class="go" id="genBtn" onclick="generate(false)" disabled>Generate order.xml</button>
-  <button class="go ghost" id="genGoBtn" onclick="generate(true)" disabled>
-    Generate + create MPC project</button>
-  <span id="selInfo" class="muted">No selection</span>
-</div>
-
 <script>
-let LIB = null;
+let LIB = null, CART = [];
+try { CART = JSON.parse(localStorage.getItem('lotr_cart') || '[]'); } catch(e) {}
 
 async function load() {
-  try {
-    const [lib, backs] = await Promise.all([
-      fetch('/api/library').then(r => r.json()),
-      fetch('/api/backs').then(r => r.json()),
-    ]);
-    LIB = lib;
-    document.getElementById('lib').textContent = LIB.root;
-    fillBacks(backs);
-    renderSets();
-  } catch (e) { document.getElementById('sets').innerHTML =
-    '<span class="err">Failed to load: ' + e + '</span>'; }
+  const [lib, backs] = await Promise.all([
+    fetch('/api/library').then(r => r.json()),
+    fetch('/api/backs').then(r => r.json()),
+  ]);
+  LIB = lib;
+  fillBacks(backs);
+  renderShop(); renderCartCount();
 }
-
 function fillBacks(b) {
-  const fill = (sel, opts, def) => { sel.innerHTML = opts.map(o =>
-    `<option ${o === def ? 'selected' : ''}>${esc(o)}</option>`).join(''); };
-  fill(document.getElementById('encBack'), b.encounter, b.default_encounter);
-  fill(document.getElementById('plyBack'), b.player, b.default_player);
+  const fill = (id, opts, def) => { document.getElementById(id).innerHTML =
+    opts.map(o => `<option ${o===def?'selected':''}>${esc(o)}</option>`).join(''); };
+  fill('encBack', b.encounter, b.default_encounter);
+  fill('plyBack', b.player, b.default_player);
 }
 
-function renderSets() {
-  const el = document.getElementById('sets');
-  el.className = ''; el.innerHTML = '';
-  LIB.sets.forEach((s, i) => el.appendChild(setRow(s, i)));
-  (LIB.unavailable_sets || []).forEach(name => {
-    const box = document.createElement('div');
-    box.className = 'set unavailable';
-    box.innerHTML = `<div class="row"><span class="toggle"></span>
-      <input type="checkbox" disabled>
-      <span class="name">${esc(name)}</span>
-      <span class="count">not in your library</span></div>`;
-    el.appendChild(box);
-  });
-  updateSel();
+/* ---------- shop ---------- */
+function renderShop() {
+  const el = document.getElementById('shop');
+  el.className = 'grid';
+  el.innerHTML = LIB.sets.map((s, i) => tile(s, i)).join('') +
+    (LIB.unavailable_sets || []).map(n =>
+      `<div class="tile dim"><div class="art"></div><div class="body">
+        <div class="nm">${esc(n)}</div><div class="sub">not in your library</div></div></div>`).join('');
 }
-
-function setRow(s, i) {
-  const box = document.createElement('div');
-  box.className = 'set' + (s.cards_total === 0 ? ' unavailable' : '');
+function tile(s, i) {
+  const art = s.image
+    ? `background-image:url('/api/product-image?f=${encodeURIComponent(s.image)}')` : '';
   const dis = s.cards_total === 0 ? 'disabled' : '';
-  const miss = s.missing_total
-    ? `<span class="badge" onclick="openMiss(${i},event)">Cards missing (${s.missing_total})</span>` : '';
-  box.innerHTML = `<div class="row">
-    <span class="toggle" onclick="togglePanel(${i})">▸</span>
-    <input type="checkbox" data-set="${i}" ${dis} onchange="onSetToggle(${i})">
-    <span class="name">${esc(s.display || s.name)}</span>
-    <span class="count">${s.cards_total} cards${s.has_chapters ? ' · '+s.chapters.length+' ch.' : ''}</span>
-    ${miss}</div>
-    <div class="panel" id="panel-${i}"></div>`;
-  return box;
+  const missTag = s.missing_total ? `<span class="miss">${s.missing_total} missing</span>` : '';
+  return `<div class="tile ${s.cards_total===0?'dim':''}">
+    <div class="art" style="${art}" onclick="openDetail(${i})">${missTag}</div>
+    <div class="body">
+      <div class="nm" onclick="openDetail(${i})">${esc(s.display||s.name)}</div>
+      <div class="sub">${s.cards_total} cards${s.has_chapters?' · '+s.chapters.length+' chapters':''}</div>
+      <button class="go mini" ${dis} onclick="addSet(${i})">Add set to cart</button>
+    </div></div>`;
 }
 
-function togglePanel(i) {
-  const p = document.getElementById('panel-' + i);
-  const open = p.classList.toggle('open');
-  event.target.textContent = open ? '▾' : '▸';
-  if (open && !p.dataset.built) { p.dataset.built = '1'; buildPanel(i, p); }
-}
-
-function buildPanel(i, p) {
+/* ---------- set detail ---------- */
+function openDetail(i) {
   const s = LIB.sets[i];
+  const el = document.getElementById('view-detail');
+  let html = `<span class="back" onclick="showView('shop')">← all sets</span>
+    <h2>${esc(s.display||s.name)}</h2>
+    <div class="row"><span class="grow count">${s.cards_total} cards</span>
+      <button class="go mini" onclick="addSet(${i})">Add whole set</button></div>`;
   if (s.has_chapters) {
-    p.innerHTML = s.chapters.map((c, j) => {
+    html += s.chapters.map((c, j) => {
       const miss = c.missing && c.missing.length
-        ? `<span class="badge" onclick="showMiss(document.getElementById('miss-${i}-${j}'),LIB.sets[${i}].chapters[${j}].missing);event.stopPropagation()">missing ${c.missing.length}</span>` : '';
-      return `<div>
-        <label class="ch"><input type="checkbox" data-set="${i}" data-ch="${j}" onchange="updateSel()">
-          ${esc(c.display || c.name)} <span class="count">${c.unique_cards} cards</span> ${miss}
-          <span class="prev" onclick="loadCards(${i},${j})">preview ▾</span></label>
-        <div id="miss-${i}-${j}"></div>
-        <div id="thumbs-${i}-${j}"></div></div>`;
+        ? `<span class="miss-badge" onclick="showMiss('miss-${j}',${i},${j})">missing ${c.missing.length}</span>` : '';
+      return `<div><div class="row">
+        <span class="grow">${esc(c.display||c.name)} <span class="count">${c.unique_cards} cards</span> ${miss}</span>
+        <span class="back" style="margin:0" onclick="loadCards(${i},${j},'cards-${j}')">cards ▾</span>
+        <button class="go mini" onclick="addChapter(${i},${j})">Add chapter</button></div>
+        <div id="miss-${j}"></div><div id="cards-${j}"></div></div>`;
     }).join('');
   } else {
-    p.innerHTML = `<div id="miss-${i}-x"></div>
-      <span class="prev" onclick="loadCards(${i},null)">preview cards ▾</span>
-      <div id="thumbs-${i}-x"></div>`;
+    html += `<span class="back" style="margin:8px 0" onclick="loadCards(${i},null,'cards-x')">show cards ▾</span>
+      <div id="cards-x"></div>`;
   }
+  el.innerHTML = html;
+  showView('detail');
 }
-
-function openMiss(i, ev) {
-  ev.stopPropagation();
-  const p = document.getElementById('panel-' + i);
-  if (!p.dataset.built) { p.dataset.built = '1'; buildPanel(i, p); }
-  if (!p.classList.contains('open')) { p.classList.add('open');
-    const t = p.parentElement.querySelector('.toggle'); if (t) t.textContent = '▾'; }
-  const s = LIB.sets[i];
-  if (!s.has_chapters)
-    showMiss(document.getElementById(`miss-${i}-x`), s.chapters[0].missing);
+function showMiss(id, i, j) {
+  const host = document.getElementById(id);
+  if (host.innerHTML) { host.innerHTML = ''; return; }
+  host.innerHTML = '<div class="miss"><b>Missing:</b><ul>' +
+    LIB.sets[i].chapters[j].missing.map(m => '<li>'+esc(m)+'</li>').join('') + '</ul></div>';
 }
-function showMiss(host, list) {
-  if (!host) return;
-  if (host.dataset.shown) { host.innerHTML = ''; host.dataset.shown = ''; return; }
-  host.dataset.shown = '1';
-  host.innerHTML = '<div class="miss"><b>Missing cards:</b><ul>' +
-    (list || []).map(m => '<li>' + esc(m) + '</li>').join('') + '</ul></div>';
-}
-
-async function loadCards(i, j) {
-  const s = LIB.sets[i];
-  const host = document.getElementById(`thumbs-${i}-${j === null ? 'x' : j}`);
-  if (host.dataset.loaded) { host.innerHTML = ''; host.dataset.loaded = ''; return; }
-  host.innerHTML = '<span class="muted">loading previews…</span>';
+async function loadCards(i, j, hostId) {
+  const s = LIB.sets[i], host = document.getElementById(hostId);
+  if (host.dataset.on) { host.innerHTML=''; host.dataset.on=''; return; }
+  host.innerHTML = '<span class="muted">loading…</span>';
   const chapter = j === null ? '' : s.chapters[j].name;
-  const q = new URLSearchParams({ set: s.name, chapter });
-  try {
-    const d = await (await fetch('/api/cards?' + q)).json();
-    host.dataset.loaded = '1';
-    host.innerHTML = '<div class="thumbs">' + d.cards.map(c =>
-      `<div class="thumb"><img loading="lazy" src="/api/thumb?p=${encodeURIComponent(c.front)}" alt="">
-        <div class="cap">${esc(c.name)}</div></div>`).join('') + '</div>';
-  } catch (e) { host.innerHTML = '<span class="err">Preview failed: ' + e + '</span>'; }
+  const d = await (await fetch('/api/cards?' + new URLSearchParams({set:s.name, chapter}))).json();
+  host.dataset.on = '1';
+  host.innerHTML = '<div class="thumbs">' + d.cards.map(c => {
+    const key = cardKey(s.name, chapter, c.front);
+    return `<div class="thumb ${inCart(key)?'in':''}" id="t-${cssid(key)}">
+      <img loading="lazy" src="/api/thumb?p=${encodeURIComponent(c.front)}">
+      <button class="add" title="add card" onclick='addCard(${JSON.stringify(s.name)},${JSON.stringify(chapter)},${JSON.stringify(c.front)},${JSON.stringify(c.name)})'>+</button>
+      <div class="cap">${esc(c.name)}</div></div>`;
+  }).join('') + '</div>';
 }
 
-function onSetToggle(i) {
-  const on = document.querySelector(`input[data-set="${i}"]:not([data-ch])`).checked;
-  document.querySelectorAll(`#panel-${i} input[data-ch]`).forEach(c => c.checked = on);
-  updateSel();
+/* ---------- cart ---------- */
+function cartKey(it){ return it.type+'|'+(it.set||'')+'|'+(it.chapter||'')+'|'+(it.front||''); }
+function cardKey(set,ch,front){ return 'card|'+set+'|'+ch+'|'+front; }
+function inCart(key){ return CART.some(it => cartKey(it) === key); }
+function saveCart(){ localStorage.setItem('lotr_cart', JSON.stringify(CART)); renderCartCount(); }
+function renderCartCount(){ document.getElementById('cartN').textContent = CART.length; }
+function pushItem(it){ if(!inCart(cartKey(it))){ CART.push(it); saveCart(); } }
+function addSet(i){ const s=LIB.sets[i]; pushItem({type:'set',set:s.name,label:s.display||s.name}); flash('Added set'); }
+function addChapter(i,j){ const s=LIB.sets[i],c=s.chapters[j];
+  pushItem({type:'chapter',set:s.name,chapter:c.name,label:(s.display||s.name)+' — '+(c.display||c.name)}); flash('Added chapter'); }
+function addCard(set,ch,front,name){ pushItem({type:'card',set,chapter:ch,front,label:name});
+  const el=document.getElementById('t-'+cssid(cardKey(set,ch,front))); if(el) el.classList.add('in'); }
+function flash(msg){ const b=document.getElementById('cartN'); b.textContent=CART.length; }
+
+function renderCart() {
+  const el = document.getElementById('cart-list');
+  if (!CART.length) { el.innerHTML = '<p class="muted">Your cart is empty. Add sets, chapters or cards from the Sets tab.</p>'; return; }
+  el.innerHTML = CART.map((it,k) =>
+    `<div class="cartitem"><span class="kind">${it.type}</span>
+      <span class="grow">${esc(it.label)}</span>
+      <span class="x" onclick="removeItem(${k})">✕</span></div>`).join('');
 }
-function selectedUnits() {
-  const units = [];
-  LIB.sets.forEach((s, i) => {
-    if (s.cards_total === 0) return;
-    if (!s.has_chapters) {
-      const cb = document.querySelector(`input[data-set="${i}"]:not([data-ch])`);
-      if (cb && cb.checked) units.push({set: s.name, chapter: null});
-    } else {
-      const anyCh = document.querySelectorAll(`#panel-${i} input[data-ch]:checked`);
-      if (anyCh.length) anyCh.forEach(cb =>
-        units.push({set: s.name, chapter: s.chapters[+cb.dataset.ch].name}));
-      else if (document.querySelector(`input[data-set="${i}"]:not([data-ch])`).checked)
-        s.chapters.forEach(c => units.push({set: s.name, chapter: c.name}));
-    }
-  });
-  return units;
-}
-function updateSel() {
-  const n = selectedUnits().length;
-  document.getElementById('genBtn').disabled = n === 0;
-  document.getElementById('genGoBtn').disabled = n === 0;
-  document.getElementById('selInfo').textContent =
-    n ? `${n} order file(s) selected` : 'No selection';
+function removeItem(k){ CART.splice(k,1); saveCart(); renderCart(); }
+function clearCart(){ CART=[]; saveCart(); renderCart(); document.getElementById('cart-result').innerHTML=''; }
+
+async function exportCart(format) {
+  if (!CART.length) { alert('Cart is empty.'); return; }
+  const res = document.getElementById('cart-result');
+  res.innerHTML = '<span class="muted">Forging…</span>';
+  const body = { items: CART, format, stock: stock.value, foil: foil.checked,
+    encounter_back: encBack.value, player_back: plyBack.value };
+  try {
+    const d = await postJSON('/api/cart-export', body);
+    if (d.error) throw new Error(d.error);
+    let html = `<div class="result"><b>${d.cards} cards</b>, ${d.fronts} fronts<br>
+      <code>${esc(d.order_xml)}</code>`;
+    if (d.message) html += `<br>${esc(d.message)}`;
+    res.innerHTML = html + '</div>';
+  } catch(e){ res.innerHTML = '<span class="err">Error: '+e.message+'</span>'; }
 }
 
-function orderBody() {
-  return { units: selectedUnits(), stock: stock.value, foil: foil.checked,
-           encounter_back: encBack.value, player_back: plyBack.value };
-}
-async function generate(alsoCreate) {
-  document.getElementById('genBtn').disabled = true;
-  document.getElementById('genGoBtn').disabled = true;
-  document.getElementById('selInfo').textContent = 'Forging order files…';
-  try {
-    const d = await postJSON('/api/pick', orderBody());
-    if (d.error) throw new Error(d.error);
-    renderResults(d.results);
-    if (alsoCreate) for (const x of d.results) await createProject(x.order_xml, null);
-  } catch (e) { alert('Error: ' + e.message); }
-  updateSel();
-}
-function renderResults(results) {
-  const panel = document.getElementById('lib-results');
-  panel.innerHTML = '<h3>Forged</h3>' + results.map(x =>
-    `<div class="result"><div><b>${esc(x.label)}</b> — ${x.cards} cards, ${x.fronts} fronts
-      <br><code>${esc(x.order_xml)}</code></div>
-      <button class="go ghost mini" data-xml="${esc(x.order_xml)}">Create MPC project</button>
-     </div>`).join('');
-  wireCreateButtons(panel);
-}
-function wireCreateButtons(panel) {
-  panel.querySelectorAll('button[data-xml]').forEach(b =>
-    b.onclick = () => createProject(b.dataset.xml, b));
-}
-async function createProject(orderXml, btn) {
-  if (btn) { btn.disabled = true; btn.textContent = 'Launching…'; }
-  try {
-    const d = await postJSON('/api/autofill', { order_xml: orderXml });
-    if (d.error) throw new Error(d.error);
-    if (btn) btn.textContent = 'MPC tool launched ✓';
-  } catch (e) { alert('Error: ' + e.message); if (btn) { btn.disabled = false; btn.textContent = 'Create MPC project'; } }
-}
+/* ---------- manual list (RingsDB import for now) ---------- */
 async function importDeck() {
   const res = document.getElementById('deck-results');
-  res.innerHTML = '<span class="muted">Summoning cards from RingsDB…</span>';
+  res.innerHTML = '<span class="muted">Summoning cards…</span>';
   try {
     const d = await postJSON('/api/deck', { source: document.getElementById('deck-src').value,
-      stock: stock.value, foil: foil.checked });
+      stock: stock ? stock.value : '(S33) Superior Smooth', foil: false });
     if (d.error) throw new Error(d.error);
-    let html = `<div class="result"><div><b>${esc(d.deck)}</b> — ${d.cards} cards
-      (${d.resolved} resolved)<br><code>${esc(d.order_xml)}</code></div>
-      <button class="go ghost mini" data-xml="${esc(d.order_xml)}">Create MPC project</button></div>`;
-    if (d.unmatched.length) html += `<div class="result err">Unmatched: ${d.unmatched.map(esc).join(', ')}</div>`;
-    if (d.missing_images.length) html += `<div class="result">No image: ${d.missing_images.map(esc).join(', ')}</div>`;
-    res.innerHTML = html; wireCreateButtons(res);
-  } catch (e) { res.innerHTML = '<span class="err">Error: ' + e.message + '</span>'; }
+    let html = `<div class="result"><b>${esc(d.deck)}</b> — ${d.cards} cards (${d.resolved} resolved)<br>
+      <code>${esc(d.order_xml)}</code></div>`;
+    if (d.unmatched.length) html += `<div class="result err">Missing from database: ${d.unmatched.map(esc).join(', ')}</div>`;
+    res.innerHTML = html;
+  } catch(e){ res.innerHTML = '<span class="err">Error: '+e.message+'</span>'; }
 }
-async function postJSON(url, body) {
-  const r = await fetch(url, {method:'POST', body: JSON.stringify(body)});
-  return r.json();
-}
-function showTab(t) {
-  document.getElementById('view-lib').classList.toggle('hidden', t !== 'lib');
-  document.getElementById('view-deck').classList.toggle('hidden', t !== 'deck');
-  document.getElementById('footer').classList.toggle('hidden', t !== 'lib');
-  document.getElementById('tab-lib').classList.toggle('active', t === 'lib');
-  document.getElementById('tab-deck').classList.toggle('active', t === 'deck');
-}
-function esc(s){ return String(s).replace(/[&<>"']/g, c =>
-  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
+/* ---------- routing / utils ---------- */
+function showView(v) {
+  ['shop','detail','cart','deck'].forEach(x =>
+    document.getElementById('view-'+x).classList.toggle('hidden', x!==v));
+  document.getElementById('nav-shop').classList.toggle('active', v==='shop'||v==='detail');
+  document.getElementById('nav-deck').classList.toggle('active', v==='deck');
+  if (v==='cart') renderCart();
+}
+async function postJSON(url, body){ return (await fetch(url,{method:'POST',body:JSON.stringify(body)})).json(); }
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function cssid(s){ return s.replace(/[^A-Za-z0-9]/g,'_'); }
 load();
 </script>
 </body>

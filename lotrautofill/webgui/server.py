@@ -134,6 +134,8 @@ def _make_handler(root: Path, out_dir: Path):
                     self._json(_deck(out_dir, self._body()))
                 elif self.path == "/api/autofill":
                     self._json(_autofill(self._body()))
+                elif self.path == "/api/cart-export":
+                    self._json(_cart_export(root, out_dir, self._body()))
                 else:
                     self._json({"error": "not found"}, 404)
             except Exception as exc:  # surface errors to the UI
@@ -349,6 +351,55 @@ def _autofill(body: dict) -> dict:
         return {"error": "order.xml not found"}
     message = launch_autofill_terminal(Path(xml))
     return {"launched": True, "message": message}
+
+
+def _cart_export(root: Path, out_dir: Path, body: dict) -> dict:
+    """Resolve the cart (set / chapter / card items) to one order.xml, then
+    export it as XML, a PDF proof, or an MPC project."""
+    items = body.get("items", [])
+    stock = body.get("stock", "(S33) Superior Smooth")
+    foil = bool(body.get("foil"))
+    fmt = body.get("format", "xml")
+    name = body.get("name") or "cart"
+    enc_back = _resolve_back(root, body.get("encounter_back"))
+    ply_back = _resolve_back(root, body.get("player_back"))
+
+    unit_cache: dict = {}
+
+    def unit_entries(set_name, chapter):
+        key = (set_name, chapter or "")
+        if key not in unit_cache:
+            folder = _unit_folder(root, set_name, chapter or None)
+            unit_cache[key] = [] if folder is None else build(
+                folder, BuildOptions(interactive=False, encounter_back=enc_back,
+                                     player_back=ply_back)).entries
+        return unit_cache[key]
+
+    chosen: dict = {}  # front path -> entry (dedupes overlapping items)
+    for it in items:
+        entries = unit_entries(it.get("set"), it.get("chapter"))
+        if it.get("type") == "card":
+            entries = [e for e in entries if _rel(e.front, root) == it.get("front")]
+        for e in entries:
+            chosen[str(e.front)] = e
+
+    if not chosen:
+        return {"error": "Cart is empty (nothing resolved)."}
+
+    manifest = {"root": str(root), "cards": [
+        {"front": str(e.front), "back": str(e.back) if e.back else None,
+         "quantity": e.quantity, "name": e.name, "category": e.category,
+         "double_sided": e.double_sided} for e in chosen.values()]}
+    plan = plan_from_manifest(manifest)
+    out = out_dir / f"{_slug(name)}.order.xml"
+    out.write_text(plan_to_xml(plan, stock=stock, foil=foil), encoding="utf-8")
+
+    result = {"order_xml": str(out), "cards": plan.total_cards,
+              "fronts": len(plan.unique_fronts), "format": fmt}
+    if fmt in ("pdf", "mpc"):
+        from ..upload.desktop_tool import launch_autofill_terminal
+        result["message"] = launch_autofill_terminal(out, export_pdf=(fmt == "pdf"))
+    return result
 
 
 def _deck(out_dir: Path, body: dict) -> dict:

@@ -277,19 +277,21 @@ python -m lotrautofill upload MPC_XML/hobbit.json             # drive MPC (heade
   back selection, create-MPC-project).
 - [x] Set/chapter names shown without the ordering number prefix.
 
+## Shop UX
+
+The GUI is a **shop-style flow**:
+
+- [x] **Shop homepage:** a grid of set tiles using **Hall of Beorn box art**
+  (a deluxe box matches by name; a cycle uses its first adventure pack's image).
+  *Add set to cart* adds the whole set; opening a tile drills into chapters →
+  cards, each with an add button.
+- [x] **Cart:** review the picked sets / chapters / cards, choose stock/backs,
+  then **Export order.xml**, **Export PDF** (desktop tool), or **Create MPC
+  project**. All items merge into one order; backs are auto-assigned by card
+  type (Player back for player cards, Encounter back otherwise). The cart
+  persists in the browser.
+
 ## Planned
-
-A UX redesign around a **shop-style flow** (see the design notes below; details
-to be confirmed):
-
-- [ ] **Shop homepage:** a grid of set tiles (one visual per set). *Add to cart*
-  adds the whole set; opening a tile drills into chapters → cards for granular
-  selection.
-- [ ] **Cart:** review the picked sets / chapters / cards (only what is present
-  locally), then **Export XML**, **Export PDF** (via the desktop tool), or
-  **Create MPC project**. Backs are auto-assigned by card type — Player cards
-  get the Player back, everything else the Encounter back (the database already
-  knows each card's category).
 - [ ] **Manual List Builder** (replaces the RingsDB import): the user types a
   card list; on submit the server checks it against the local database, reports
   any cards not found and offers to continue, then adds the rest to the cart.
