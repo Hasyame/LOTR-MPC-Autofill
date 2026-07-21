@@ -326,11 +326,12 @@ def _cmd_db(args: argparse.Namespace) -> int:
             continue
         chapters = f", {len(s['chapters'])} chapters" if s["has_chapters"] else ""
         flag = f"  [{missing} MISSING]" if missing else ""
-        print(f"  {s['name']:<42} {s['cards_total']:>4} cards{chapters}{flag}")
+        name = s.get("display", s["name"])
+        print(f"  {name:<40} {s['cards_total']:>4} cards{chapters}{flag}")
         for ch in s["chapters"]:
             if not ch["missing"]:
                 continue
-            where = f"{ch['name']}: " if s["has_chapters"] else ""
+            where = f"{ch.get('display', ch['name'])}: " if s["has_chapters"] else ""
             shown = ", ".join(ch["missing"][:6]) + ("…" if len(ch["missing"]) > 6 else "")
             print(f"      missing — {where}{shown}")
     print(f"\nDatabase written to: {args.output}")
@@ -338,7 +339,7 @@ def _cmd_db(args: argparse.Namespace) -> int:
 
 
 def _cmd_sets(args: argparse.Namespace) -> int:
-    from .sets import discover_sets, default_library_root
+    from .sets import discover_sets, default_library_root, display_name
 
     root = args.root or default_library_root()
     sets = discover_sets(root)
@@ -347,12 +348,13 @@ def _cmd_sets(args: argparse.Namespace) -> int:
         return 0
     print(f"Printable sets under {root.resolve()}:")
     for i, s in enumerate(sets, 1):
-        print(f"  [{i}] {s.name}")
+        print(f"  [{i}] {display_name(s.name)}")
     return 0
 
 
 def _cmd_pick(args: argparse.Namespace) -> int:
-    from .sets import discover_sets, discover_chapters, default_library_root
+    from .sets import (discover_sets, discover_chapters, default_library_root,
+                       display_name)
     from .build import BuildOptions, build
     from .upload.plan import plan_from_manifest
     from .interactive import default_enabled
@@ -373,11 +375,11 @@ def _cmd_pick(args: argparse.Namespace) -> int:
     for s in chosen:
         chapters = discover_chapters(s)
         if not chapters:
-            units.append((s.name, s))
+            units.append((display_name(s.name), s))
             continue
         picked = _choose_chapters(s, chapters)
         for ch in picked:
-            units.append((f"{s.name} — {ch.name}", ch))
+            units.append((f"{display_name(s.name)} — {display_name(ch.name)}", ch))
 
     if not units:
         print("Nothing selected.")
@@ -400,9 +402,10 @@ def _cmd_pick(args: argparse.Namespace) -> int:
 
 
 def _choose_chapters(set_folder: Path, chapters: list) -> list:
-    print(f"\n'{set_folder.name}' has {len(chapters)} chapters:")
+    from .sets import display_name
+    print(f"\n'{display_name(set_folder.name)}' has {len(chapters)} chapters:")
     for i, ch in enumerate(chapters, 1):
-        print(f"  [{i}] {ch.name}")
+        print(f"  [{i}] {display_name(ch.name)}")
     print("  [a] all chapters (one order.xml each)")
     try:
         raw = input("Chapters to print (comma-separated), 'a' for all: ").strip().lower()
@@ -418,9 +421,10 @@ def _choose_chapters(set_folder: Path, chapters: list) -> list:
 
 
 def _choose_sets(sets: list) -> list:
+    from .sets import display_name
     print("Which set(s) do you want to print?")
     for i, s in enumerate(sets, 1):
-        print(f"  [{i}] {s.name}")
+        print(f"  [{i}] {display_name(s.name)}")
     print("  [a] all")
     try:
         raw = input("Enter numbers (comma-separated), 'a' for all: ").strip().lower()

@@ -269,7 +269,9 @@ def _pick(root: Path, out_dir: Path, body: dict) -> dict:
         folder = _unit_folder(root, set_name, chapter)
         if folder is None:
             continue
-        label = f"{set_name} — {chapter}" if chapter else set_name
+        from ..sets import display_name
+        label = (f"{display_name(set_name)} — {display_name(chapter)}"
+                 if chapter else display_name(set_name))
         results.append(
             _build_unit_xml(folder, label, out_dir, stock, foil, enc_back, ply_back))
     return {"results": results}

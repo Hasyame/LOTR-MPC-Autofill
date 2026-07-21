@@ -189,7 +189,7 @@ function setRow(s, i) {
   box.innerHTML = `<div class="row">
     <span class="toggle" onclick="togglePanel(${i})">▸</span>
     <input type="checkbox" data-set="${i}" ${dis} onchange="onSetToggle(${i})">
-    <span class="name">${esc(s.name)}</span>
+    <span class="name">${esc(s.display || s.name)}</span>
     <span class="count">${s.cards_total} cards${s.has_chapters ? ' · '+s.chapters.length+' ch.' : ''}</span>
     ${miss}</div>
     <div class="panel" id="panel-${i}"></div>`;
@@ -211,7 +211,7 @@ function buildPanel(i, p) {
         ? `<span class="badge" onclick="showMiss(document.getElementById('miss-${i}-${j}'),LIB.sets[${i}].chapters[${j}].missing);event.stopPropagation()">missing ${c.missing.length}</span>` : '';
       return `<div>
         <label class="ch"><input type="checkbox" data-set="${i}" data-ch="${j}" onchange="updateSel()">
-          ${esc(c.name)} <span class="count">${c.unique_cards} cards</span> ${miss}
+          ${esc(c.display || c.name)} <span class="count">${c.unique_cards} cards</span> ${miss}
           <span class="prev" onclick="loadCards(${i},${j})">preview ▾</span></label>
         <div id="miss-${i}-${j}"></div>
         <div id="thumbs-${i}-${j}"></div></div>`;

@@ -23,7 +23,7 @@ from typing import Optional
 from .build import BuildOptions, build
 from .matching import best_match, normalize
 from .parsing import parse_filename
-from .sets import discover_chapters, discover_sets
+from .sets import discover_chapters, discover_sets, display_name
 
 _NUM_PREFIX = re.compile(r"^\d+\s*-\s*")
 # Hall of Beorn appends a card's type in parens to disambiguate same-named cards.
@@ -94,6 +94,7 @@ def _scan_set(set_folder: Path, root: Path, options: BuildOptions) -> dict:
              else [(set_folder.name, set_folder)])
     entry = {
         "name": set_folder.name,
+        "display": display_name(set_folder.name),
         "has_chapters": bool(chapters),
         "chapters": [_scan_unit(label, folder, root, options)
                      for label, folder in units],
@@ -122,6 +123,7 @@ def _scan_unit(label: str, folder: Path, root: Path, options: BuildOptions) -> d
               for u in report.unmatched_cardlist]
     return {
         "name": label,
+        "display": display_name(label),
         "path": _rel(folder, root),
         "unique_cards": report.unique_cards,
         "total_slots": report.total_slots,

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from .model import CATEGORIES
@@ -14,6 +15,14 @@ EXCLUDE_NAMES = {"Card_Backs", "MPC_XML", "builds", "sets_folder", "toPrint",
 LIBRARY_DIRNAMES = ("sets_folder", "toPrint")
 # Generated order.xml files are written here.
 OUTPUT_DIRNAME = "MPC_XML"
+
+
+_NUM_PREFIX = re.compile(r"^\d+\s*-\s*")
+
+
+def display_name(name: str) -> str:
+    """A set/chapter name for display: the ``NN - `` ordering prefix removed."""
+    return _NUM_PREFIX.sub("", name)
 
 
 def default_library_root(cwd: Path | None = None) -> Path:
