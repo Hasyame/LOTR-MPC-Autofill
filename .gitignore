@@ -1,9 +1,12 @@
-# Card libraries — your set folders and Card_Backs live in toPrint/ and are
-# NEVER committed. Only the explanatory README is tracked.
+# Card libraries — your set folders and Card_Backs live in sets_folder/ and are
+# NEVER committed. Only the explanatory README is tracked. (toPrint = old name.)
+/sets_folder/*
+!/sets_folder/README.md
 /toPrint/*
 !/toPrint/README.md
 
-# Generated build output (manifests + order.xml)
+# Generated order.xml output (manifests + order.xml)
+/MPC_XML/
 /builds/
 mpc_manifest.json
 *.mpc_manifest.json

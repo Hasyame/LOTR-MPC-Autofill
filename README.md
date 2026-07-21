@@ -60,7 +60,7 @@ python -m lotrautofill build "19 - The Hobbit Saga" \
     --player-copies 1 \      # copies of each Player card (no cardlist)
     --backs-dir "Card_Backs/Card_Backs" \
     --non-interactive \      # accept defaults, never prompt (default: prompt in a TTY)
-    -o builds/hobbit.json
+    -o MPC_XML/hobbit.json
 ```
 
 The command prints a report and writes `mpc_manifest.json` (unless
@@ -127,21 +127,21 @@ directly as a `Local File`). LOTRAutofill's job is the LOTR-specific part —
 understanding sets, cardlists, quest A/B, errata and backs — and emitting an
 `order.xml` the desktop tool consumes.
 
-### Put your cards in `toPrint/`
+### Put your cards in `sets_folder/`
 
-Drop your set folders and the `Card_Backs` folder into **`toPrint/`** (see
-`toPrint/README.md`). That directory is git-ignored, so your card images are
-never committed. `sets` and `pick` scan `toPrint/` automatically.
+Drop your set folders and the `Card_Backs` folder into **`sets_folder/`** (see
+`sets_folder/README.md`). That directory is git-ignored, so your card images are
+never committed. `sets` and `pick` scan `sets_folder/` automatically.
 
 ### Pick set(s) and print
 
 ```sh
-python -m lotrautofill pick             # scans toPrint/, lists sets, you choose
+python -m lotrautofill pick             # scans sets_folder/, lists sets, you choose
 ```
 
-`pick` lists the set folders it finds in `toPrint/` (e.g. `03 - Khazad-dûm`,
+`pick` lists the set folders it finds in `sets_folder/` (e.g. `03 - Khazad-dûm`,
 `19 - The Hobbit Saga`), lets you select one or several, then for each writes a
-manifest **and** an `order.xml` into `builds/`.
+manifest **and** an `order.xml` into `MPC_XML/`.
 
 **Chapters.** Some sets are split into chapters (a saga or cycle — e.g.
 `19 - The Hobbit Saga` → `01 - Over Hill and Under Hill`, `02 - On the
@@ -155,8 +155,8 @@ sensible MPC project size. Plain boxes (no chapters) produce one `order.xml`.
 `~/.lotr-autofill/`), sets up its virtualenv, and runs it on your `order.xml`:
 
 ```sh
-python -m lotrautofill autofill builds/03-khazad-dum.order.xml          # drive MPC
-python -m lotrautofill autofill builds/03-khazad-dum.order.xml --pdf    # PDF proof
+python -m lotrautofill autofill MPC_XML/03-khazad-dum.order.xml          # drive MPC
+python -m lotrautofill autofill MPC_XML/03-khazad-dum.order.xml --pdf    # PDF proof
 ```
 
 The live run uploads your local images, autofills the slots, and stops for you
@@ -176,7 +176,7 @@ Related commands:
 
 ```sh
 python -m lotrautofill sets                         # just list printable sets
-python -m lotrautofill export builds/hobbit.json    # a manifest -> order.xml
+python -m lotrautofill export MPC_XML/hobbit.json    # a manifest -> order.xml
 python -m lotrautofill export … --stock "(S33) Superior Smooth" --foil
 ```
 
@@ -194,8 +194,8 @@ A `.txt` decklist has one card per line with a quantity — `3x Gandalf`,
 `2 Steward of Gondor`, `Sneak Attack x3` (a trailing `(Pack)` and section
 headers/comments are ignored). Card names are resolved against RingsDB with the
 same normalized + fuzzy matching (so `Sneak Atack` → `Sneak Attack`) and an
-`order.xml` is written to `builds/`. Every card gets the Player back
-(auto-detected in `toPrint/Card_Backs`, or `--player-back`). Then run `autofill`
+`order.xml` is written to `MPC_XML/`. Every card gets the Player back
+(auto-detected in `sets_folder/Card_Backs`, or `--player-back`). Then run `autofill`
 on it as usual.
 
 Downloaded card images are **temporary**: they go to a folder in the OS temp
@@ -222,8 +222,8 @@ the `autofill` path and should be validated on a live logged-in run.
 
 ```sh
 pip install -e .[upload] && playwright install chromium
-python -m lotrautofill upload builds/hobbit.json --dry-run   # plan only, no deps
-python -m lotrautofill upload builds/hobbit.json             # drive MPC (headed)
+python -m lotrautofill upload MPC_XML/hobbit.json --dry-run   # plan only, no deps
+python -m lotrautofill upload MPC_XML/hobbit.json             # drive MPC (headed)
 ```
 
 ## Status / roadmap

@@ -95,8 +95,8 @@ def main(argv: list[str] | None = None) -> int:
         "pick", help="Pick set folder(s) to print: build + plan + order.xml each.")
     p.add_argument("root", type=Path, nargs="?", default=None,
                    help="Directory to scan (default: toPrint/ if present, else .).")
-    p.add_argument("-o", "--out-dir", type=Path, default=Path("builds"),
-                   help="Where to write manifests and order.xml (default: builds/).")
+    p.add_argument("-o", "--out-dir", type=Path, default=Path("MPC_XML"),
+                   help="Where to write manifests and order.xml (default: MPC_XML/).")
     p.add_argument("--errata", choices=("prefer", "skip", "both"), default="prefer")
     p.add_argument("--player-copies", type=int, default=1)
     p.add_argument("--stock", default="(S33) Superior Smooth")
@@ -127,7 +127,7 @@ def main(argv: list[str] | None = None) -> int:
         "deck", help="Import a player deck from RingsDB (.txt / id / URL) -> order.xml.")
     d.add_argument("source", help="Decklist .txt file, or a RingsDB decklist id/URL.")
     d.add_argument("-o", "--output", type=Path, default=None,
-                   help="order.xml path (default: builds/<deck>.order.xml).")
+                   help="order.xml path (default: MPC_XML/<deck>.order.xml).")
     d.add_argument("--player-back", type=Path, default=None,
                    help="Player card-back image (default: auto-detected in "
                         "toPrint/Card_Backs).")
@@ -246,7 +246,7 @@ def _cmd_deck(args: argparse.Namespace) -> int:
         print(f"  fuzzy: '{r.query}' -> '{r.card['name']}'")
 
     plan = plan_from_manifest(manifest)
-    out_dir = Path("builds")
+    out_dir = Path("MPC_XML")
     out_dir.mkdir(parents=True, exist_ok=True)
     out = args.output or out_dir / f"{_slug(deck_name)}.order.xml"
     _write_order_xml(plan, out, args.stock, args.foil)

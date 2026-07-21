@@ -6,17 +6,25 @@ from pathlib import Path
 
 from .model import CATEGORIES
 
-EXCLUDE_NAMES = {"Card_Backs", "builds", "toPrint", "__pycache__"}
+EXCLUDE_NAMES = {"Card_Backs", "MPC_XML", "builds", "sets_folder", "toPrint",
+                 "__pycache__"}
 
-# Card libraries live here by convention (git-ignored).
-LIBRARY_DIRNAME = "toPrint"
+# Card libraries live in one of these folders by convention (git-ignored).
+# "sets_folder" is current; "toPrint" is accepted for backward compatibility.
+LIBRARY_DIRNAMES = ("sets_folder", "toPrint")
+# Generated order.xml files are written here.
+OUTPUT_DIRNAME = "MPC_XML"
 
 
 def default_library_root(cwd: Path | None = None) -> Path:
-    """Where to look for sets by default: ``toPrint/`` if it exists, else ``.``."""
+    """Where to look for sets by default: ``sets_folder/`` (or ``toPrint/``) if
+    present, else the current directory."""
     base = Path(cwd) if cwd else Path(".")
-    candidate = base / LIBRARY_DIRNAME
-    return candidate if candidate.is_dir() else base
+    for name in LIBRARY_DIRNAMES:
+        candidate = base / name
+        if candidate.is_dir():
+            return candidate
+    return base
 
 
 def discover_sets(root: Path) -> list[Path]:
