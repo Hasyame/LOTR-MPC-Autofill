@@ -203,6 +203,23 @@ directory (never inside the repo, so they are never committed to git), and
 `autofill` deletes the ones it uploaded once the MPC import is done (pass
 `--keep-images` to keep them).
 
+### Card library database
+
+`db` indexes the whole library into `MPC_XML/database.json` (sets → chapters →
+categories → cards, with counts) — the data a UI reads to browse the collection:
+
+```sh
+python -m lotrautofill db                 # index sets_folder/ -> database.json
+python -m lotrautofill db --missing-only  # only sets with something to review
+```
+
+It also lists `cardlist.txt` entries that matched no image (a small "review"
+list — usually double-sided encounter cards named `SideA/SideB`). Note: a
+reliable per-card *missing* list can't come from the folders alone (within a
+pack all categories share one number sequence, so gaps flag other folders'
+cards), and RingsDB only lists player-side cards — so encounter cards can't be
+verified against a reference.
+
 ### order.xml format
 
 Matches the desktop tool exactly: `<details>` (quantity / stock / foil),

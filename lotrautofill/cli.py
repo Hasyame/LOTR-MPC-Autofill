@@ -138,6 +138,17 @@ def main(argv: list[str] | None = None) -> int:
                         "(default: a folder in the OS temp dir).")
     d.set_defaults(func=_cmd_deck)
 
+    db = sub.add_parser(
+        "db", help="Index the card library and report missing cards per set/chapter.")
+    db.add_argument("root", type=Path, nargs="?", default=None,
+                    help="Library dir to scan (default: sets_folder/).")
+    db.add_argument("-o", "--output", type=Path, default=Path("MPC_XML/database.json"),
+                    help="Where to write the JSON database (default: "
+                         "MPC_XML/database.json).")
+    db.add_argument("--missing-only", action="store_true",
+                    help="Only print sets/chapters that have missing cards.")
+    db.set_defaults(func=_cmd_db)
+
     args = parser.parse_args(argv)
     return args.func(args)
 
@@ -252,6 +263,38 @@ def _cmd_deck(args: argparse.Namespace) -> int:
     _write_order_xml(plan, out, args.stock, args.foil)
     print(f"\nCard images are temporary (in {image_dir}); `autofill` deletes them "
           "after importing into MPC. They are never committed to git.")
+    return 0
+
+
+def _cmd_db(args: argparse.Namespace) -> int:
+    import json
+    from .database import build_database
+    from .sets import default_library_root
+
+    root = args.root or default_library_root()
+    print(f"Indexing card library under {root.resolve()} ...")
+    db = build_database(root)
+
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(json.dumps(db, indent=2, ensure_ascii=False),
+                           encoding="utf-8")
+
+    total_cards = sum(s["cards_total"] for s in db["sets"])
+    total_review = sum(s["review_total"] for s in db["sets"])
+    print(f"\n{len(db['sets'])} sets, {total_cards} cards indexed. "
+          f"{total_review} cardlist entrie(s) to review:\n")
+    for s in db["sets"]:
+        if args.missing_only and s["review_total"] == 0:
+            continue
+        chapters = f", {len(s['chapters'])} chapters" if s["has_chapters"] else ""
+        flag = f"  [{s['review_total']} to review]" if s["review_total"] else ""
+        print(f"  {s['name']:<42} {s['cards_total']:>4} cards{chapters}{flag}")
+        for ch in s["chapters"]:
+            for r in ch["cardlist_review"]:
+                where = f"{ch['name']}: " if s["has_chapters"] else ""
+                print(f"      review — {where}'{r['name']}' "
+                      f"(no image; often a double-sided card)")
+    print(f"\nDatabase written to: {args.output}")
     return 0
 
 
