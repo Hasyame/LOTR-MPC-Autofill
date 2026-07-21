@@ -9,9 +9,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import tempfile
 import threading
 import urllib.parse
+import urllib.request
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -26,6 +28,10 @@ from .page import PAGE
 # Light thumbnails are cached here (needs Pillow; falls back to the original).
 _THUMB_DIR = Path(tempfile.gettempdir()) / "lotr-autofill-thumbs"
 _THUMB_MAX = 240
+# Hall of Beorn product/box images (fetched from S3, cached).
+_PRODUCT_DIR = Path(tempfile.gettempdir()) / "lotr-autofill-products"
+_S3_PRODUCTS = "https://s3.amazonaws.com/hallofbeorn-resources/Images/Products/"
+_PRODUCT_FILE = re.compile(r"^[A-Za-z0-9_.-]+\.(?:png|jpg|jpeg)$")
 
 
 def run_server(root: Path | None = None, host: str = "127.0.0.1",
@@ -91,8 +97,22 @@ def _make_handler(root: Path, out_dir: Path):
                                        query.get("chapter", [""])[0]))
             elif path == "/api/thumb":
                 self._thumb(query.get("p", [""])[0])
+            elif path == "/api/product-image":
+                self._binary(*_product_image(query.get("f", [""])[0]),
+                             cache_control="max-age=604800")
             else:
                 self._json({"error": "not found"}, 404)
+
+        def _binary(self, data, ctype, cache_control="max-age=86400") -> None:
+            if data is None:
+                self._json({"error": "not found"}, 404)
+                return
+            self.send_response(200)
+            self.send_header("Content-Type", ctype)
+            self.send_header("Cache-Control", cache_control)
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
 
         def _thumb(self, rel: str) -> None:
             data, ctype = _thumbnail(root, rel)
@@ -142,6 +162,7 @@ def _library(root: Path) -> dict:
     unavailable: list[str] = []
     ref = load_reference()
     if ref:
+        _map_set_images(db["sets"], ref.get("products", []))
         local = [normalize(re.sub(r"^\d+\s*-\s*", "", s["name"])) for s in db["sets"]]
         seen = set()
         for sc in ref.get("scenarios", []):
@@ -209,6 +230,49 @@ def _thumbnail(root: Path, rel: str) -> tuple[bytes | None, str]:
         except Exception:
             return src.read_bytes(), "image/jpeg"
     return cache.read_bytes(), "image/jpeg"
+
+
+def _product_image(fname: str) -> tuple[bytes | None, str]:
+    """A Hall of Beorn product/box image, fetched from S3 and cached."""
+    if not fname or not _PRODUCT_FILE.match(fname):
+        return None, ""
+    _PRODUCT_DIR.mkdir(parents=True, exist_ok=True)
+    cache = _PRODUCT_DIR / fname
+    if not cache.exists():
+        try:
+            req = urllib.request.Request(_S3_PRODUCTS + fname,
+                                         headers={"User-Agent": "LOTRAutofill"})
+            with urllib.request.urlopen(req, timeout=30) as r:  # noqa: S310 (https)
+                cache.write_bytes(r.read())
+        except Exception:
+            return None, ""
+    ext = fname.rsplit(".", 1)[-1].lower()
+    return cache.read_bytes(), "image/jpeg" if ext in ("jpg", "jpeg") else "image/png"
+
+
+def _map_set_images(sets: list, products: list) -> None:
+    """Attach a Hall of Beorn product image filename to each set/chapter.
+
+    A deluxe box matches a product by name; a cycle (no single product) falls
+    back to its first chapter's (adventure pack's) image.
+    """
+    from ..matching import normalize
+
+    index: dict[str, str] = {}
+    for p in products:
+        index.setdefault(normalize(p["name"]), p["image"])
+
+    def base(url: str | None) -> str | None:
+        return url.rsplit("/", 1)[-1] if url else None
+
+    for s in sets:
+        set_img = index.get(normalize(s.get("display", s["name"])))
+        for ch in s.get("chapters", []):
+            cimg = index.get(normalize(ch.get("display", ch["name"])))
+            ch["image"] = base(cimg)
+            if set_img is None and cimg:
+                set_img = cimg
+        s["image"] = base(set_img)
 
 
 def _unit_folder(root: Path, set_name: str, chapter: str | None) -> Path | None:
