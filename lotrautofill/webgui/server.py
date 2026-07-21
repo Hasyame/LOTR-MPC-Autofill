@@ -71,6 +71,8 @@ def _make_handler(root: Path, out_dir: Path):
                 self._send(200, PAGE.encode("utf-8"), "text/html; charset=utf-8")
             elif self.path == "/api/library":
                 self._json(_library(root))
+            elif self.path == "/api/backs":
+                self._json(_backs_info(root))
             else:
                 self._json({"error": "not found"}, 404)
 
@@ -80,6 +82,8 @@ def _make_handler(root: Path, out_dir: Path):
                     self._json(_pick(root, out_dir, self._body()))
                 elif self.path == "/api/deck":
                     self._json(_deck(out_dir, self._body()))
+                elif self.path == "/api/autofill":
+                    self._json(_autofill(self._body()))
                 else:
                     self._json({"error": "not found"}, 404)
             except Exception as exc:  # surface errors to the UI
@@ -109,9 +113,11 @@ def _unit_folder(root: Path, set_name: str, chapter: str | None) -> Path | None:
     return next((c for c in discover_chapters(set_folder) if c.name == chapter), None)
 
 
-def _build_unit_xml(folder: Path, label: str, out_dir: Path,
-                    stock: str, foil: bool) -> dict:
-    report = build(folder, BuildOptions(interactive=False))
+def _build_unit_xml(folder: Path, label: str, out_dir: Path, stock: str,
+                    foil: bool, enc_back: Path | None,
+                    ply_back: Path | None) -> dict:
+    report = build(folder, BuildOptions(interactive=False, encounter_back=enc_back,
+                                        player_back=ply_back))
     manifest = {"root": str(report.root),
                 "cards": [e.to_dict(report.root) for e in report.entries]}
     plan = plan_from_manifest(manifest)
@@ -121,9 +127,34 @@ def _build_unit_xml(folder: Path, label: str, out_dir: Path,
             "cards": plan.total_cards, "fronts": len(plan.unique_fronts)}
 
 
+def _backs_info(root: Path) -> dict:
+    from ..backs import CardBacks, ENCOUNTER_BACK, PLAYER_BACK, find_backs_dir
+
+    backs = CardBacks(find_backs_dir(root))
+    enc, ply = [], []
+    for c in backs.choices:
+        (ply if "player" in c.label.lower() else enc).append(c.label)
+    return {"encounter": enc, "player": ply,
+            "default_encounter": Path(ENCOUNTER_BACK).stem,
+            "default_player": Path(PLAYER_BACK).stem}
+
+
+def _resolve_back(root: Path, label) -> Path | None:
+    from ..backs import CardBacks, find_backs_dir
+
+    if not label:
+        return None
+    for c in CardBacks(find_backs_dir(root)).choices:
+        if c.label == label:
+            return c.path
+    return None
+
+
 def _pick(root: Path, out_dir: Path, body: dict) -> dict:
     stock = body.get("stock", "(S33) Superior Smooth")
     foil = bool(body.get("foil"))
+    enc_back = _resolve_back(root, body.get("encounter_back"))
+    ply_back = _resolve_back(root, body.get("player_back"))
     results = []
     for unit in body.get("units", []):
         set_name = unit.get("set")
@@ -132,8 +163,19 @@ def _pick(root: Path, out_dir: Path, body: dict) -> dict:
         if folder is None:
             continue
         label = f"{set_name} — {chapter}" if chapter else set_name
-        results.append(_build_unit_xml(folder, label, out_dir, stock, foil))
+        results.append(
+            _build_unit_xml(folder, label, out_dir, stock, foil, enc_back, ply_back))
     return {"results": results}
+
+
+def _autofill(body: dict) -> dict:
+    from ..upload.desktop_tool import launch_autofill_terminal
+
+    xml = body.get("order_xml")
+    if not xml or not Path(xml).is_file():
+        return {"error": "order.xml not found"}
+    message = launch_autofill_terminal(Path(xml))
+    return {"launched": True, "message": message}
 
 
 def _deck(out_dir: Path, body: dict) -> dict:

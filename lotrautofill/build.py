@@ -34,11 +34,16 @@ class BuildOptions:
         player_copies: int = 1,
         backs_dir: Optional[Path] = None,
         interactive: Optional[bool] = None,
+        encounter_back: Optional[Path] = None,
+        player_back: Optional[Path] = None,
     ):
         self.errata = errata
         self.player_copies = player_copies
         self.backs_dir = backs_dir
         self.interactive = default_enabled() if interactive is None else interactive
+        # Explicit common-back overrides (skip the interactive/ default choice).
+        self.encounter_back = encounter_back
+        self.player_back = player_back
 
 
 class _Context:
@@ -88,6 +93,11 @@ def _select_common_backs(ctx: _Context, categories: list[str]) -> None:
     """Resolve, once, the common back image used per category."""
     backs = ctx.backs
     for category in categories:
+        override = (ctx.options.player_back if category == CATEGORY_PLAYER
+                    else ctx.options.encounter_back)
+        if override is not None:
+            ctx.category_back[category] = Path(override)
+            continue
         default_path = backs.for_category(category)
         if not ctx.prompter.enabled or not backs.choices:
             ctx.category_back[category] = default_path

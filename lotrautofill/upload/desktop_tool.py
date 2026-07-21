@@ -138,3 +138,39 @@ def _collect_pdfs(workdir: Path, dest: Path) -> None:
 
 def _run(cmd: list[str]) -> None:
     subprocess.run(cmd, check=True)
+
+
+def _self_command() -> list[str]:
+    """How to re-invoke this app's CLI (frozen exe vs. python -m)."""
+    if getattr(sys, "frozen", False):
+        return [sys.executable]
+    return [sys.executable, "-m", "lotrautofill"]
+
+
+def launch_autofill_terminal(order_xml: Path, browser: str = "chrome") -> str:
+    """Launch `autofill <order_xml>` in a NEW console window.
+
+    The desktop tool has an interactive console UI (login, review) and must run
+    in a real terminal — so the web GUI spawns it in its own window rather than
+    capturing it. Returns a human-readable status message.
+    """
+    order_xml = Path(order_xml).resolve()
+    cmd = _self_command() + ["autofill", str(order_xml), "--browser", browser]
+
+    if os.name == "nt":
+        creationflags = getattr(subprocess, "CREATE_NEW_CONSOLE", 0)
+        subprocess.Popen(cmd, creationflags=creationflags, close_fds=True)
+        return "Launched the MPC autofill tool in a new console window."
+
+    for term in ("x-terminal-emulator", "gnome-terminal", "konsole", "xterm"):
+        if shutil.which(term):
+            flag = "--" if term == "gnome-terminal" else "-e"
+            try:
+                subprocess.Popen([term, flag, *cmd])
+                return f"Launched the MPC autofill tool in {term}."
+            except OSError:
+                continue
+    # No terminal emulator found — run detached (interactive UI may not attach).
+    subprocess.Popen(cmd)
+    return ("Started the MPC autofill tool (no terminal emulator found — run "
+            f"it manually if needed: {' '.join(cmd)}).")
