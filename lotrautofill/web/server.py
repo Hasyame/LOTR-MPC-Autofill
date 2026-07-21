@@ -18,11 +18,11 @@ import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from ..build import BuildOptions, build
-from ..database import build_database
-from ..sets import default_library_root, discover_chapters, discover_sets
-from ..upload.mpc_xml import plan_to_xml
-from ..upload.plan import plan_from_manifest
+from ..library.build import BuildOptions, build
+from ..catalog.database import build_database
+from ..library.sets import default_library_root, discover_chapters, discover_sets
+from ..mpc.mpc_xml import plan_to_xml
+from ..mpc.plan import plan_from_manifest
 from .page import PAGE
 
 # Light thumbnails are cached here (needs Pillow; falls back to the original).
@@ -153,8 +153,8 @@ def _make_handler(root: Path, out_dir: Path):
 # API implementations (reuse the CLI building blocks)
 # --------------------------------------------------------------------------- #
 def _library(root: Path) -> dict:
-    from ..hallofbeorn import load_reference
-    from ..matching import normalize
+    from ..catalog.hallofbeorn import load_reference
+    from ..library.matching import normalize
 
     db = build_database(root)
     # Trim the heavy per-card lists; the UI fetches cards per unit for previews.
@@ -262,7 +262,7 @@ def _map_set_images(sets: list, products: list) -> None:
     A deluxe box matches a product by name; a cycle (no single product) falls
     back to its first chapter's (adventure pack's) image.
     """
-    from ..matching import normalize
+    from ..library.matching import normalize
 
     index: dict[str, str] = {}
     for p in products:
@@ -305,7 +305,7 @@ def _build_unit_xml(folder: Path, label: str, out_dir: Path, stock: str,
 
 
 def _backs_info(root: Path) -> dict:
-    from ..backs import CardBacks, ENCOUNTER_BACK, PLAYER_BACK, find_backs_dir
+    from ..library.backs import CardBacks, ENCOUNTER_BACK, PLAYER_BACK, find_backs_dir
 
     backs = CardBacks(find_backs_dir(root))
     enc, ply = [], []
@@ -317,7 +317,7 @@ def _backs_info(root: Path) -> dict:
 
 
 def _resolve_back(root: Path, label) -> Path | None:
-    from ..backs import CardBacks, find_backs_dir
+    from ..library.backs import CardBacks, find_backs_dir
 
     if not label:
         return None
@@ -339,7 +339,7 @@ def _pick(root: Path, out_dir: Path, body: dict) -> dict:
         folder = _unit_folder(root, set_name, chapter)
         if folder is None:
             continue
-        from ..sets import display_name
+        from ..library.sets import display_name
         label = (f"{display_name(set_name)} — {display_name(chapter)}"
                  if chapter else display_name(set_name))
         results.append(
@@ -348,7 +348,7 @@ def _pick(root: Path, out_dir: Path, body: dict) -> dict:
 
 
 def _autofill(body: dict) -> dict:
-    from ..upload.desktop_tool import launch_autofill_terminal
+    from ..mpc.desktop_tool import launch_autofill_terminal
 
     xml = body.get("order_xml")
     if not xml or not Path(xml).is_file():
@@ -360,7 +360,7 @@ def _autofill(body: dict) -> dict:
 def _card_catalog(root: Path) -> dict:
     """Every locally-available card as ``{normalized name: {set, chapter, front,
     name, category}}`` — the reference the Manual List resolves against."""
-    from ..matching import normalize
+    from ..library.matching import normalize
 
     catalog: dict[str, dict] = {}
     for s in discover_sets(root):
@@ -380,8 +380,8 @@ def _manual_list(catalog: dict, body: dict) -> dict:
     Returns the cards found (with their location + quantity, ready for the cart)
     and the ones with no local image (reported, so the user can decide).
     """
-    from ..decklist import parse_decklist_text
-    from ..matching import best_match, normalize
+    from ..library.decklist import parse_decklist_text
+    from ..library.matching import best_match, normalize
 
     resolved, missing = [], []
     for qty, name in parse_decklist_text(body.get("text", "")):
@@ -442,7 +442,7 @@ def _cart_export(root: Path, out_dir: Path, body: dict) -> dict:
     result = {"order_xml": str(out), "cards": plan.total_cards,
               "fronts": len(plan.unique_fronts), "format": fmt}
     if fmt in ("pdf", "mpc"):
-        from ..upload.desktop_tool import launch_autofill_terminal
+        from ..mpc.desktop_tool import launch_autofill_terminal
         result["message"] = launch_autofill_terminal(out, export_pdf=(fmt == "pdf"))
     return result
 

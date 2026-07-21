@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from lotrautofill.upload.plan import plan_from_manifest
+from lotrautofill.mpc.plan import plan_from_manifest
 
 
 def _manifest(tmp: Path) -> dict:

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from lotrautofill.parsing import parse_filename
+from lotrautofill.library.parsing import parse_filename
 
 
 def _parse(name: str):

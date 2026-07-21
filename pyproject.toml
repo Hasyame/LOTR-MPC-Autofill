@@ -22,4 +22,10 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["lotrautofill", "lotrautofill.upload", "lotrautofill.webgui"]
+packages = [
+    "lotrautofill",
+    "lotrautofill.library",
+    "lotrautofill.mpc",
+    "lotrautofill.catalog",
+    "lotrautofill.web",
+]

@@ -2,8 +2,8 @@
 
 import hashlib
 
-from lotrautofill.upload.plan import plan_from_manifest
-from lotrautofill.upload.mpc import _pid, _slots_by_image
+from lotrautofill.mpc.plan import plan_from_manifest
+from lotrautofill.mpc.driver import _pid, _slots_by_image
 
 
 def _plan(tmp):

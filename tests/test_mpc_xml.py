@@ -2,8 +2,8 @@
 
 from xml.etree import ElementTree as ET
 
-from lotrautofill.upload.plan import plan_from_manifest
-from lotrautofill.upload.mpc_xml import plan_to_xml
+from lotrautofill.mpc.plan import plan_from_manifest
+from lotrautofill.mpc.mpc_xml import plan_to_xml
 
 
 def _plan(tmp):

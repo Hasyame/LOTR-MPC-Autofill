@@ -20,10 +20,10 @@ import time
 from pathlib import Path
 from typing import Optional
 
-from .build import BuildOptions, build
-from .matching import best_match, normalize
-from .parsing import parse_filename
-from .sets import discover_chapters, discover_sets, display_name
+from ..library.build import BuildOptions, build
+from ..library.matching import best_match, normalize
+from ..library.parsing import parse_filename
+from ..library.sets import discover_chapters, discover_sets, display_name
 
 _NUM_PREFIX = re.compile(r"^\d+\s*-\s*")
 # Hall of Beorn appends a card's type in parens to disambiguate same-named cards.

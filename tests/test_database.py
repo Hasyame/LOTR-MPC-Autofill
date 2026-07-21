@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from lotrautofill.database import _HobRef, _cross_reference, build_database
+from lotrautofill.catalog.database import _HobRef, _cross_reference, build_database
 
 
 def test_hobref_matches_scenario_then_cycle():
@@ -23,7 +23,7 @@ def test_hobref_matches_scenario_then_cycle():
 
 
 def test_cross_reference_reports_missing():
-    from lotrautofill.matching import normalize
+    from lotrautofill.library.matching import normalize
     hob = {"Louis": {"normal": 1, "nightmare": 1},
            "Bert": {"normal": 1, "nightmare": 0},
            "NightmareOnly": {"normal": 0, "nightmare": 2},

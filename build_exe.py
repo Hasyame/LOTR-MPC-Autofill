@@ -5,7 +5,7 @@ Usage:
     python build_exe.py          # -> dist/lotr-autofill(.exe)
 
 The executable bundles the whole CLI (build / pick / export / sets / autofill /
-deck / db / reference / gui). The optional Playwright `upload` driver is
+db / reference / gui). The optional Playwright `upload` driver is
 excluded to keep the binary small; the `autofill` command still shells out to a
 real Python for the desktop tool. Pillow is bundled (if installed) so the GUI's
 card thumbnails work; without it the GUI serves full images instead.
@@ -31,7 +31,7 @@ def main() -> int:
         "--name", NAME,
         "--noconfirm",
         # Bundle every lotrautofill submodule (many are imported lazily in the
-        # CLI handlers — webgui, ringsdb, database, hallofbeorn, upload.*).
+        # CLI handlers — library.*, catalog.*, mpc.*, web.*).
         "--collect-submodules", "lotrautofill",
         # Playwright is a heavy optional dep imported lazily; don't bundle it.
         "--exclude-module", "playwright",

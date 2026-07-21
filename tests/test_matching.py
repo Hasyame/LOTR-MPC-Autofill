@@ -1,4 +1,4 @@
-from lotrautofill.matching import best_match, normalize
+from lotrautofill.library.matching import best_match, normalize
 
 
 def test_apostrophe_and_underscore_normalize_equal():

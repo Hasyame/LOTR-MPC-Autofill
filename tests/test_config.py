@@ -1,6 +1,6 @@
 """Tests for MPC deck-size tier selection."""
 
-from lotrautofill.upload.config import (
+from lotrautofill.mpc.config import (
     DEFAULT_PRODUCT,
     MPC_MAX_CARDS_PER_PROJECT,
     deck_size_tier,

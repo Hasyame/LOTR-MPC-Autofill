@@ -8,8 +8,8 @@ import sys
 from pathlib import Path
 
 from . import __version__
-from .build import BuildOptions, build
-from .model import BuildReport
+from .library.build import BuildOptions, build
+from .library.model import BuildReport
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -151,7 +151,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _cmd_autofill(args: argparse.Namespace) -> int:
-    from .upload.desktop_tool import run_autofill, default_tool_dir
+    from .mpc.desktop_tool import run_autofill, default_tool_dir
 
     return run_autofill(
         args.order,
@@ -163,7 +163,7 @@ def _cmd_autofill(args: argparse.Namespace) -> int:
 
 
 def _cmd_upload(args: argparse.Namespace) -> int:
-    from .upload.runner import run
+    from .mpc.runner import run
 
     if not args.manifest.is_file():
         print(f"error: manifest not found: {args.manifest}", file=sys.stderr)
@@ -172,7 +172,7 @@ def _cmd_upload(args: argparse.Namespace) -> int:
 
 
 def _cmd_export(args: argparse.Namespace) -> int:
-    from .upload.plan import load_manifest, plan_from_manifest
+    from .mpc.plan import load_manifest, plan_from_manifest
 
     if not args.manifest.is_file():
         print(f"error: manifest not found: {args.manifest}", file=sys.stderr)
@@ -184,8 +184,8 @@ def _cmd_export(args: argparse.Namespace) -> int:
 
 
 def _cmd_gui(args: argparse.Namespace) -> int:
-    from .webgui import run_server
-    from .sets import default_library_root
+    from .web import run_server
+    from .library.sets import default_library_root
 
     run_server(root=args.root or default_library_root(), port=args.port,
                open_browser=args.open_browser)
@@ -193,7 +193,7 @@ def _cmd_gui(args: argparse.Namespace) -> int:
 
 
 def _cmd_reference(args: argparse.Namespace) -> int:
-    from .hallofbeorn import CACHE_FILE, build_reference
+    from .catalog.hallofbeorn import CACHE_FILE, build_reference
 
     def progress(i, n, name):
         print(f"\r  {i}/{n}  {name[:48]:<48}", end="", flush=True)
@@ -206,8 +206,8 @@ def _cmd_reference(args: argparse.Namespace) -> int:
 
 def _cmd_db(args: argparse.Namespace) -> int:
     import json
-    from .database import build_database
-    from .sets import default_library_root
+    from .catalog.database import build_database
+    from .library.sets import default_library_root
 
     root = args.root or default_library_root()
     print(f"Indexing card library under {root.resolve()} ...")
@@ -242,7 +242,7 @@ def _cmd_db(args: argparse.Namespace) -> int:
 
 
 def _cmd_sets(args: argparse.Namespace) -> int:
-    from .sets import discover_sets, default_library_root, display_name
+    from .library.sets import discover_sets, default_library_root, display_name
 
     root = args.root or default_library_root()
     sets = discover_sets(root)
@@ -256,11 +256,11 @@ def _cmd_sets(args: argparse.Namespace) -> int:
 
 
 def _cmd_pick(args: argparse.Namespace) -> int:
-    from .sets import (discover_sets, discover_chapters, default_library_root,
+    from .library.sets import (discover_sets, discover_chapters, default_library_root,
                        display_name)
-    from .build import BuildOptions, build
-    from .upload.plan import plan_from_manifest
-    from .interactive import default_enabled
+    from .library.build import BuildOptions, build
+    from .mpc.plan import plan_from_manifest
+    from .library.interactive import default_enabled
 
     root = args.root or default_library_root()
     sets = discover_sets(root)
@@ -305,7 +305,7 @@ def _cmd_pick(args: argparse.Namespace) -> int:
 
 
 def _choose_chapters(set_folder: Path, chapters: list) -> list:
-    from .sets import display_name
+    from .library.sets import display_name
     print(f"\n'{display_name(set_folder.name)}' has {len(chapters)} chapters:")
     for i, ch in enumerate(chapters, 1):
         print(f"  [{i}] {display_name(ch.name)}")
@@ -324,7 +324,7 @@ def _choose_chapters(set_folder: Path, chapters: list) -> list:
 
 
 def _choose_sets(sets: list) -> list:
-    from .sets import display_name
+    from .library.sets import display_name
     print("Which set(s) do you want to print?")
     for i, s in enumerate(sets, 1):
         print(f"  [{i}] {display_name(s.name)}")
@@ -343,7 +343,7 @@ def _choose_sets(sets: list) -> list:
 
 
 def _write_order_xml(plan, out: Path, stock: str, foil: bool) -> None:
-    from .upload.mpc_xml import plan_to_xml
+    from .mpc.mpc_xml import plan_to_xml
 
     if plan.missing_files:
         print(f"! {len(plan.missing_files)} image(s) missing — order.xml may be "

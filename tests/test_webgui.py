@@ -1,7 +1,7 @@
 """Network-free tests for the web GUI's set-image mapping and safety guards."""
 
-from lotrautofill.matching import normalize
-from lotrautofill.webgui.server import _manual_list, _map_set_images, _product_image
+from lotrautofill.library.matching import normalize
+from lotrautofill.web.server import _manual_list, _map_set_images, _product_image
 
 
 def test_map_set_images_deluxe_and_cycle():
