@@ -133,7 +133,7 @@ PAGE = r"""<!doctype html>
       (<code>sets_folder/</code>) to be printed — anything not found there is
       reported and skipped.</p>
     <textarea id="deck-src" placeholder="3x Gandalf&#10;2 Steward of Gondor&#10;…"></textarea>
-    <div style="margin-top:10px"><button class="go" onclick="importDeck()">Import → order.xml</button></div>
+    <div style="margin-top:10px"><button class="go" onclick="checkManualList()">Check against library</button></div>
     <div id="deck-results"></div>
   </div>
 
@@ -271,19 +271,36 @@ async function exportCart(format) {
   } catch(e){ res.innerHTML = '<span class="err">Error: '+e.message+'</span>'; }
 }
 
-/* ---------- manual list (RingsDB import for now) ---------- */
-async function importDeck() {
+/* ---------- manual list (resolved against the LOCAL library) ---------- */
+let MANUAL = null;
+async function checkManualList() {
   const res = document.getElementById('deck-results');
-  res.innerHTML = '<span class="muted">Summoning cards…</span>';
+  res.innerHTML = '<span class="muted">Checking against your library…</span>';
   try {
-    const d = await postJSON('/api/deck', { source: document.getElementById('deck-src').value,
-      stock: stock ? stock.value : '(S33) Superior Smooth', foil: false });
+    const d = await postJSON('/api/manual-list', { text: document.getElementById('deck-src').value });
     if (d.error) throw new Error(d.error);
-    let html = `<div class="result"><b>${esc(d.deck)}</b> — ${d.cards} cards (${d.resolved} resolved)<br>
-      <code>${esc(d.order_xml)}</code></div>`;
-    if (d.unmatched.length) html += `<div class="result err">Missing from database: ${d.unmatched.map(esc).join(', ')}</div>`;
+    MANUAL = d;
+    let html = `<div class="result"><b>${d.resolved.length} card(s) found</b> in your library.`;
+    if (d.missing.length) html += `<div class="miss"><b>${d.missing.length} not found (will be skipped):</b><ul>`
+      + d.missing.map(m => '<li>'+esc(m.quantity+'× '+m.name)+'</li>').join('') + '</ul></div>';
+    html += '</div>';
+    if (d.resolved.length) {
+      const label = d.missing.length
+        ? `Add ${d.resolved.length} found card(s) to cart (skip ${d.missing.length})`
+        : `Add ${d.resolved.length} card(s) to cart`;
+      html += `<button class="go" onclick="addManualToCart()">${label}</button>`;
+    }
     res.innerHTML = html;
   } catch(e){ res.innerHTML = '<span class="err">Error: '+e.message+'</span>'; }
+}
+function addManualToCart() {
+  if (!MANUAL) return;
+  MANUAL.resolved.forEach(c => pushItem({type:'card', set:c.set, chapter:c.chapter,
+    front:c.front, quantity:c.quantity, label:c.quantity+'× '+c.name}));
+  renderCartCount();
+  document.getElementById('deck-results').innerHTML =
+    `<div class="result">Added ${MANUAL.resolved.length} card(s) to your cart. Open 🛒 Cart to export.</div>`;
+  MANUAL = null;
 }
 
 /* ---------- routing / utils ---------- */

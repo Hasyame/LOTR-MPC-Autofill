@@ -136,6 +136,10 @@ def _make_handler(root: Path, out_dir: Path):
                     self._json(_autofill(self._body()))
                 elif self.path == "/api/cart-export":
                     self._json(_cart_export(root, out_dir, self._body()))
+                elif self.path == "/api/manual-list":
+                    if "catalog" not in cache:
+                        cache["catalog"] = _card_catalog(root)
+                    self._json(_manual_list(cache["catalog"], self._body()))
                 else:
                     self._json({"error": "not found"}, 404)
             except Exception as exc:  # surface errors to the UI
@@ -353,6 +357,44 @@ def _autofill(body: dict) -> dict:
     return {"launched": True, "message": message}
 
 
+def _card_catalog(root: Path) -> dict:
+    """Every locally-available card as ``{normalized name: {set, chapter, front,
+    name, category}}`` — the reference the Manual List resolves against."""
+    from ..matching import normalize
+
+    catalog: dict[str, dict] = {}
+    for s in discover_sets(root):
+        chapters = discover_chapters(s)
+        units = ([(c.name, c) for c in chapters] if chapters else [("", s)])
+        for chname, folder in units:
+            for e in build(folder, BuildOptions(interactive=False)).entries:
+                catalog.setdefault(normalize(e.name), {
+                    "set": s.name, "chapter": chname, "front": _rel(e.front, root),
+                    "name": e.name, "category": e.category})
+    return catalog
+
+
+def _manual_list(catalog: dict, body: dict) -> dict:
+    """Resolve a pasted card list against the local library.
+
+    Returns the cards found (with their location + quantity, ready for the cart)
+    and the ones with no local image (reported, so the user can decide).
+    """
+    from ..matching import best_match, normalize
+    from ..ringsdb import parse_decklist_text
+
+    resolved, missing = [], []
+    for qty, name in parse_decklist_text(body.get("text", "")):
+        loc = catalog.get(normalize(name))
+        if loc is None:
+            loc = best_match(name, catalog)[0]
+        if loc:
+            resolved.append({**loc, "quantity": qty, "query": name})
+        else:
+            missing.append({"name": name, "quantity": qty})
+    return {"resolved": resolved, "missing": missing}
+
+
 def _cart_export(root: Path, out_dir: Path, body: dict) -> dict:
     """Resolve the cart (set / chapter / card items) to one order.xml, then
     export it as XML, a PDF proof, or an MPC project."""
@@ -380,6 +422,9 @@ def _cart_export(root: Path, out_dir: Path, body: dict) -> dict:
         entries = unit_entries(it.get("set"), it.get("chapter"))
         if it.get("type") == "card":
             entries = [e for e in entries if _rel(e.front, root) == it.get("front")]
+            for e in entries:            # a manual-list card carries its quantity
+                if it.get("quantity"):
+                    e.quantity = int(it["quantity"])
         for e in entries:
             chosen[str(e.front)] = e
 
