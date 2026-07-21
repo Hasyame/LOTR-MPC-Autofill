@@ -105,6 +105,25 @@ def test_cardlist_front_slash_back_pairs_separate_images(tmp_path):
     assert len([e for e in report.entries if not e.double_sided]) == 0
 
 
+def test_cardlist_pairs_front_with_no_number_shared_back(tmp_path):
+    root = tmp_path / "Set" / "Set"
+    _touch(tmp_path / "Card_Backs" / "Card_Backs",
+           "Encounter Card Back.jpg", "Player Card Back.jpg")
+    enc = root / "Encounter" / "X"
+    # Two fronts share one back stored WITHOUT a number prefix.
+    _touch(enc, "002 - Desecrated Ruins.jpg", "004 - Cursed Temple.jpg",
+           "Edge of the Temple.jpg")
+    (enc / "cardlist.txt").write_text(
+        "1 Desecrated Ruins/Edge of the Temple\n"
+        "1 Cursed Temple/Edge of the Temple\n", encoding="utf-8")
+
+    report = build(root, BuildOptions(interactive=False))
+    ds = [e for e in report.entries if e.double_sided]
+    assert len(ds) == 2
+    assert all(e.back.name == "Edge of the Temple.jpg" for e in ds)
+    assert report.unmatched_cardlist == []
+
+
 def test_same_number_even_count_pairs_into_couples(tmp_path):
     root = tmp_path / "Set" / "Set"
     _touch(tmp_path / "Card_Backs" / "Card_Backs",

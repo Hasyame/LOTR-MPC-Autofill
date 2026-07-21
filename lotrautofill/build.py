@@ -19,6 +19,7 @@ from .model import (
     CardImage,
 )
 from .parsing import (
+    IMAGE_EXTS,
     find_category_folders,
     image_folders_for_category,
     list_images,
@@ -133,7 +134,7 @@ def _build_folder(ctx: _Context, category: str, folder: Path) -> None:
             _classify_group(ctx, category, source, number, imgs, faces_in_folder)
         )
 
-    _quantify_singles(ctx, category, source, singles, cardlist, images)
+    _quantify_singles(ctx, category, source, singles, cardlist, images, folder)
 
 
 # --------------------------------------------------------------------------- #
@@ -259,7 +260,8 @@ def _choose_back_for(ctx, category, source, img: CardImage) -> Optional[Path]:
 # --------------------------------------------------------------------------- #
 def _quantify_singles(ctx, category, source, singles: list[CardImage],
                       cardlist: Optional[list[tuple[int, str]]],
-                      all_images: list[CardImage] | None = None) -> None:
+                      all_images: list[CardImage] | None = None,
+                      folder: Optional[Path] = None) -> None:
     if not singles and not ctx.folder_pairs:
         return
     back = _common_back(ctx, category)
@@ -313,6 +315,10 @@ def _quantify_singles(ctx, category, source, singles: list[CardImage],
             if len(parts) >= 2:
                 f_img, _fk, _fs = best_match(parts[0], candidates)
                 b_img, _bk, _bs = best_match(parts[-1], all_map)
+                if b_img is None:
+                    # The back may be stored without a number prefix (a shared
+                    # back like "Edge of the Temple.jpg") — scan raw files.
+                    b_img = _raw_back_image(folder, parts[-1])
                 if (f_img is not None and b_img is not None
                         and f_img.path != b_img.path):
                     used.add(f_img.path.name)
@@ -400,6 +406,20 @@ def _candidate_map(images: list[CardImage], report: BuildReport) -> dict[str, Ca
         key = normalize(img.name)
         candidates[key] = img
     return candidates
+
+
+def _raw_back_image(folder: Optional[Path], name: str) -> Optional[CardImage]:
+    """Find a back image by name among the folder's raw files, including files
+    stored without a ``NNN -`` number prefix (e.g. a shared "Edge of the
+    Temple.jpg")."""
+    if folder is None:
+        return None
+    target = normalize(name)
+    for p in sorted(folder.iterdir()):
+        if p.is_file() and p.suffix.lower() in IMAGE_EXTS and normalize(p.stem) == target:
+            return CardImage(path=p, number="", name=p.stem, is_errata=False,
+                             side=None, stage=None)
+    return None
 
 
 def _pair_candidate_map(folder_pairs: list[tuple]) -> dict[str, CardEntry]:
