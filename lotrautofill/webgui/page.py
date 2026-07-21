@@ -7,7 +7,6 @@ PAGE = r"""<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LOTRAutofill</title>
 <style>
-  /* Middle-earth theme: dark parchment, aged gold, deep forest accent. */
   :root {
     --bg:#161009; --bg2:#1e160c; --card:#251c10; --fg:#ece0c4; --muted:#a08e6c;
     --gold:#c8a13a; --gold-soft:#8a6f28; --accent:#5c7a3f; --border:#4a3a1e;
@@ -33,7 +32,7 @@ PAGE = r"""<!doctype html>
     font-family:inherit; }
   .tabs button.active { color:var(--gold); border-bottom-color:var(--card);
     font-weight:600; }
-  main { padding:16px 24px 150px; max-width:900px; margin:0 auto; }
+  main { padding:16px 24px 150px; max-width:920px; margin:0 auto; }
   .bar { display:flex; gap:16px; align-items:center; flex-wrap:wrap;
     margin-bottom:16px; background:var(--card); border:1px solid var(--border);
     border-radius:10px; padding:12px 14px; }
@@ -45,16 +44,28 @@ PAGE = r"""<!doctype html>
   textarea { width:100%; min-height:150px; resize:vertical; font-family:inherit; }
   .set { background:var(--card); border:1px solid var(--border); border-radius:10px;
     margin-bottom:8px; overflow:hidden; }
+  .set.unavailable { opacity:.5; }
   .set > .row { display:flex; align-items:center; gap:10px; padding:10px 12px; }
   .set .name { font-weight:600; flex:1; color:var(--fg); }
   .count { color:var(--muted); font-size:13px; }
-  .badge { font-size:11px; color:var(--warn); border:1px solid var(--gold-soft);
-    border-radius:20px; padding:1px 8px; }
+  .badge { font-size:11px; border-radius:20px; padding:1px 8px; cursor:pointer;
+    color:var(--warn); border:1px solid var(--gold-soft); }
+  .badge.grey { color:var(--muted); border-color:var(--border); cursor:default; }
   .toggle { cursor:pointer; user-select:none; width:16px; color:var(--gold); }
-  .chapters { padding:0 12px 10px 42px; display:none; }
-  .chapters.open { display:block; }
-  .chapters label { display:flex; align-items:center; gap:8px; padding:3px 0; }
+  .panel { padding:0 12px 10px 42px; display:none; }
+  .panel.open { display:block; }
+  .panel label.ch { display:flex; align-items:center; gap:8px; padding:3px 0; }
   input[type=checkbox] { accent-color:var(--accent); width:15px; height:15px; }
+  .miss { color:var(--warn); font-size:12px; margin:4px 0 6px; }
+  .miss ul { margin:4px 0 4px 16px; padding:0; columns:2; }
+  .prev { font-size:12px; color:var(--gold); cursor:pointer; user-select:none; }
+  .thumbs { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0; max-height:360px;
+    overflow:auto; padding:4px; background:var(--bg2); border-radius:8px; }
+  .thumb { width:84px; text-align:center; }
+  .thumb img { width:84px; height:auto; border-radius:4px; border:1px solid var(--border);
+    background:#0d0906; }
+  .thumb .cap { font-size:10px; color:var(--muted); line-height:1.2;
+    overflow:hidden; max-height:24px; }
   .footer { position:fixed; bottom:0; left:0; right:0; background:#140e06;
     border-top:1px solid var(--gold-soft); padding:12px 24px; display:flex;
     align-items:center; gap:12px; flex-wrap:wrap; }
@@ -147,10 +158,8 @@ async function load() {
 }
 
 function fillBacks(b) {
-  const fill = (sel, opts, def) => {
-    sel.innerHTML = opts.map(o =>
-      `<option ${o === def ? 'selected' : ''}>${esc(o)}</option>`).join('');
-  };
+  const fill = (sel, opts, def) => { sel.innerHTML = opts.map(o =>
+    `<option ${o === def ? 'selected' : ''}>${esc(o)}</option>`).join(''); };
   fill(document.getElementById('encBack'), b.encounter, b.default_encounter);
   fill(document.getElementById('plyBack'), b.player, b.default_player);
 }
@@ -158,50 +167,114 @@ function fillBacks(b) {
 function renderSets() {
   const el = document.getElementById('sets');
   el.className = ''; el.innerHTML = '';
-  LIB.sets.forEach((s, i) => {
+  LIB.sets.forEach((s, i) => el.appendChild(setRow(s, i)));
+  (LIB.unavailable_sets || []).forEach(name => {
     const box = document.createElement('div');
-    box.className = 'set';
-    const review = s.review_total ? `<span class="badge">${s.review_total} review</span>` : '';
-    const toggle = s.has_chapters ? `<span class="toggle" onclick="toggleCh(${i})">▸</span>` : '<span class="toggle"></span>';
-    box.innerHTML = `<div class="row">${toggle}
-      <input type="checkbox" data-set="${i}" onchange="onSetToggle(${i})">
-      <span class="name">${esc(s.name)}</span>
-      <span class="count">${s.cards_total} cards${s.has_chapters ? ' · '+s.chapters.length+' ch.' : ''}</span>
-      ${review}</div>`;
-    if (s.has_chapters) {
-      const ch = document.createElement('div');
-      ch.className = 'chapters'; ch.id = 'ch-' + i;
-      ch.innerHTML = s.chapters.map((c, j) =>
-        `<label><input type="checkbox" data-set="${i}" data-ch="${j}" onchange="updateSel()">
-          ${esc(c.name)} <span class="count">${c.unique_cards} cards</span></label>`).join('');
-      box.appendChild(ch);
-    }
+    box.className = 'set unavailable';
+    box.innerHTML = `<div class="row"><span class="toggle"></span>
+      <input type="checkbox" disabled>
+      <span class="name">${esc(name)}</span>
+      <span class="count">not in your library</span></div>`;
     el.appendChild(box);
   });
   updateSel();
 }
 
-function toggleCh(i) {
-  const ch = document.getElementById('ch-' + i);
-  const open = ch.classList.toggle('open');
-  event.target.textContent = open ? '▾' : '▸';
+function setRow(s, i) {
+  const box = document.createElement('div');
+  box.className = 'set' + (s.cards_total === 0 ? ' unavailable' : '');
+  const dis = s.cards_total === 0 ? 'disabled' : '';
+  const miss = s.missing_total
+    ? `<span class="badge" onclick="openMiss(${i},event)">Cards missing (${s.missing_total})</span>` : '';
+  box.innerHTML = `<div class="row">
+    <span class="toggle" onclick="togglePanel(${i})">▸</span>
+    <input type="checkbox" data-set="${i}" ${dis} onchange="onSetToggle(${i})">
+    <span class="name">${esc(s.name)}</span>
+    <span class="count">${s.cards_total} cards${s.has_chapters ? ' · '+s.chapters.length+' ch.' : ''}</span>
+    ${miss}</div>
+    <div class="panel" id="panel-${i}"></div>`;
+  return box;
 }
+
+function togglePanel(i) {
+  const p = document.getElementById('panel-' + i);
+  const open = p.classList.toggle('open');
+  event.target.textContent = open ? '▾' : '▸';
+  if (open && !p.dataset.built) { p.dataset.built = '1'; buildPanel(i, p); }
+}
+
+function buildPanel(i, p) {
+  const s = LIB.sets[i];
+  if (s.has_chapters) {
+    p.innerHTML = s.chapters.map((c, j) => {
+      const miss = c.missing && c.missing.length
+        ? `<span class="badge" onclick="showMiss(document.getElementById('miss-${i}-${j}'),LIB.sets[${i}].chapters[${j}].missing);event.stopPropagation()">missing ${c.missing.length}</span>` : '';
+      return `<div>
+        <label class="ch"><input type="checkbox" data-set="${i}" data-ch="${j}" onchange="updateSel()">
+          ${esc(c.name)} <span class="count">${c.unique_cards} cards</span> ${miss}
+          <span class="prev" onclick="loadCards(${i},${j})">preview ▾</span></label>
+        <div id="miss-${i}-${j}"></div>
+        <div id="thumbs-${i}-${j}"></div></div>`;
+    }).join('');
+  } else {
+    p.innerHTML = `<div id="miss-${i}-x"></div>
+      <span class="prev" onclick="loadCards(${i},null)">preview cards ▾</span>
+      <div id="thumbs-${i}-x"></div>`;
+  }
+}
+
+function openMiss(i, ev) {
+  ev.stopPropagation();
+  const p = document.getElementById('panel-' + i);
+  if (!p.dataset.built) { p.dataset.built = '1'; buildPanel(i, p); }
+  if (!p.classList.contains('open')) { p.classList.add('open');
+    const t = p.parentElement.querySelector('.toggle'); if (t) t.textContent = '▾'; }
+  const s = LIB.sets[i];
+  if (!s.has_chapters)
+    showMiss(document.getElementById(`miss-${i}-x`), s.chapters[0].missing);
+}
+function showMiss(host, list) {
+  if (!host) return;
+  if (host.dataset.shown) { host.innerHTML = ''; host.dataset.shown = ''; return; }
+  host.dataset.shown = '1';
+  host.innerHTML = '<div class="miss"><b>Missing cards:</b><ul>' +
+    (list || []).map(m => '<li>' + esc(m) + '</li>').join('') + '</ul></div>';
+}
+
+async function loadCards(i, j) {
+  const s = LIB.sets[i];
+  const host = document.getElementById(`thumbs-${i}-${j === null ? 'x' : j}`);
+  if (host.dataset.loaded) { host.innerHTML = ''; host.dataset.loaded = ''; return; }
+  host.innerHTML = '<span class="muted">loading previews…</span>';
+  const chapter = j === null ? '' : s.chapters[j].name;
+  const q = new URLSearchParams({ set: s.name, chapter });
+  try {
+    const d = await (await fetch('/api/cards?' + q)).json();
+    host.dataset.loaded = '1';
+    host.innerHTML = '<div class="thumbs">' + d.cards.map(c =>
+      `<div class="thumb"><img loading="lazy" src="/api/thumb?p=${encodeURIComponent(c.front)}" alt="">
+        <div class="cap">${esc(c.name)}</div></div>`).join('') + '</div>';
+  } catch (e) { host.innerHTML = '<span class="err">Preview failed: ' + e + '</span>'; }
+}
+
 function onSetToggle(i) {
   const on = document.querySelector(`input[data-set="${i}"]:not([data-ch])`).checked;
-  document.querySelectorAll(`#ch-${i} input[data-ch]`).forEach(c => c.checked = on);
+  document.querySelectorAll(`#panel-${i} input[data-ch]`).forEach(c => c.checked = on);
   updateSel();
 }
 function selectedUnits() {
   const units = [];
   LIB.sets.forEach((s, i) => {
+    if (s.cards_total === 0) return;
     if (!s.has_chapters) {
-      if (document.querySelector(`input[data-set="${i}"]:not([data-ch])`).checked)
-        units.push({set: s.name, chapter: null});
+      const cb = document.querySelector(`input[data-set="${i}"]:not([data-ch])`);
+      if (cb && cb.checked) units.push({set: s.name, chapter: null});
     } else {
-      s.chapters.forEach((c, j) => {
-        const cb = document.querySelector(`input[data-set="${i}"][data-ch="${j}"]`);
-        if (cb && cb.checked) units.push({set: s.name, chapter: c.name});
-      });
+      const anyCh = document.querySelectorAll(`#panel-${i} input[data-ch]:checked`);
+      if (anyCh.length) anyCh.forEach(cb =>
+        units.push({set: s.name, chapter: s.chapters[+cb.dataset.ch].name}));
+      else if (document.querySelector(`input[data-set="${i}"]:not([data-ch])`).checked)
+        s.chapters.forEach(c => units.push({set: s.name, chapter: c.name}));
     }
   });
   return units;
@@ -218,7 +291,6 @@ function orderBody() {
   return { units: selectedUnits(), stock: stock.value, foil: foil.checked,
            encounter_back: encBack.value, player_back: plyBack.value };
 }
-
 async function generate(alsoCreate) {
   document.getElementById('genBtn').disabled = true;
   document.getElementById('genGoBtn').disabled = true;
@@ -231,7 +303,6 @@ async function generate(alsoCreate) {
   } catch (e) { alert('Error: ' + e.message); }
   updateSel();
 }
-
 function renderResults(results) {
   const panel = document.getElementById('lib-results');
   panel.innerHTML = '<h3>Forged</h3>' + results.map(x =>
@@ -245,7 +316,6 @@ function wireCreateButtons(panel) {
   panel.querySelectorAll('button[data-xml]').forEach(b =>
     b.onclick = () => createProject(b.dataset.xml, b));
 }
-
 async function createProject(orderXml, btn) {
   if (btn) { btn.disabled = true; btn.textContent = 'Launching…'; }
   try {
@@ -254,7 +324,6 @@ async function createProject(orderXml, btn) {
     if (btn) btn.textContent = 'MPC tool launched ✓';
   } catch (e) { alert('Error: ' + e.message); if (btn) { btn.disabled = false; btn.textContent = 'Create MPC project'; } }
 }
-
 async function importDeck() {
   const res = document.getElementById('deck-results');
   res.innerHTML = '<span class="muted">Summoning cards from RingsDB…</span>';
@@ -267,11 +336,9 @@ async function importDeck() {
       <button class="go ghost mini" data-xml="${esc(d.order_xml)}">Create MPC project</button></div>`;
     if (d.unmatched.length) html += `<div class="result err">Unmatched: ${d.unmatched.map(esc).join(', ')}</div>`;
     if (d.missing_images.length) html += `<div class="result">No image: ${d.missing_images.map(esc).join(', ')}</div>`;
-    res.innerHTML = html;
-    wireCreateButtons(res);
+    res.innerHTML = html; wireCreateButtons(res);
   } catch (e) { res.innerHTML = '<span class="err">Error: ' + e.message + '</span>'; }
 }
-
 async function postJSON(url, body) {
   const r = await fetch(url, {method:'POST', body: JSON.stringify(body)});
   return r.json();

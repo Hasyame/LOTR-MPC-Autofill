@@ -11,6 +11,8 @@ dependencies = []
 upload = ["playwright>=1.40"]
 # Build a standalone executable (see build_exe.py).
 build = ["pyinstaller>=6"]
+# GUI card thumbnails (optional — falls back to full images without it).
+gui = ["pillow>=10"]
 
 [project.scripts]
 lotr-autofill = "lotrautofill.cli:main"

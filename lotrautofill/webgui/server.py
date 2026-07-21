@@ -7,8 +7,11 @@ sets/chapters, and import a RingsDB deck. Bind to localhost only.
 
 from __future__ import annotations
 
+import hashlib
 import json
+import tempfile
 import threading
+import urllib.parse
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -19,6 +22,10 @@ from ..sets import default_library_root, discover_chapters, discover_sets
 from ..upload.mpc_xml import plan_to_xml
 from ..upload.plan import plan_from_manifest
 from .page import PAGE
+
+# Light thumbnails are cached here (needs Pillow; falls back to the original).
+_THUMB_DIR = Path(tempfile.gettempdir()) / "lotr-autofill-thumbs"
+_THUMB_MAX = 240
 
 
 def run_server(root: Path | None = None, host: str = "127.0.0.1",
@@ -43,6 +50,8 @@ def run_server(root: Path | None = None, host: str = "127.0.0.1",
 
 
 def _make_handler(root: Path, out_dir: Path):
+    cache: dict = {}  # the library index is expensive; build it once per run
+
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *args):  # quiet
             pass
@@ -67,14 +76,35 @@ def _make_handler(root: Path, out_dir: Path):
 
         # ---- routing ----------------------------------------------------- #
         def do_GET(self):
-            if self.path == "/" or self.path.startswith("/index"):
+            parsed = urllib.parse.urlparse(self.path)
+            path, query = parsed.path, urllib.parse.parse_qs(parsed.query)
+            if path == "/" or path.startswith("/index"):
                 self._send(200, PAGE.encode("utf-8"), "text/html; charset=utf-8")
-            elif self.path == "/api/library":
-                self._json(_library(root))
-            elif self.path == "/api/backs":
+            elif path == "/api/library":
+                if "lib" not in cache:
+                    cache["lib"] = _library(root)
+                self._json(cache["lib"])
+            elif path == "/api/backs":
                 self._json(_backs_info(root))
+            elif path == "/api/cards":
+                self._json(_unit_cards(root, query.get("set", [""])[0],
+                                       query.get("chapter", [""])[0]))
+            elif path == "/api/thumb":
+                self._thumb(query.get("p", [""])[0])
             else:
                 self._json({"error": "not found"}, 404)
+
+        def _thumb(self, rel: str) -> None:
+            data, ctype = _thumbnail(root, rel)
+            if data is None:
+                self._json({"error": "not found"}, 404)
+            else:
+                self.send_response(200)
+                self.send_header("Content-Type", ctype)
+                self.send_header("Cache-Control", "max-age=86400")
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
 
         def do_POST(self):
             try:
@@ -96,12 +126,89 @@ def _make_handler(root: Path, out_dir: Path):
 # API implementations (reuse the CLI building blocks)
 # --------------------------------------------------------------------------- #
 def _library(root: Path) -> dict:
+    import re
+    from ..hallofbeorn import load_reference
+    from ..matching import normalize
+
     db = build_database(root)
-    # Trim the heavy per-card lists; the UI needs names + counts + review.
+    # Trim the heavy per-card lists; the UI fetches cards per unit for previews.
     for s in db["sets"]:
         for ch in s["chapters"]:
             ch.pop("cards", None)
+
+    # Canonical sets (Hall of Beorn cycles) the user does NOT have locally,
+    # so the UI can show them greyed out and uncheckable.
+    _META = ("deck", "kit", "pack", "scenarios")
+    unavailable: list[str] = []
+    ref = load_reference()
+    if ref:
+        local = [normalize(re.sub(r"^\d+\s*-\s*", "", s["name"])) for s in db["sets"]]
+        seen = set()
+        for sc in ref.get("scenarios", []):
+            cyc = sc.get("cycle")
+            if not cyc:
+                continue
+            n = normalize(cyc)
+            if n in seen:
+                continue
+            seen.add(n)
+            # available if the cycle name is contained in (or contains) a local
+            # set name — handles "The Hobbit" vs "The Hobbit Saga" etc.
+            available = any(n in loc or loc in n for loc in local)
+            if available or any(w in n for w in _META):
+                continue
+            unavailable.append(cyc)
+    db["unavailable_sets"] = unavailable
     return db
+
+
+def _unit_cards(root: Path, set_name: str, chapter: str) -> dict:
+    """Cards of one unit with front/back paths relative to root (for thumbnails)."""
+    folder = _unit_folder(root, set_name, chapter or None)
+    if folder is None:
+        return {"cards": []}
+    report = build(folder, BuildOptions(interactive=False))
+    cards = []
+    for e in report.entries:
+        cards.append({
+            "name": e.name, "category": e.category, "quantity": e.quantity,
+            "double_sided": e.double_sided,
+            "front": _rel(e.front, root),
+            "back": _rel(e.back, root) if e.back else None,
+        })
+    return {"cards": cards}
+
+
+def _rel(p: Path, root: Path) -> str | None:
+    try:
+        return str(Path(p).resolve().relative_to(root)).replace("\\", "/")
+    except ValueError:
+        return None
+
+
+def _thumbnail(root: Path, rel: str) -> tuple[bytes | None, str]:
+    """A light JPEG thumbnail of a card image (Pillow); original if unavailable."""
+    if not rel:
+        return None, ""
+    src = (root / rel).resolve()
+    if root not in src.parents or not src.is_file():
+        return None, ""
+    try:
+        from PIL import Image
+    except Exception:
+        return src.read_bytes(), "image/jpeg"  # no Pillow: serve original
+    _THUMB_DIR.mkdir(parents=True, exist_ok=True)
+    key = hashlib.sha1(f"{src}|{src.stat().st_mtime_ns}".encode()).hexdigest()
+    cache = _THUMB_DIR / f"{key}.jpg"
+    if not cache.exists():
+        try:
+            with Image.open(src) as im:
+                im = im.convert("RGB")
+                im.thumbnail((_THUMB_MAX, _THUMB_MAX))
+                im.save(cache, "JPEG", quality=70)
+        except Exception:
+            return src.read_bytes(), "image/jpeg"
+    return cache.read_bytes(), "image/jpeg"
 
 
 def _unit_folder(root: Path, set_name: str, chapter: str | None) -> Path | None:
