@@ -40,3 +40,22 @@ def _contains_category(folder: Path) -> bool:
         if p.is_dir() and p.name in CATEGORIES:
             return True
     return False
+
+
+def _has_direct_category(folder: Path) -> bool:
+    return any((folder / cat).is_dir() for cat in CATEGORIES)
+
+
+def discover_chapters(set_folder: Path) -> list[Path]:
+    """Chapter folders inside a set, or ``[]`` if the set has no chapters.
+
+    A "category container" is any folder that *directly* holds Encounter/Player/
+    Quest/Nightmare sub-folders. A set with chapters (e.g. a saga) has several
+    such containers — one per chapter; a plain box has exactly one (the set
+    itself), so we report no chapters there.
+    """
+    containers = [
+        p for p in sorted(Path(set_folder).rglob("*"))
+        if p.is_dir() and _has_direct_category(p)
+    ]
+    return containers if len(containers) > 1 else []

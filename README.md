@@ -127,6 +127,12 @@ python -m lotrautofill pick             # scans toPrint/, lists sets, you choose
 `19 - The Hobbit Saga`), lets you select one or several, then for each writes a
 manifest **and** an `order.xml` into `builds/`.
 
+**Chapters.** Some sets are split into chapters (a saga or cycle — e.g.
+`19 - The Hobbit Saga` → `01 - Over Hill and Under Hill`, `02 - On the
+Doorstep`). When a selected set has chapters, `pick` asks which to print (all,
+or a subset) and writes **one `order.xml` per chapter**, so each stays a
+sensible MPC project size. Plain boxes (no chapters) produce one `order.xml`.
+
 ### Run the desktop tool (one command)
 
 `autofill` clones the mpc-autofill desktop tool (once, into
@@ -190,7 +196,7 @@ python -m lotrautofill upload builds/hobbit.json             # drive MPC (headed
 - [x] **Stage 2 — pick:** choose set folder(s) → manifest + order.xml each.
 - [x] **Stage 2 — autofill:** one-command clone/install/run of the desktop tool.
 - [x] **Optional driver:** Playwright upload/insert ported from mpc-autofill.
-- [ ] **Chapters:** print all chapters of a set, or pick chapters per set.
+- [x] **Chapters:** print all chapters of a set, or pick chapters per set.
 - [ ] **Executable:** package the CLI as a standalone binary (no Python needed).
 - [ ] **Deck import:** read a decklist `.txt` and fetch cards from RingsDB.
 - [ ] **GUI:** a web/desktop front-end over the CLI (CLI stays supported).

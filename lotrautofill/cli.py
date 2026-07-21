@@ -174,7 +174,7 @@ def _cmd_sets(args: argparse.Namespace) -> int:
 
 
 def _cmd_pick(args: argparse.Namespace) -> int:
-    from .sets import discover_sets, default_library_root
+    from .sets import discover_sets, discover_chapters, default_library_root
     from .build import BuildOptions, build
     from .upload.plan import plan_from_manifest
     from .interactive import default_enabled
@@ -190,21 +190,53 @@ def _cmd_pick(args: argparse.Namespace) -> int:
         print("Nothing selected.")
         return 0
 
+    # Resolve each chosen set into print units: the whole set, or its chapters.
+    units: list[tuple[str, Path]] = []
+    for s in chosen:
+        chapters = discover_chapters(s)
+        if not chapters:
+            units.append((s.name, s))
+            continue
+        picked = _choose_chapters(s, chapters)
+        for ch in picked:
+            units.append((f"{s.name} — {ch.name}", ch))
+
+    if not units:
+        print("Nothing selected.")
+        return 0
+
     interactive = default_enabled() if args.interactive is None else args.interactive
     options = BuildOptions(errata=args.errata, player_copies=args.player_copies,
                            interactive=interactive)
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
-    for folder in chosen:
-        print(f"\n=== {folder.name} ===")
+    for label, folder in units:
+        print(f"\n=== {label} ===")
         report = build(folder, options)
         print_report(report)
-        slug = _slug(folder.name)
-        manifest_path = args.out_dir / f"{slug}.json"
-        write_manifest(report, manifest_path, options)
+        slug = _slug(label)
+        write_manifest(report, args.out_dir / f"{slug}.json", options)
         plan = plan_from_manifest(_manifest_dict(report, options))
         _write_order_xml(plan, args.out_dir / f"{slug}.order.xml", args.stock, args.foil)
     return 0
+
+
+def _choose_chapters(set_folder: Path, chapters: list) -> list:
+    print(f"\n'{set_folder.name}' has {len(chapters)} chapters:")
+    for i, ch in enumerate(chapters, 1):
+        print(f"  [{i}] {ch.name}")
+    print("  [a] all chapters (one order.xml each)")
+    try:
+        raw = input("Chapters to print (comma-separated), 'a' for all: ").strip().lower()
+    except EOFError:
+        return list(chapters)
+    if raw in ("a", "all", ""):
+        return list(chapters)
+    picks = []
+    for tok in raw.replace(" ", "").split(","):
+        if tok.isdigit() and 1 <= int(tok) <= len(chapters):
+            picks.append(chapters[int(tok) - 1])
+    return picks
 
 
 def _choose_sets(sets: list) -> list:

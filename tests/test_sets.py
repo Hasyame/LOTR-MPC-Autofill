@@ -3,13 +3,25 @@
 import os
 from pathlib import Path
 
-from lotrautofill.sets import discover_sets, default_library_root
+from lotrautofill.sets import (
+    default_library_root,
+    discover_chapters,
+    discover_sets,
+)
 from lotrautofill.upload.desktop_tool import _venv_python
 
 
 def _make_set(root: Path, name: str, category: str = "Player") -> None:
     (root / name / name / category).mkdir(parents=True, exist_ok=True)
     (root / name / name / category / "001 - Card.jpg").write_bytes(b"")
+
+
+def _make_chaptered_set(root: Path, name: str, chapters: list[str]) -> Path:
+    for ch in chapters:
+        cat = root / name / name / ch / "Player"
+        cat.mkdir(parents=True, exist_ok=True)
+        (cat / "001 - Card.jpg").write_bytes(b"")
+    return root / name
 
 
 def test_discover_sets_finds_card_folders(tmp_path):
@@ -33,6 +45,18 @@ def test_default_library_root_prefers_toprint(tmp_path):
 
 def test_default_library_root_falls_back_to_dot(tmp_path):
     assert default_library_root(tmp_path) == tmp_path
+
+
+def test_chapters_detected_for_saga(tmp_path):
+    s = _make_chaptered_set(tmp_path, "19 - Saga",
+                            ["01 - First", "02 - Second"])
+    names = [c.name for c in discover_chapters(s)]
+    assert names == ["01 - First", "02 - Second"]
+
+
+def test_no_chapters_for_plain_box(tmp_path):
+    _make_set(tmp_path, "03 - Box")
+    assert discover_chapters(tmp_path / "03 - Box") == []
 
 
 def test_venv_python_path_is_os_specific(tmp_path):
