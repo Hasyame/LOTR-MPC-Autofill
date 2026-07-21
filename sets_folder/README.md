@@ -1,8 +1,14 @@
-# sets_folder/ — your card library (never committed)
+# sets_folder/ — your card library
 
-Put your **set folders** and the **`Card_Backs`** folder here. Everything in
-this directory except this README is git-ignored, so your (large) card images
-are never committed or pushed.
+Put your **set folders** here. The **`Card_Backs/`** folder (the shared
+encounter/player backs) and this README **are** tracked in git — everyone needs
+the same backs. Your **set folders and the cards inside them are git-ignored**,
+so your (large) card images are never committed or pushed.
+
+**Naming:** name set/chapter folders in **English**. A leading `NN - ` number is
+**optional** — it only controls display order; the tool finds sets and matches
+them (to Hall of Beorn, RingsDB, …) with or without it. So `Core Set` and
+`01 - Core Set` both work.
 
 Expected layout:
 

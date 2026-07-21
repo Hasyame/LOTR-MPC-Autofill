@@ -7,6 +7,7 @@ from lotrautofill.sets import (
     default_library_root,
     discover_chapters,
     discover_sets,
+    display_name,
 )
 from lotrautofill.upload.desktop_tool import _venv_python
 
@@ -36,6 +37,18 @@ def test_discover_sets_finds_card_folders(tmp_path):
 def test_discover_sets_skips_non_card_dirs(tmp_path):
     (tmp_path / "random" / "sub").mkdir(parents=True)
     assert discover_sets(tmp_path) == []
+
+
+def test_sets_found_with_or_without_number_prefix(tmp_path):
+    _make_set(tmp_path, "Core Set")            # English name, no number
+    _make_set(tmp_path, "07 - The Voice of Isengard")  # numbered
+    names = [p.name for p in discover_sets(tmp_path)]
+    assert "Core Set" in names and "07 - The Voice of Isengard" in names
+
+
+def test_display_name_strips_optional_number_prefix():
+    assert display_name("03 - Khazad-dûm") == "Khazad-dûm"
+    assert display_name("Core Set") == "Core Set"
 
 
 def test_default_library_root_prefers_toprint(tmp_path):

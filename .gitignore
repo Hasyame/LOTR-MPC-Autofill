@@ -1,9 +1,12 @@
-# Card libraries — your set folders and Card_Backs live in sets_folder/ and are
-# NEVER committed. Only the explanatory README is tracked. (toPrint = old name.)
+# Card libraries live in sets_folder/. Set folders (and the cards inside them)
+# are NEVER committed. The shared card BACKS (Card_Backs/) and the README ARE
+# tracked — everyone needs the same encounter/player backs. (toPrint = old name.)
 /sets_folder/*
 !/sets_folder/README.md
+!/sets_folder/Card_Backs
 /toPrint/*
 !/toPrint/README.md
+!/toPrint/Card_Backs
 
 # Generated order.xml output (manifests + order.xml)
 /MPC_XML/
