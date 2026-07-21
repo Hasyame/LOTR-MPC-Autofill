@@ -141,6 +141,8 @@ def _make_handler(root: Path, out_dir: Path):
                     self._json(_autofill(self._body()))
                 elif self.path == "/api/cart-export":
                     self._json(_cart_export(root, out_dir, self._body()))
+                elif self.path == "/api/cart-price":
+                    self._json(_cart_price(root, self._body()))
                 elif self.path == "/api/manual-list":
                     if "catalog" not in cache:
                         cache["catalog"] = _card_catalog(root)
@@ -314,7 +316,8 @@ def _backs_info(root: Path) -> dict:
     backs = CardBacks(find_backs_dir(root))
     enc, ply = [], []
     for c in backs.choices:
-        (ply if "player" in c.label.lower() else enc).append(c.label)
+        item = {"label": c.label, "path": _rel(c.path, root)}
+        (ply if "player" in c.label.lower() else enc).append(item)
     return {"encounter": enc, "player": ply,
             "default_encounter": Path(ENCOUNTER_BACK).stem,
             "default_player": Path(PLAYER_BACK).stem}
@@ -399,14 +402,10 @@ def _manual_list(catalog: dict, body: dict) -> dict:
     return {"resolved": resolved, "missing": missing}
 
 
-def _cart_export(root: Path, out_dir: Path, body: dict) -> dict:
-    """Resolve the cart (set / chapter / card items) to one order.xml, then
-    export it as XML, a PDF proof, or an MPC project."""
+def _resolve_cart_plan(root: Path, body: dict):
+    """Resolve the cart (set / chapter / card items) into a single UploadPlan,
+    honoring the chosen encounter/player backs. Returns ``None`` if empty."""
     items = body.get("items", [])
-    stock = body.get("stock", "(S33) Superior Smooth")
-    foil = bool(body.get("foil"))
-    fmt = body.get("format", "xml")
-    name = body.get("name") or "cart"
     enc_back = _resolve_back(root, body.get("encounter_back"))
     ply_back = _resolve_back(root, body.get("player_back"))
 
@@ -433,18 +432,48 @@ def _cart_export(root: Path, out_dir: Path, body: dict) -> dict:
             chosen[str(e.front)] = e
 
     if not chosen:
-        return {"error": i18n.t("srv_cart_empty", lang=i18n.resolve_lang(body.get("lang")))}
+        return None
 
     manifest = {"root": str(root), "cards": [
         {"front": str(e.front), "back": str(e.back) if e.back else None,
          "quantity": e.quantity, "name": e.name, "category": e.category,
          "double_sided": e.double_sided} for e in chosen.values()]}
-    plan = plan_from_manifest(manifest)
+    return plan_from_manifest(manifest)
+
+
+def _cart_price(root: Path, body: dict) -> dict:
+    """Estimate the MPC price of the current cart without writing any file."""
+    from ..mpc import pricing
+
+    plan = _resolve_cart_plan(root, body)
+    if plan is None:
+        return {"error": i18n.t("srv_cart_empty", lang=i18n.resolve_lang(body.get("lang")))}
+    stock = body.get("stock", "(S33) Superior Smooth")
+    foil = bool(body.get("foil"))
+    return {"cards": plan.total_cards, "fronts": len(plan.unique_fronts),
+            "price": pricing.estimate(plan.total_cards, stock, foil)}
+
+
+def _cart_export(root: Path, out_dir: Path, body: dict) -> dict:
+    """Resolve the cart (set / chapter / card items) to one order.xml, then
+    export it as XML, a PDF proof, or an MPC project."""
+    from ..mpc import pricing
+
+    stock = body.get("stock", "(S33) Superior Smooth")
+    foil = bool(body.get("foil"))
+    fmt = body.get("format", "xml")
+    name = body.get("name") or "cart"
+
+    plan = _resolve_cart_plan(root, body)
+    if plan is None:
+        return {"error": i18n.t("srv_cart_empty", lang=i18n.resolve_lang(body.get("lang")))}
+
     out = out_dir / f"{_slug(name)}.order.xml"
     out.write_text(plan_to_xml(plan, stock=stock, foil=foil), encoding="utf-8")
 
     result = {"order_xml": str(out), "cards": plan.total_cards,
-              "fronts": len(plan.unique_fronts), "format": fmt}
+              "fronts": len(plan.unique_fronts), "format": fmt,
+              "price": pricing.estimate(plan.total_cards, stock, foil)}
     if fmt in ("pdf", "mpc"):
         from ..mpc.desktop_tool import launch_autofill_terminal
         result["message"] = launch_autofill_terminal(out, export_pdf=(fmt == "pdf"))

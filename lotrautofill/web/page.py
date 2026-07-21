@@ -97,6 +97,22 @@ PAGE = r"""<!doctype html>
   .muted { color:var(--muted); } .err { color:var(--err); } .hidden { display:none; }
   .pagefoot { text-align:center; color:var(--gold-soft); font-size:12px;
     padding:26px 0 6px; letter-spacing:1px; }
+  .backpick { display:flex; gap:18px; flex-wrap:wrap; margin:6px 0 4px; }
+  .backpick .bk { flex:1; min-width:260px; }
+  .backpick .bk-h { font-size:13px; color:var(--muted); margin-bottom:6px; }
+  .backrow { display:flex; gap:8px; flex-wrap:wrap; padding:8px;
+    background:var(--bg2); border:1px solid var(--border); border-radius:8px; }
+  .backopt { width:78px; text-align:center; cursor:pointer; border-radius:6px;
+    padding:3px; border:2px solid transparent; }
+  .backopt img { width:70px; border-radius:4px; border:1px solid var(--border);
+    background:#0d0906; display:block; margin:0 auto; }
+  .backopt .cap { font-size:10px; color:var(--muted); max-height:24px; overflow:hidden; }
+  .backopt.sel { border-color:var(--gold); }
+  .backopt.sel .cap { color:var(--gold); }
+  .price { margin-top:12px; }
+  .price .price-h { color:var(--muted); font-size:13px; }
+  .price .price-amt { color:var(--gold); font-size:20px; font-weight:700; margin:2px 0 6px; }
+  .price .price-disc { font-size:11px; font-style:italic; margin-top:6px; }
 </style>
 </head>
 <body>
@@ -121,14 +137,17 @@ PAGE = r"""<!doctype html>
     <h2 data-i18n="cart_title">Your cart</h2>
     <div id="cart-list"></div>
     <div class="bar" id="cart-opts">
-      <label><span data-i18n="stock">Card stock</span> <select id="stock">
+      <label><span data-i18n="stock">Card stock</span> <select id="stock" onchange="onOptChange()">
         <option>(S33) Superior Smooth</option><option>(S30) Standard Smooth</option>
         <option>(S27) Smooth</option><option>(M31) Linen</option><option>(P10) Plastic</option>
       </select></label>
-      <label><span data-i18n="enc_back">Encounter back</span> <select id="encBack"></select></label>
-      <label><span data-i18n="ply_back">Player back</span> <select id="plyBack"></select></label>
-      <label><input type="checkbox" id="foil"> <span data-i18n="foil">Foil</span></label>
+      <label><input type="checkbox" id="foil" onchange="onOptChange()"> <span data-i18n="foil">Foil</span></label>
     </div>
+    <div class="backpick">
+      <div class="bk"><div class="bk-h" data-i18n="enc_back">Encounter back</div><div id="encBack" class="backrow"></div></div>
+      <div class="bk"><div class="bk-h" data-i18n="ply_back">Player back</div><div id="plyBack" class="backrow"></div></div>
+    </div>
+    <div id="cart-price" class="price"></div>
     <div style="display:flex; gap:10px; flex-wrap:wrap">
       <button class="go" onclick="exportCart('xml')" data-i18n="export_xml">Export order.xml</button>
       <button class="go ghost" onclick="exportCart('pdf')" data-i18n="export_pdf">Export PDF</button>
@@ -179,6 +198,10 @@ const I18N = {
     add_found_skip:"Add {n} found card(s) to cart (skip {m})",
     add_found:"Add {n} card(s) to cart",
     added_to_cart:"Added {n} card(s) to your cart. Open 🛒 Cart to export.",
+    est_price:"Estimated price", est_calc:"Estimating…", est_for:"for {n} cards",
+    est_billed:"billed by MPC as {b} cards", est_percard:"≈ {v} per card",
+    est_foil:"foil",
+    est_disclaimer:"Estimated MPC price as of {date} — cards only, shipping & taxes excluded.",
   },
   fr: {
     nav_sets:"Extensions", nav_manual:"Liste manuelle", cart:"Panier",
@@ -205,6 +228,10 @@ const I18N = {
     add_found_skip:"Ajouter {n} carte(s) trouvée(s) au panier (ignorer {m})",
     add_found:"Ajouter {n} carte(s) au panier",
     added_to_cart:"{n} carte(s) ajoutée(s) à votre panier. Ouvrez 🛒 Panier pour exporter.",
+    est_price:"Prix estimé", est_calc:"Estimation…", est_for:"pour {n} cartes",
+    est_billed:"facturé par MPC pour {b} cartes", est_percard:"≈ {v} par carte",
+    est_foil:"foil",
+    est_disclaimer:"Prix MPC estimé à la date du {date} — cartes uniquement, hors frais de port et taxes.",
   },
   es: {
     nav_sets:"Expansiones", nav_manual:"Lista manual", cart:"Carrito",
@@ -231,6 +258,10 @@ const I18N = {
     add_found_skip:"Añadir {n} carta(s) encontrada(s) al carrito (omitir {m})",
     add_found:"Añadir {n} carta(s) al carrito",
     added_to_cart:"{n} carta(s) añadida(s) a tu carrito. Abre 🛒 Carrito para exportar.",
+    est_price:"Precio estimado", est_calc:"Estimando…", est_for:"para {n} cartas",
+    est_billed:"facturado por MPC como {b} cartas", est_percard:"≈ {v} por carta",
+    est_foil:"foil",
+    est_disclaimer:"Precio MPC estimado a fecha de {date} — solo cartas, sin envío ni impuestos.",
   },
   zh: {
     nav_sets:"系列", nav_manual:"手动列表", cart:"购物车",
@@ -256,13 +287,24 @@ const I18N = {
     add_found_skip:"将找到的 {n} 张卡加入购物车（跳过 {m} 张）",
     add_found:"将 {n} 张卡加入购物车",
     added_to_cart:"已将 {n} 张卡加入购物车。打开 🛒 购物车以导出。",
+    est_price:"预计价格", est_calc:"正在估算…", est_for:"共 {n} 张卡",
+    est_billed:"MPC 按 {b} 张卡计费", est_percard:"≈ 每张 {v}",
+    est_foil:"闪膜",
+    est_disclaimer:"MPC 价格为 {date} 的估算 —— 仅含卡牌，不含运费和税费。",
   },
 };
 const LANGS = ['en','fr','es','zh'];
-let LANG = localStorage.getItem('lotr_lang');
+let LANG = localStorage.getItem('lotr_lang');  // explicit choice wins, if any
 if (!LANGS.includes(LANG)) {
-  LANG = (navigator.language || 'en').slice(0,2).toLowerCase();
-  if (!LANGS.includes(LANG)) LANG = 'en';
+  // Otherwise follow the browser's ordered language preferences; anything that
+  // isn't French/Spanish/Chinese falls back to English.
+  LANG = 'en';
+  const prefs = (navigator.languages && navigator.languages.length)
+    ? navigator.languages : [navigator.language || 'en'];
+  for (const p of prefs) {
+    const c = (p || '').slice(0,2).toLowerCase();
+    if (LANGS.includes(c)) { LANG = c; break; }
+  }
 }
 function T(k, p) {
   let s = (I18N[LANG] && I18N[LANG][k]) || I18N.en[k] || k;
@@ -286,7 +328,8 @@ function setLang(l) {
 }
 
 /* ---------- state ---------- */
-let LIB = null, CART = [], VIEW = 'shop', DETAIL = null;
+let LIB = null, CART = [], VIEW = 'shop', DETAIL = null, BACKS = null;
+const BACKS_SEL = { encounter:'', player:'' };
 try { CART = JSON.parse(localStorage.getItem('lotr_cart') || '[]'); } catch(e) {}
 
 async function load() {
@@ -298,11 +341,30 @@ async function load() {
   fillBacks(backs);
   renderShop(); renderCartCount();
 }
+/* ---------- card-back picker (visible thumbnails) ---------- */
 function fillBacks(b) {
-  const fill = (id, opts, def) => { document.getElementById(id).innerHTML =
-    opts.map(o => `<option ${o===def?'selected':''}>${esc(o)}</option>`).join(''); };
-  fill('encBack', b.encounter, b.default_encounter);
-  fill('plyBack', b.player, b.default_player);
+  BACKS = b;
+  BACKS_SEL.encounter = b.default_encounter;
+  BACKS_SEL.player = b.default_player;
+  renderBackPicker('encBack', b.encounter, 'encounter');
+  renderBackPicker('plyBack', b.player, 'player');
+}
+function renderBackPicker(hostId, items, kind) {
+  const host = document.getElementById(hostId);
+  if (!host) return;
+  host.innerHTML = (items || []).map(it => {
+    const sel = BACKS_SEL[kind] === it.label ? ' sel' : '';
+    return `<div class="backopt${sel}" title="${esc(it.label)}"
+      onclick='pickBack(${JSON.stringify(kind)},${JSON.stringify(it.label)},this)'>
+      <img loading="lazy" src="/api/thumb?p=${encodeURIComponent(it.path)}">
+      <div class="cap">${esc(it.label)}</div></div>`;
+  }).join('');
+}
+function pickBack(kind, label, el) {
+  BACKS_SEL[kind] = label;
+  el.parentNode.querySelectorAll('.backopt').forEach(x => x.classList.remove('sel'));
+  el.classList.add('sel');
+  estimatePrice();
 }
 
 /* ---------- shop ---------- */
@@ -400,12 +462,17 @@ function renderCart() {
 function removeItem(k){ CART.splice(k,1); saveCart(); renderCart(); }
 function clearCart(){ CART=[]; saveCart(); renderCart(); document.getElementById('cart-result').innerHTML=''; }
 
+function optsBody() {
+  return { items: CART, stock: stock.value, foil: foil.checked,
+    encounter_back: BACKS_SEL.encounter, player_back: BACKS_SEL.player, lang: LANG };
+}
+function onOptChange() { estimatePrice(); }
+
 async function exportCart(format) {
   if (!CART.length) { alert(T('cart_empty_alert')); return; }
   const res = document.getElementById('cart-result');
   res.innerHTML = '<span class="muted">'+T('forging')+'</span>';
-  const body = { items: CART, format, stock: stock.value, foil: foil.checked,
-    encounter_back: encBack.value, player_back: plyBack.value, lang: LANG };
+  const body = Object.assign(optsBody(), { format });
   try {
     const d = await postJSON('/api/cart-export', body);
     if (d.error) throw new Error(d.error);
@@ -413,7 +480,34 @@ async function exportCart(format) {
       <code>${esc(d.order_xml)}</code>`;
     if (d.message) html += `<br>${esc(d.message)}`;
     res.innerHTML = html + '</div>';
+    if (d.price) document.getElementById('cart-price').innerHTML = renderPrice(d.price);
   } catch(e){ res.innerHTML = '<span class="err">'+T('error_prefix')+': '+e.message+'</span>'; }
+}
+
+/* ---------- price estimate (MPC, EUR/USD/CNY; dated estimate) ---------- */
+async function estimatePrice() {
+  const host = document.getElementById('cart-price');
+  if (!host) return;
+  if (!CART.length) { host.innerHTML = ''; return; }
+  host.innerHTML = '<span class="muted">'+T('est_calc')+'</span>';
+  try {
+    const d = await postJSON('/api/cart-price', optsBody());
+    host.innerHTML = d.error ? '' : renderPrice(d.price);
+  } catch(e){ host.innerHTML = ''; }
+}
+function renderPrice(p) {
+  const sy = p.symbols, pr = p.prices;
+  const money = c => sy[c] + pr[c].toFixed(2);
+  const billed = p.billed_cards !== p.cards
+    ? `<div class="muted">${T('est_billed',{b:p.billed_cards})}</div>` : '';
+  return `<div class="result">
+    <div class="price-h">${T('est_price')}</div>
+    <div class="price-amt">${money('EUR')} &nbsp;·&nbsp; ${money('USD')} &nbsp;·&nbsp; ${money('CNY')}</div>
+    <div class="muted">${T('est_for',{n:p.cards})} · ${esc(p.stock)}${p.foil?' · '+T('est_foil'):''}
+      · ${T('est_percard',{v:sy.USD+p.per_card_usd.toFixed(2)})}</div>
+    ${billed}
+    <div class="muted price-disc">${T('est_disclaimer',{date:p.date})}</div>
+  </div>`;
 }
 
 /* ---------- manual list (resolved against the LOCAL library) ---------- */
@@ -455,11 +549,11 @@ function showView(v) {
     document.getElementById('view-'+x).classList.toggle('hidden', x!==v));
   document.getElementById('nav-shop').classList.toggle('active', v==='shop'||v==='detail');
   document.getElementById('nav-deck').classList.toggle('active', v==='deck');
-  if (v==='cart') renderCart();
+  if (v==='cart') { renderCart(); estimatePrice(); }
 }
 function refreshView() {
   if (VIEW==='detail' && DETAIL!=null && LIB) openDetail(DETAIL);
-  else if (VIEW==='cart') renderCart();
+  else if (VIEW==='cart') { renderCart(); estimatePrice(); }
 }
 async function postJSON(url, body){ return (await fetch(url,{method:'POST',body:JSON.stringify(body)})).json(); }
 function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
