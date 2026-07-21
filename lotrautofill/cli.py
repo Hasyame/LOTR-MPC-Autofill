@@ -149,6 +149,12 @@ def main(argv: list[str] | None = None) -> int:
                     help="Only print sets/chapters that have missing cards.")
     db.set_defaults(func=_cmd_db)
 
+    ref = sub.add_parser(
+        "reference",
+        help="Scrape Hall of Beorn for the true card list of every scenario "
+             "(cached for `db`/`gui` missing-card detection).")
+    ref.set_defaults(func=_cmd_reference)
+
     g = sub.add_parser("gui", help="Launch the local web GUI (browse + generate).")
     g.add_argument("root", type=Path, nargs="?", default=None,
                    help="Library dir (default: sets_folder/).")
@@ -283,6 +289,18 @@ def _cmd_gui(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_reference(args: argparse.Namespace) -> int:
+    from .hallofbeorn import CACHE_FILE, build_reference
+
+    def progress(i, n, name):
+        print(f"\r  {i}/{n}  {name[:48]:<48}", end="", flush=True)
+
+    print("Scraping Hall of Beorn scenarios (one-time; cached)...")
+    ref = build_reference(progress=progress)
+    print(f"\nCached {len(ref['scenarios'])} scenarios to {CACHE_FILE}")
+    return 0
+
+
 def _cmd_db(args: argparse.Namespace) -> int:
     import json
     from .database import build_database
@@ -297,20 +315,24 @@ def _cmd_db(args: argparse.Namespace) -> int:
                            encoding="utf-8")
 
     total_cards = sum(s["cards_total"] for s in db["sets"])
-    total_review = sum(s["review_total"] for s in db["sets"])
-    print(f"\n{len(db['sets'])} sets, {total_cards} cards indexed. "
-          f"{total_review} cardlist entrie(s) to review:\n")
+    total_missing = sum(s.get("missing_total", 0) for s in db["sets"])
+    ref = "Hall of Beorn cross-reference on" if db.get("has_reference") else \
+        "no Hall of Beorn reference (run `lotr-autofill reference` first)"
+    print(f"\n{len(db['sets'])} sets, {total_cards} cards indexed "
+          f"({ref}). {total_missing} missing card(s):\n")
     for s in db["sets"]:
-        if args.missing_only and s["review_total"] == 0:
+        missing = s.get("missing_total", 0)
+        if args.missing_only and missing == 0:
             continue
         chapters = f", {len(s['chapters'])} chapters" if s["has_chapters"] else ""
-        flag = f"  [{s['review_total']} to review]" if s["review_total"] else ""
+        flag = f"  [{missing} MISSING]" if missing else ""
         print(f"  {s['name']:<42} {s['cards_total']:>4} cards{chapters}{flag}")
         for ch in s["chapters"]:
-            for r in ch["cardlist_review"]:
-                where = f"{ch['name']}: " if s["has_chapters"] else ""
-                print(f"      review — {where}'{r['name']}' "
-                      f"(no image; often a double-sided card)")
+            if not ch["missing"]:
+                continue
+            where = f"{ch['name']}: " if s["has_chapters"] else ""
+            shown = ", ".join(ch["missing"][:6]) + ("…" if len(ch["missing"]) > 6 else "")
+            print(f"      missing — {where}{shown}")
     print(f"\nDatabase written to: {args.output}")
     return 0
 

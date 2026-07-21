@@ -2,7 +2,40 @@
 
 from pathlib import Path
 
-from lotrautofill.database import build_database
+from lotrautofill.database import _HobRef, _cross_reference, build_database
+
+
+def test_hobref_matches_scenario_then_cycle():
+    ref = {"scenarios": [
+        {"cycle": "Shadows of Mirkwood", "name": "Conflict at the Carrock",
+         "cards": {"Louis": {"normal": 1, "nightmare": 1}}},
+        {"cycle": "Core Set", "name": "Passage Through Mirkwood",
+         "cards": {"Forest Spider": {"normal": 4, "nightmare": 1}}},
+    ]}
+    h = _HobRef(ref)
+    assert h.available
+    # chapter name matches a scenario (number prefix stripped)
+    assert "Louis" in h.cards_for("02 - Shadows of Mirkwood",
+                                  "02 - Conflict at the Carrock")
+    # a no-chapter set falls back to the cycle union
+    assert "Forest Spider" in h.cards_for("01 - Core Set", "01 - Core Set")
+    assert h.cards_for("99 - Unknown", "99 - Unknown") is None
+
+
+def test_cross_reference_reports_missing():
+    from lotrautofill.matching import normalize
+    hob = {"Louis": {"normal": 1, "nightmare": 1},
+           "Bert": {"normal": 1, "nightmare": 0},
+           "NightmareOnly": {"normal": 0, "nightmare": 2},
+           "Great Cave-troll (Enemy)": {"normal": 2, "nightmare": 2}}
+    present = {normalize("Louis"): "Louis",
+               normalize("Great Cave-troll"): "Great Cave-troll"}
+    expected, missing = _cross_reference(hob, present)
+    assert expected == 4
+    assert "Bert" in missing and "NightmareOnly" in missing
+    assert "Louis" not in missing
+    # Type suffix stripped -> matches the local "Great Cave-troll".
+    assert "Great Cave-troll (Enemy)" not in missing
 
 
 def _touch(folder: Path, *names: str) -> None:
