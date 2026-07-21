@@ -6,7 +6,17 @@ from pathlib import Path
 
 from .model import CATEGORIES
 
-EXCLUDE_NAMES = {"Card_Backs", "builds", "__pycache__"}
+EXCLUDE_NAMES = {"Card_Backs", "builds", "toPrint", "__pycache__"}
+
+# Card libraries live here by convention (git-ignored).
+LIBRARY_DIRNAME = "toPrint"
+
+
+def default_library_root(cwd: Path | None = None) -> Path:
+    """Where to look for sets by default: ``toPrint/`` if it exists, else ``.``."""
+    base = Path(cwd) if cwd else Path(".")
+    candidate = base / LIBRARY_DIRNAME
+    return candidate if candidate.is_dir() else base
 
 
 def discover_sets(root: Path) -> list[Path]:

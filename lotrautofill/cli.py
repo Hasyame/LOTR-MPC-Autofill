@@ -87,14 +87,14 @@ def main(argv: list[str] | None = None) -> int:
     x.set_defaults(func=_cmd_export)
 
     s = sub.add_parser("sets", help="List printable set folders under a directory.")
-    s.add_argument("root", type=Path, nargs="?", default=Path("."),
-                   help="Directory to scan (default: current).")
+    s.add_argument("root", type=Path, nargs="?", default=None,
+                   help="Directory to scan (default: toPrint/ if present, else .).")
     s.set_defaults(func=_cmd_sets)
 
     p = sub.add_parser(
         "pick", help="Pick set folder(s) to print: build + plan + order.xml each.")
-    p.add_argument("root", type=Path, nargs="?", default=Path("."),
-                   help="Directory to scan for sets (default: current).")
+    p.add_argument("root", type=Path, nargs="?", default=None,
+                   help="Directory to scan (default: toPrint/ if present, else .).")
     p.add_argument("-o", "--out-dir", type=Path, default=Path("builds"),
                    help="Where to write manifests and order.xml (default: builds/).")
     p.add_argument("--errata", choices=("prefer", "skip", "both"), default="prefer")
@@ -160,27 +160,29 @@ def _cmd_export(args: argparse.Namespace) -> int:
 
 
 def _cmd_sets(args: argparse.Namespace) -> int:
-    from .sets import discover_sets
+    from .sets import discover_sets, default_library_root
 
-    sets = discover_sets(args.root)
+    root = args.root or default_library_root()
+    sets = discover_sets(root)
     if not sets:
-        print(f"No printable set folders found under {args.root.resolve()}")
+        print(f"No printable set folders found under {root.resolve()}")
         return 0
-    print(f"Printable sets under {args.root.resolve()}:")
+    print(f"Printable sets under {root.resolve()}:")
     for i, s in enumerate(sets, 1):
         print(f"  [{i}] {s.name}")
     return 0
 
 
 def _cmd_pick(args: argparse.Namespace) -> int:
-    from .sets import discover_sets
+    from .sets import discover_sets, default_library_root
     from .build import BuildOptions, build
     from .upload.plan import plan_from_manifest
     from .interactive import default_enabled
 
-    sets = discover_sets(args.root)
+    root = args.root or default_library_root()
+    sets = discover_sets(root)
     if not sets:
-        print(f"No printable set folders found under {args.root.resolve()}")
+        print(f"No printable set folders found under {root.resolve()}")
         return 1
 
     chosen = _choose_sets(sets)

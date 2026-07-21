@@ -111,13 +111,19 @@ directly as a `Local File`). LOTRAutofill's job is the LOTR-specific part —
 understanding sets, cardlists, quest A/B, errata and backs — and emitting an
 `order.xml` the desktop tool consumes.
 
+### Put your cards in `toPrint/`
+
+Drop your set folders and the `Card_Backs` folder into **`toPrint/`** (see
+`toPrint/README.md`). That directory is git-ignored, so your card images are
+never committed. `sets` and `pick` scan `toPrint/` automatically.
+
 ### Pick set(s) and print
 
 ```sh
-python -m lotrautofill pick .           # lists your set folders, you choose
+python -m lotrautofill pick             # scans toPrint/, lists sets, you choose
 ```
 
-`pick` lists the set folders it finds (e.g. `03 - Khazad-dûm`,
+`pick` lists the set folders it finds in `toPrint/` (e.g. `03 - Khazad-dûm`,
 `19 - The Hobbit Saga`), lets you select one or several, then for each writes a
 manifest **and** an `order.xml` into `builds/`.
 
@@ -147,7 +153,7 @@ minutes); later runs reuse them. Pass `--skip-install` once set up.
 Related commands:
 
 ```sh
-python -m lotrautofill sets .                       # just list printable sets
+python -m lotrautofill sets                         # just list printable sets
 python -m lotrautofill export builds/hobbit.json    # a manifest -> order.xml
 python -m lotrautofill export … --stock "(S33) Superior Smooth" --foil
 ```

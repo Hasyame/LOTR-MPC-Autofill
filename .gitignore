@@ -1,11 +1,15 @@
-# Card image libraries (large binary sets — keep out of git)
-/[0-9]* - */
-/Card_Backs/
+# Card libraries — your set folders and Card_Backs live in toPrint/ and are
+# NEVER committed. Only the explanatory README is tracked.
+/toPrint/*
+!/toPrint/README.md
 
-# Generated build output
+# Generated build output (manifests + order.xml)
+/builds/
 mpc_manifest.json
 *.mpc_manifest.json
-/builds/
+
+# Cloned mpc-autofill desktop tool + its venv
+/.lotr-autofill/
 
 # Python
 __pycache__/
