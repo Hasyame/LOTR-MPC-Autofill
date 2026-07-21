@@ -14,6 +14,16 @@ Zero external dependencies — pure Python standard library (3.10+).
 
 With Python: `python -m lotrautofill <command>` (see commands below).
 
+### Web GUI
+
+```sh
+python -m lotrautofill gui       # opens http://127.0.0.1:8765 in your browser
+```
+
+A local, zero-dependency web app (works on Windows and Linux): browse the card
+library, tick sets/chapters and generate their `order.xml`, or import a RingsDB
+deck — all from the browser. The CLI remains fully supported.
+
 Or build a **standalone executable** (no Python needed to run it afterwards):
 
 ```sh
@@ -255,7 +265,8 @@ python -m lotrautofill upload MPC_XML/hobbit.json             # drive MPC (heade
 - [x] **Chapters:** print all chapters of a set, or pick chapters per set.
 - [x] **Executable:** `build_exe.py` packages the CLI as a standalone binary.
 - [x] **Deck import:** `deck` reads a decklist `.txt`/id/URL and fetches RingsDB.
-- [ ] **GUI:** a web/desktop front-end over the CLI (CLI stays supported).
+- [x] **Database:** `db` indexes the library (catalog + cardlist review list).
+- [x] **GUI:** `gui` — a local zero-dependency web front-end over the CLI.
 
 ## Development
 

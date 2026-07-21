@@ -149,6 +149,14 @@ def main(argv: list[str] | None = None) -> int:
                     help="Only print sets/chapters that have missing cards.")
     db.set_defaults(func=_cmd_db)
 
+    g = sub.add_parser("gui", help="Launch the local web GUI (browse + generate).")
+    g.add_argument("root", type=Path, nargs="?", default=None,
+                   help="Library dir (default: sets_folder/).")
+    g.add_argument("--port", type=int, default=8765, help="Port (default: 8765).")
+    g.add_argument("--no-browser", dest="open_browser", action="store_false",
+                   default=True, help="Do not open a browser automatically.")
+    g.set_defaults(func=_cmd_gui)
+
     args = parser.parse_args(argv)
     return args.func(args)
 
@@ -263,6 +271,15 @@ def _cmd_deck(args: argparse.Namespace) -> int:
     _write_order_xml(plan, out, args.stock, args.foil)
     print(f"\nCard images are temporary (in {image_dir}); `autofill` deletes them "
           "after importing into MPC. They are never committed to git.")
+    return 0
+
+
+def _cmd_gui(args: argparse.Namespace) -> int:
+    from .webgui import run_server
+    from .sets import default_library_root
+
+    run_server(root=args.root or default_library_root(), port=args.port,
+               open_browser=args.open_browser)
     return 0
 
 
