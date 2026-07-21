@@ -1,30 +1,36 @@
-"""Playwright driver for MakePlayingCards (stage 2).
+"""Optional self-contained Playwright driver for MakePlayingCards.
 
-Target product: blank poker cards (custom face & back), size 2.5"x3.5", up to
-612 cards per deck.
+This ports the proven upload/insert mechanism from chilli-axe/mpc-autofill's
+``src/driver.py`` to Playwright, so LOTRAutofill can drive MPC without cloning
+the desktop tool. The primary/recommended path remains `export` + `autofill`
+(the desktop tool itself); this driver is a convenience alternative.
 
-Flow captured from the live site:
-  1. product page  -> select card stock / deck size / packaging
-  2. "Start your design" (doPersonalize) -> editor
-  3. editor Step 1 (iframe #sysifm_loginFrame): #txt_card_number, then the
-     PARENT #btn_next_step
-  4. front page dn_playingcards_front_dynamic.aspx exposes JS hooks
-     oDesign.applyPopupPhoto() (upload popup) and oDesign.setAutoFill()
-  5. back assignment, then stop at the cart
+Flow (mirrors the desktop tool):
+  1. product page: select cardstock + deck-size bracket
+  2. doPersonalize() -> editor; in #sysifm_loginFrame set card count + "different
+     images" mode
+  3. fronts: for each unique image, upload to #uploadId then place it in each of
+     its slots via PageLayout.prototype.applyDragPhoto(...)
+  4. page to backs, repeat (or "same image" mode if a single common back)
+  5. page to review -> stop (never orders)
 
-Signing in and the async photo popup's file-input selector are handled in a
-supervised, visible run: the driver pauses so the operator signs in and (until
-the popup selector is confirmed locally) performs the image upload, then the
-driver calls the confirmed autofill hook. It never places the order.
+Selectors/JS are from the live site; the operator signs in. Because it needs a
+logged-in session and a live canvas editor, this driver should be validated on a
+real headed run.
 """
 
 from __future__ import annotations
 
+import hashlib
+import time
 from pathlib import Path
 
 from . import config as cfg
 from .config import DEFAULT_PRODUCT, MpcProductConfig
 from .plan import UploadPlan
+
+_POLL_SECONDS = 0.5
+_MAX_WAIT_SECONDS = 60
 
 
 class MpcDriver:
@@ -64,46 +70,45 @@ class MpcDriver:
             print(f"{exc}\nSplit the manifest into multiple orders.")
             return 5
 
+        front_slots = _slots_by_image(plan, face="front")
+        back_slots = _slots_by_image(plan, face="back")
+
         self._launch()
         try:
             self._require_login()
             self._configure_product(tier)
-            self._editor_step1(plan.total_cards)
-            self._customize_fronts(plan.unique_fronts)
-            self._assign_backs(plan)
-            self._go_to_cart()
+            self._page_to_fronts(plan.total_cards)
+            print(f"  fronts: {len(front_slots)} images")
+            self._upload_and_insert(front_slots)
+            self._page_to_backs(single_back=len(back_slots) == 1)
+            print(f"  backs: {len(back_slots)} image(s)")
+            self._upload_and_insert(back_slots, same_image=len(back_slots) == 1)
+            self._page_to_review()
 
-            print("\nStopped at the cart. Review and pay manually in the browser.")
+            print("\nProject filled. Review it and order manually — nothing was "
+                  "purchased.")
             self._pause("Press Enter to close the browser...")
             return 0
         finally:
             self.close()
 
-    # ---- login (operator types credentials; driver never does) ----------- #
+    # ---- login (operator types credentials) ------------------------------ #
     def _require_login(self) -> None:
         self._page.goto("https://www.makeplayingcards.com/login.aspx",
                         wait_until="domcontentloaded")
         print("Sign in to your MPC account in the opened window.")
         self._pause("Press Enter once you are signed in...")
 
-    # ---- product configuration (wired to live selectors) ----------------- #
+    # ---- product configuration ------------------------------------------- #
     def _configure_product(self, deck_tier: int) -> None:
         page = self._page
         p = self.product
         print(f"Opening product page: {cfg.PRODUCT_URL}")
         page.goto(cfg.PRODUCT_URL, wait_until="domcontentloaded")
         self._reject_cookies()
-
-        print(f"  card stock -> {p.card_stock}")
+        print(f"  card stock -> {p.card_stock}; deck size -> {deck_tier}")
         page.select_option(cfg.SEL_CARD_STOCK, value=p.card_stock_value)
-        print(f"  deck size  -> Up to {deck_tier} cards")
         page.select_option(cfg.SEL_DECK_SIZE, value=str(deck_tier))
-        if page.locator(cfg.SEL_PACKAGING).count():
-            page.select_option(cfg.SEL_PACKAGING, value=p.packaging_value)
-
-        print("  starting design editor...")
-        page.get_by_text(cfg.TXT_START_DESIGN, exact=False).first.click()
-        page.wait_for_load_state("domcontentloaded")
 
     def _reject_cookies(self) -> None:
         try:
@@ -111,59 +116,119 @@ class MpcDriver:
         except Exception:
             pass
 
-    # ---- editor Step 1: number of cards (inside the iframe) -------------- #
-    def _editor_step1(self, card_count: int) -> None:
+    # ---- paging ---------------------------------------------------------- #
+    def _page_to_fronts(self, card_count: int) -> None:
         page = self._page
-        frame = page.frame_locator(cfg.FRAME_EDITOR)
-        print(f"  editor step 1: {card_count} cards")
-        frame.locator(cfg.SEL_STEP1_CARD_NUMBER).fill(str(card_count))
-        # Proceeding uses the parent-level button, not the one in the iframe.
-        page.locator(cfg.SEL_NEXT_STEP).click()
-        page.wait_for_load_state("networkidle")
+        print("  entering editor...")
+        page.evaluate(f"doPersonalize('{cfg.ACCEPT_SETTINGS_URL}');")
+        page.wait_for_load_state("domcontentloaded")
+        frame = self._editor_frame()
+        if frame is not None:
+            _try(lambda: frame.fill(cfg.SEL_STEP1_CARD_NUMBER, str(card_count)))
+            _try(lambda: frame.evaluate(cfg.JS_SET_DIFFERENT_IMAGES))
+        self._wait_spinner()
 
-    # ---- fronts: upload + autofill (confirmed JS hooks) ------------------ #
-    def _customize_fronts(self, fronts: list[Path]) -> None:
-        page = self._page
-        print(f"  fronts: uploading {len(fronts)} images, then autofill")
-        page.evaluate(cfg.JS_OPEN_UPLOAD)   # oDesign.applyPopupPhoto()
-        self._upload_files(fronts, what="front")
-        page.evaluate(cfg.JS_AUTOFILL)      # oDesign.setAutoFill()
-        self._pause("  Verify fronts autofilled correctly, then press Enter...")
-        page.evaluate(cfg.JS_NEXT_STEP)
-        page.wait_for_load_state("networkidle")
-
-    # ---- backs ----------------------------------------------------------- #
-    def _assign_backs(self, plan: UploadPlan) -> None:
-        print(f"  backs: {len(plan.unique_backs)} image(s) "
-              "(common Encounter/Player + unique quest backs)")
-        self._upload_files(plan.unique_backs, what="back")
-        self._pause("  Assign each back to its slot(s), then press Enter...")
-
-    def _upload_files(self, files: list[Path], what: str) -> None:
-        """Set the popup's file input to bulk-upload images.
-
-        The photo popup renders async inside the canvas editor; its file-input
-        selector must be confirmed during a local headed run. Until then, the
-        operator drops the files and we continue.
-        """
-        page = self._page
+    def _page_to_backs(self, single_back: bool) -> None:
+        self._next_step()
         try:
-            file_input = page.locator("input[type=file]").first
-            file_input.set_input_files([str(f) for f in files], timeout=5000)
-            print(f"    uploaded {len(files)} {what} image(s)")
+            close_btn = self._page.query_selector(cfg.SEL_CLOSE_BTN)
+            if close_btn and close_btn.is_visible():
+                close_btn.click()
         except Exception:
-            print(f"    [confirm locally] upload these {len(files)} {what} images "
-                  "in the popup:")
-            self._pause("    Press Enter once uploaded...")
+            pass
+        self._next_step()
+        frame = self._editor_frame()
+        if frame is not None:
+            js = cfg.JS_SET_SAME_IMAGE if single_back else cfg.JS_SET_DIFFERENT_IMAGES
+            _try(lambda: frame.evaluate(js))
+        self._wait_spinner()
 
-    def _go_to_cart(self) -> None:
-        print(f"Navigating to cart: {cfg.CART_URL}")
-        self._page.goto(cfg.CART_URL, wait_until="domcontentloaded")
+    def _page_to_review(self) -> None:
+        self._next_step()
+        self._next_step()
 
-    # ---- helpers --------------------------------------------------------- #
+    def _next_step(self) -> None:
+        self._wait_spinner()
+        _try(lambda: self._page.evaluate(cfg.JS_NEXT_STEP))
+        self._wait_spinner()
+
+    # ---- upload + insert (the core, ported from driver.py) --------------- #
+    def _upload_and_insert(self, by_image: "dict[Path, list[int]]",
+                           same_image: bool = False) -> None:
+        page = self._page
+        uploaded = set(self._uploaded_pids())
+        for path, slots in by_image.items():
+            pid = _pid(path)
+            if pid not in uploaded:
+                print(f"    uploading {path.name}")
+                page.set_input_files(cfg.SEL_UPLOAD_INPUT, str(path))
+                self._wait_upload()
+                uploaded = set(self._uploaded_pids())
+            if same_image:
+                continue  # one image applied to the whole face by MPC
+            for slot in sorted(slots):
+                el = f'PageLayout.prototype.getElement3("dnImg","{slot}")'
+                _try(lambda el=el, pid=pid: page.evaluate(
+                    f'PageLayout.prototype.applyDragPhoto({el}, 0, "{pid}")'))
+                self._wait_spinner()
+
+    # ---- editor helpers -------------------------------------------------- #
+    def _editor_frame(self):
+        el = self._page.query_selector(cfg.FRAME_EDITOR)
+        return el.content_frame() if el else None
+
+    def _uploaded_pids(self) -> "list[str]":
+        js = ("(typeof oDesignImage !== 'undefined' && oDesignImage.dn_getImageList)"
+              " ? oDesignImage.dn_getImageList() : ''")
+        result = _try(lambda: self._page.evaluate(js)) or ""
+        return [p for p in result.split(";") if p]
+
+    def _wait_upload(self) -> None:
+        deadline = time.time() + _MAX_WAIT_SECONDS
+        while time.time() < deadline:
+            uploading = _try(lambda: self._page.evaluate(
+                "typeof oDesignImage !== 'undefined' && "
+                "oDesignImage.UploadStatus == 'Uploading'"))
+            if not uploading:
+                return
+            time.sleep(_POLL_SECONDS)
+
+    def _wait_spinner(self) -> None:
+        try:
+            self._page.wait_for_selector(cfg.SEL_WAIT_SPINNER, state="hidden",
+                                         timeout=_MAX_WAIT_SECONDS * 1000)
+        except Exception:
+            pass
+
     @staticmethod
     def _pause(message: str) -> None:
         try:
             input(message)
         except EOFError:
             pass
+
+
+# --------------------------------------------------------------------------- #
+# Helpers
+# --------------------------------------------------------------------------- #
+def _slots_by_image(plan: UploadPlan, face: str) -> "dict[Path, list[int]]":
+    """Map each image path to the 0-indexed slots it fills, in first-seen order."""
+    out: "dict[Path, list[int]]" = {}
+    for i, slot in enumerate(plan.slots):
+        img = slot.front if face == "front" else slot.back
+        if img is not None:
+            out.setdefault(img, []).append(i)
+    return out
+
+
+def _pid(path: Path) -> str:
+    return hashlib.sha1(Path(path).read_bytes()).hexdigest().upper()
+
+
+def _try(fn):
+    """Run a Playwright/JS call, swallowing transient JS errors (as the desktop
+    tool does with @ignore_javascript_errors)."""
+    try:
+        return fn()
+    except Exception:
+        return None

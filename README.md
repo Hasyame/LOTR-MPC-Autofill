@@ -168,11 +168,18 @@ double-sided backs land in `<backs>`; the Player back too.
 
 ### Built-in driver (optional)
 
-A self-contained Playwright driver (`upload` command, `mpc.py`) is also
-included, with the MPC product-config selectors and editor flow wired from a
-live session. It is secondary to the mpc-autofill path; the one unfinished piece
-is the async photo-popup's file-input selector. `--dry-run` shows the plan with
-no browser and no dependencies.
+A self-contained Playwright driver (`upload` command, `mpc.py`) is also included.
+Its editor automation is **ported from mpc-autofill's proven `driver.py`**: it
+uploads each image to `#uploadId` and places it into each of its exact slots via
+`PageLayout.prototype.applyDragPhoto(...)` (per-slot insert, not blind autofill),
+paging fronts → backs → review and stopping before checkout. It is secondary to
+the `autofill` path and should be validated on a live logged-in run.
+
+```sh
+pip install -e .[upload] && playwright install chromium
+python -m lotrautofill upload builds/hobbit.json --dry-run   # plan only, no deps
+python -m lotrautofill upload builds/hobbit.json             # drive MPC (headed)
+```
 
 ## Status / roadmap
 
@@ -182,7 +189,11 @@ no browser and no dependencies.
 - [x] **Stage 2 — export:** manifest → mpc-autofill `order.xml` (local files).
 - [x] **Stage 2 — pick:** choose set folder(s) → manifest + order.xml each.
 - [x] **Stage 2 — autofill:** one-command clone/install/run of the desktop tool.
-- [ ] Optional: finish the built-in Playwright driver's photo-popup selector.
+- [x] **Optional driver:** Playwright upload/insert ported from mpc-autofill.
+- [ ] **Chapters:** print all chapters of a set, or pick chapters per set.
+- [ ] **Executable:** package the CLI as a standalone binary (no Python needed).
+- [ ] **Deck import:** read a decklist `.txt` and fetch cards from RingsDB.
+- [ ] **GUI:** a web/desktop front-end over the CLI (CLI stays supported).
 
 ## Development
 

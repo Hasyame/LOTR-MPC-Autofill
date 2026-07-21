@@ -49,17 +49,26 @@ BACK_DYNAMIC_URL = (
     "dn_playingcards_back_dynamic.aspx?ssid={ssid}"
 )
 
-# Confirmed JS hooks on the front/back dynamic pages (logged in):
-#   oDesign.applyPopupPhoto()     -> opens the photo/upload popup
-#   oDesign.setAutoFill()         -> autofills uploaded images into slots
-#   oDesign.setAutoFillHandle()   -> autofill (handle variant)
-#   oDesign.setNextStep()         -> advance the flow
-JS_OPEN_UPLOAD = "oDesign.applyPopupPhoto();"
-JS_AUTOFILL = "oDesign.setAutoFill();"
+# Upload + per-slot insert mechanism (ported from mpc-autofill's src/driver.py).
+# The hidden file input; send a local path to it to upload one image.
+SEL_UPLOAD_INPUT = "#uploadId"
+# Loading spinner shown while the editor processes an action.
+SEL_WAIT_SPINNER = "#sysdiv_wait"
+# A popup close button that can appear when paging to backs.
+SEL_CLOSE_BTN = "#closeBtn"
+# "Accept settings" URL that doPersonalize() loads to enter the editor.
+ACCEPT_SETTINGS_URL = EDITOR_URL
+
+# JS the editor exposes (top-level page unless noted):
+#   oDesignImage.UploadStatus == 'Uploading'      -> an upload is in progress
+#   oDesignImage.dn_getImageList()                -> ';'-joined pids of uploads
+#   PageLayout.prototype.getElement3("dnImg", n)  -> the slot-n card element
+#   PageLayout.prototype.applyDragPhoto(el, 0, p) -> place image pid p in slot
+#   oDesign.setNextStep() / oDesign.setTemporarySave()
+#   setMode('ImageText', 0|1)  (inside #sysifm_loginFrame) -> different|same img
 JS_NEXT_STEP = "oDesign.setNextStep();"
-# TODO (confirm during a local headed run): the file <input type=file> selector
-# inside the photo popup, and the popup's "add to project / done" control. The
-# popup renders async in a canvas editor, so it needs a visible run to capture.
+JS_SET_DIFFERENT_IMAGES = "setMode('ImageText', 0);"
+JS_SET_SAME_IMAGE = "setMode('ImageText', 1);"
 
 # MPC "size of deck" tiers (max cards billed per deck). Pick the smallest >= n.
 DECK_SIZE_TIERS = [18, 36, 55, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234,
