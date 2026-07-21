@@ -128,8 +128,10 @@ PAGE = r"""<!doctype html>
 
   <div id="view-deck" class="hidden">
     <h2>Manual list</h2>
-    <p class="muted">Paste a decklist (one card per line, e.g. <code>3x Gandalf</code>)
-      or a RingsDB decklist id / URL:</p>
+    <p class="muted">Paste a card list, one card per line (e.g. <code>3x Gandalf</code>).</p>
+    <p class="muted">⚠️ Cards must be available in your local library
+      (<code>sets_folder/</code>) to be printed — anything not found there is
+      reported and skipped.</p>
     <textarea id="deck-src" placeholder="3x Gandalf&#10;2 Steward of Gondor&#10;…"></textarea>
     <div style="margin-top:10px"><button class="go" onclick="importDeck()">Import → order.xml</button></div>
     <div id="deck-results"></div>
