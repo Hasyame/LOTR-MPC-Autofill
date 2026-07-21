@@ -50,6 +50,10 @@ class _Context:
         self.report = report
         # Per-category common back, resolved once (possibly interactively).
         self.category_back: dict[str, Optional[Path]] = {}
+        # Double-sided pairs emitted for the folder currently being processed,
+        # as (entry, face_name, back_name) — so a cardlist quantity can be
+        # applied to a double-sided card too.
+        self.folder_pairs: list[tuple] = []
 
 
 def build(root: Path, options: BuildOptions) -> BuildReport:
@@ -109,6 +113,7 @@ def _build_folder(ctx: _Context, category: str, folder: Path) -> None:
     source = _rel_source(folder, ctx.report.root)
     cardlist = _load_cardlist(folder) if category in CARDLIST_CATEGORIES else None
 
+    ctx.folder_pairs = []
     groups = _group_by_number(images)
     singles: list[CardImage] = []      # single-sided cards awaiting a quantity
     faces_in_folder = [i for i in images if i.side == "A" or i.side is None]
@@ -118,7 +123,7 @@ def _build_folder(ctx: _Context, category: str, folder: Path) -> None:
             _classify_group(ctx, category, source, number, imgs, faces_in_folder)
         )
 
-    _quantify_singles(ctx, category, source, singles, cardlist)
+    _quantify_singles(ctx, category, source, singles, cardlist, images)
 
 
 # --------------------------------------------------------------------------- #
@@ -161,21 +166,21 @@ def _classify_group(
     return _apply_errata(plain, ctx.options.errata)
 
 
-def _emit_pair(ctx, category, source, number, face, back, kind) -> None:
-    ctx.report.entries.append(
-        CardEntry(
-            front=face.path,
-            back=back.path,
-            quantity=1,
-            name=face.name,
-            number=number,
-            category=category,
-            double_sided=True,
-            source=source,
-            match="implicit",
-            note=f"double-sided ({kind})",
-        )
+def _emit_pair(ctx, category, source, number, face, back, kind, quantity=1) -> None:
+    entry = CardEntry(
+        front=face.path,
+        back=back.path,
+        quantity=quantity,
+        name=face.name,
+        number=number,
+        category=category,
+        double_sided=True,
+        source=source,
+        match="implicit",
+        note=f"double-sided ({kind})",
     )
+    ctx.report.entries.append(entry)
+    ctx.folder_pairs.append((entry, face.name, back.name))
     ctx.report.double_sided_pairs.append(
         {"source": source, "number": number, "kind": kind,
          "face": face.filename, "back": back.filename}
@@ -243,8 +248,9 @@ def _choose_back_for(ctx, category, source, img: CardImage) -> Optional[Path]:
 # Quantities for single-sided cards
 # --------------------------------------------------------------------------- #
 def _quantify_singles(ctx, category, source, singles: list[CardImage],
-                      cardlist: Optional[list[tuple[int, str]]]) -> None:
-    if not singles:
+                      cardlist: Optional[list[tuple[int, str]]],
+                      all_images: list[CardImage] | None = None) -> None:
+    if not singles and not ctx.folder_pairs:
         return
     back = _common_back(ctx, category)
 
@@ -261,24 +267,55 @@ def _quantify_singles(ctx, category, source, singles: list[CardImage],
         return
 
     candidates = _candidate_map(singles, ctx.report)
+    pair_candidates = _pair_candidate_map(ctx.folder_pairs)
+    all_map = _candidate_map(all_images or singles, ctx.report)
     used: set[str] = set()
     for qty, name in cardlist:
         img, kind, score = best_match(name, candidates)
-        if img is None:
-            ctx.report.unmatched_cardlist.append(
-                {"source": source, "name": name, "quantity": qty,
-                 "best_score": round(score, 2)}
-            )
+        if img is not None:
+            used.add(img.path.name)
+            note = ""
+            if kind == "fuzzy":
+                note = f"cardlist '{name}' -> '{img.name}' ({score:.2f})"
+                ctx.report.fuzzy_matches.append(
+                    {"source": source, "cardlist": name, "file": img.name,
+                     "score": round(score, 2)}
+                )
+            _emit_single(ctx, category, source, img, qty, back, match=kind, note=note)
             continue
-        used.add(img.path.name)
-        note = ""
-        if kind == "fuzzy":
-            note = f"cardlist '{name}' -> '{img.name}' ({score:.2f})"
-            ctx.report.fuzzy_matches.append(
-                {"source": source, "cardlist": name, "file": img.name,
-                 "score": round(score, 2)}
-            )
-        _emit_single(ctx, category, source, img, qty, back, match=kind, note=note)
+
+        # A "SideA/SideB" cardlist entry refers to an already-emitted
+        # double-sided card: apply the quantity to that pair.
+        pair, pkind, pscore = best_match(name, pair_candidates)
+        if pair is not None:
+            pair.quantity = qty
+            if pkind == "fuzzy":
+                ctx.report.fuzzy_matches.append(
+                    {"source": source, "cardlist": name, "file": pair.name,
+                     "score": round(pscore, 2)}
+                )
+            continue
+
+        # A "Front/Back" entry for a two-sided card whose sides are separate
+        # images (possibly different numbers): pair the two named images.
+        if "/" in name:
+            parts = [p.strip() for p in name.split("/") if p.strip()]
+            if len(parts) >= 2:
+                f_img, _fk, _fs = best_match(parts[0], candidates)
+                b_img, _bk, _bs = best_match(parts[-1], all_map)
+                if (f_img is not None and b_img is not None
+                        and f_img.path != b_img.path):
+                    used.add(f_img.path.name)
+                    if any(s.path == b_img.path for s in singles):
+                        used.add(b_img.path.name)
+                    _emit_pair(ctx, category, source, f_img.number, f_img, b_img,
+                               kind="cardlist", quantity=qty)
+                    continue
+
+        ctx.report.unmatched_cardlist.append(
+            {"source": source, "name": name, "quantity": qty,
+             "best_score": round(score, 2)}
+        )
 
     # Cards present but not listed -> auto-include at qty 1 (per project rules).
     for img in singles:
@@ -352,6 +389,18 @@ def _candidate_map(images: list[CardImage], report: BuildReport) -> dict[str, Ca
     for img in images:
         key = normalize(img.name)
         candidates[key] = img
+    return candidates
+
+
+def _pair_candidate_map(folder_pairs: list[tuple]) -> dict[str, CardEntry]:
+    """Match keys for double-sided pairs: each side's name and both combined
+    orders, so a cardlist 'SideA/SideB' entry resolves to the pair."""
+    candidates: dict[str, CardEntry] = {}
+    for entry, face, back in folder_pairs:
+        for key in (normalize(face), normalize(back),
+                    normalize(f"{face} {back}"), normalize(f"{back} {face}")):
+            if key:
+                candidates.setdefault(key, entry)
     return candidates
 
 

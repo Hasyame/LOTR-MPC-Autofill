@@ -84,6 +84,27 @@ def test_errata_skip_policy(tmp_path):
     assert "(errata)" not in orc.front.name
 
 
+def test_cardlist_front_slash_back_pairs_separate_images(tmp_path):
+    root = tmp_path / "Set" / "Set"
+    _touch(tmp_path / "Card_Backs" / "Card_Backs",
+           "Encounter Card Back.jpg", "Player Card Back.jpg")
+    enc = root / "Encounter" / "X"
+    # A two-sided card whose sides are separate images with DIFFERENT numbers.
+    _touch(enc, "011 - Daybreak.jpg", "012 - Nightfall.jpg")
+    (enc / "cardlist.txt").write_text("2 Nightfall/Daybreak\n", encoding="utf-8")
+
+    report = build(root, BuildOptions(interactive=False))
+    # Resolved into ONE double-sided card at the cardlist quantity, not two
+    # singles, and nothing left unmatched.
+    ds = [e for e in report.entries if e.double_sided]
+    assert len(ds) == 1
+    assert ds[0].quantity == 2
+    assert ds[0].front.name == "012 - Nightfall.jpg"
+    assert ds[0].back.name == "011 - Daybreak.jpg"
+    assert report.unmatched_cardlist == []
+    assert len([e for e in report.entries if not e.double_sided]) == 0
+
+
 def test_same_number_even_count_pairs_into_couples(tmp_path):
     root = tmp_path / "Set" / "Set"
     _touch(tmp_path / "Card_Backs" / "Card_Backs",
