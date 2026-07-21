@@ -32,6 +32,7 @@ _THUMB_MAX = 240
 _PRODUCT_DIR = Path(tempfile.gettempdir()) / "lotr-autofill-products"
 _S3_PRODUCTS = "https://s3.amazonaws.com/hallofbeorn-resources/Images/Products/"
 _PRODUCT_FILE = re.compile(r"^[A-Za-z0-9_.-]+\.(?:png|jpg|jpeg)$")
+_MAX_BODY = 4 * 1024 * 1024  # cap request bodies (cart/manual list) at 4 MB
 
 
 def run_server(root: Path | None = None, host: str = "127.0.0.1",
@@ -75,9 +76,11 @@ def _make_handler(root: Path, out_dir: Path):
                        "application/json; charset=utf-8")
 
         def _body(self) -> dict:
-            length = int(self.headers.get("Content-Length", 0))
-            if not length:
+            length = int(self.headers.get("Content-Length", 0) or 0)
+            if length <= 0:
                 return {}
+            if length > _MAX_BODY:
+                raise ValueError("request body too large")
             return json.loads(self.rfile.read(length).decode("utf-8"))
 
         # ---- routing ----------------------------------------------------- #
@@ -152,7 +155,6 @@ def _make_handler(root: Path, out_dir: Path):
 # API implementations (reuse the CLI building blocks)
 # --------------------------------------------------------------------------- #
 def _library(root: Path) -> dict:
-    import re
     from ..hallofbeorn import load_reference
     from ..matching import normalize
 
@@ -483,5 +485,4 @@ def _deck(out_dir: Path, body: dict) -> dict:
 
 
 def _slug(name: str) -> str:
-    import re
     return re.sub(r"[^A-Za-z0-9]+", "-", name).strip("-").lower() or "order"

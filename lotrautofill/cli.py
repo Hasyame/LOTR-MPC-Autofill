@@ -209,7 +209,6 @@ def _cmd_upload(args: argparse.Namespace) -> int:
 
 def _cmd_export(args: argparse.Namespace) -> int:
     from .upload.plan import load_manifest, plan_from_manifest
-    from .upload.mpc_xml import plan_to_xml
 
     if not args.manifest.is_file():
         print(f"error: manifest not found: {args.manifest}", file=sys.stderr)

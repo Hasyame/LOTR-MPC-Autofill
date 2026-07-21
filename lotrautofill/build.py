@@ -13,7 +13,6 @@ from .matching import best_match, normalize
 from .model import (
     CARDLIST_CATEGORIES,
     CATEGORY_PLAYER,
-    CATEGORY_QUEST,
     BuildReport,
     CardEntry,
     CardImage,
