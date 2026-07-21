@@ -12,6 +12,8 @@ PAGE = r"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" href="/logo.png">
 <title>LOTRAutofill</title>
 <style>
   :root {
@@ -30,7 +32,11 @@ PAGE = r"""<!doctype html>
     border-bottom:1px solid var(--border); background:linear-gradient(#1e1509,#160f07);
     position:sticky; top:0; z-index:10; }
   header h1 { margin:0; font-size:20px; color:var(--gold); flex:1;
-    text-shadow:0 1px 0 #000, 0 0 18px rgba(200,161,58,.25); cursor:pointer; }
+    text-shadow:0 1px 0 #000, 0 0 18px rgba(200,161,58,.25); cursor:pointer;
+    display:flex; align-items:center; gap:10px; }
+  header h1 .logo { height:34px; width:34px; border-radius:50%; object-fit:cover;
+    object-position:50% 30%; border:1px solid var(--gold-soft);
+    box-shadow:0 0 12px rgba(200,161,58,.35); }
   header nav button, .cartbtn { border:1px solid var(--border); background:var(--card);
     color:var(--muted); padding:7px 14px; border-radius:8px; cursor:pointer;
     font-family:inherit; font-size:14px; }
@@ -117,7 +123,7 @@ PAGE = r"""<!doctype html>
 </head>
 <body>
 <header>
-  <h1 onclick="showView('shop')">⛰️ LOTRAutofill</h1>
+  <h1 onclick="showView('shop')"><img class="logo" src="/logo.png" alt=""> LOTRAutofill</h1>
   <nav>
     <button id="nav-shop" class="active" onclick="showView('shop')" data-i18n="nav_sets">Sets</button>
     <button id="nav-deck" onclick="showView('deck')" data-i18n="nav_manual">Manual List</button>

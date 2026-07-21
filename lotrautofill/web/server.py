@@ -11,6 +11,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import sys
 import tempfile
 import threading
 import urllib.parse
@@ -93,6 +94,12 @@ def _make_handler(root: Path, out_dir: Path):
             path, query = parsed.path, urllib.parse.parse_qs(parsed.query)
             if path == "/" or path.startswith("/index"):
                 self._send(200, PAGE.encode("utf-8"), "text/html; charset=utf-8")
+            elif path == "/logo.png":
+                self._binary(_asset_bytes("gandalf.png"), "image/png",
+                             cache_control="max-age=604800")
+            elif path == "/favicon.ico":
+                self._binary(_asset_bytes("gandalf.ico"), "image/x-icon",
+                             cache_control="max-age=604800")
             elif path == "/api/library":
                 if "lib" not in cache:
                     cache["lib"] = _library(root)
@@ -217,6 +224,16 @@ def _rel(p: Path, root: Path) -> str | None:
         return str(Path(p).resolve().relative_to(root)).replace("\\", "/")
     except ValueError:
         return None
+
+
+def _asset_bytes(name: str) -> bytes | None:
+    """Read a bundled branding asset (logo/icon). Works both from source and
+    from a PyInstaller one-file build (assets land under ``sys._MEIPASS``)."""
+    meipass = getattr(sys, "_MEIPASS", None)
+    base = (Path(meipass) / "lotrautofill" / "assets") if meipass \
+        else Path(__file__).resolve().parent.parent / "assets"
+    p = base / name
+    return p.read_bytes() if p.is_file() else None
 
 
 def _thumbnail(root: Path, rel: str) -> tuple[bytes | None, str]:

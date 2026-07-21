@@ -30,7 +30,8 @@ def main(argv: list[str] | None = None) -> int:
         "--lang", choices=i18n.LANGS, default=None,
         help="Language for messages: en/fr/es/zh (default: from $LANG, else en).",
     )
-    sub = parser.add_subparsers(dest="command", required=True)
+    # No subcommand (e.g. double-clicking the .exe) launches the GUI.
+    sub = parser.add_subparsers(dest="command", required=False)
 
     b = sub.add_parser("build", help="Scan a card folder and build a manifest.")
     b.add_argument("folder", type=Path, help="Set or scenario folder to scan.")
@@ -153,6 +154,12 @@ def main(argv: list[str] | None = None) -> int:
 
     args = parser.parse_args(argv)
     i18n.set_lang(i18n.resolve_lang(args.lang))
+    if args.command is None:
+        # Double-click / bare run: start the GUI with defaults.
+        from .web import run_server
+        from .library.sets import default_library_root
+        run_server(root=default_library_root(), lang=i18n.current_lang())
+        return 0
     return args.func(args)
 
 
