@@ -133,8 +133,6 @@ def _make_handler(root: Path, out_dir: Path):
             try:
                 if self.path == "/api/pick":
                     self._json(_pick(root, out_dir, self._body()))
-                elif self.path == "/api/deck":
-                    self._json(_deck(out_dir, self._body()))
                 elif self.path == "/api/autofill":
                     self._json(_autofill(self._body()))
                 elif self.path == "/api/cart-export":
@@ -382,8 +380,8 @@ def _manual_list(catalog: dict, body: dict) -> dict:
     Returns the cards found (with their location + quantity, ready for the cart)
     and the ones with no local image (reported, so the user can decide).
     """
+    from ..decklist import parse_decklist_text
     from ..matching import best_match, normalize
-    from ..ringsdb import parse_decklist_text
 
     resolved, missing = [], []
     for qty, name in parse_decklist_text(body.get("text", "")):
@@ -447,41 +445,6 @@ def _cart_export(root: Path, out_dir: Path, body: dict) -> dict:
         from ..upload.desktop_tool import launch_autofill_terminal
         result["message"] = launch_autofill_terminal(out, export_pdf=(fmt == "pdf"))
     return result
-
-
-def _deck(out_dir: Path, body: dict) -> dict:
-    from .. import ringsdb
-    from ..backs import CardBacks, find_backs_dir
-
-    source = (body.get("source") or "").strip()
-    stock = body.get("stock", "(S33) Superior Smooth")
-    foil = bool(body.get("foil"))
-    if not source:
-        return {"error": "empty deck source"}
-
-    backs = CardBacks(find_backs_dir(default_library_root()))
-    catalog = ringsdb.fetch_cards()
-    decklist_id = ringsdb.decklist_id_from(source)
-    if decklist_id is not None and "\n" not in source:
-        deck_name, slots = ringsdb.fetch_decklist_slots(decklist_id)
-        resolved, unmatched = ringsdb.resolve_slots(slots, catalog), []
-    else:
-        entries = ringsdb.parse_decklist_text(source)
-        resolved, unmatched = ringsdb.resolve_text_entries(entries, catalog)
-        deck_name = "deck"
-
-    manifest, missing = ringsdb.build_manifest(resolved, backs.player)
-    plan = plan_from_manifest(manifest)
-    out = out_dir / f"{_slug(deck_name)}.order.xml"
-    out.write_text(plan_to_xml(plan, stock=stock, foil=foil), encoding="utf-8")
-    return {
-        "deck": deck_name,
-        "order_xml": str(out),
-        "cards": plan.total_cards,
-        "resolved": len(resolved),
-        "unmatched": [u["name"] for u in unmatched],
-        "missing_images": [m["name"] for m in missing],
-    }
 
 
 def _slug(name: str) -> str:

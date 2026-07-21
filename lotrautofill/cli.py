@@ -119,24 +119,7 @@ def main(argv: list[str] | None = None) -> int:
                         "~/.lotr-autofill/mpc-autofill).")
     a.add_argument("--skip-install", action="store_true",
                    help="Assume the tool's venv/deps are already installed.")
-    a.add_argument("--keep-images", action="store_true",
-                   help="Do not delete temporary RingsDB images after importing.")
     a.set_defaults(func=_cmd_autofill)
-
-    d = sub.add_parser(
-        "deck", help="Import a player deck from RingsDB (.txt / id / URL) -> order.xml.")
-    d.add_argument("source", help="Decklist .txt file, or a RingsDB decklist id/URL.")
-    d.add_argument("-o", "--output", type=Path, default=None,
-                   help="order.xml path (default: MPC_XML/<deck>.order.xml).")
-    d.add_argument("--player-back", type=Path, default=None,
-                   help="Player card-back image (default: auto-detected in "
-                        "toPrint/Card_Backs).")
-    d.add_argument("--stock", default="(S33) Superior Smooth")
-    d.add_argument("--foil", action="store_true")
-    d.add_argument("--cache", type=Path, default=None,
-                   help="Temp folder for downloaded card images "
-                        "(default: a folder in the OS temp dir).")
-    d.set_defaults(func=_cmd_deck)
 
     db = sub.add_parser(
         "db", help="Index the card library and report missing cards per set/chapter.")
@@ -170,32 +153,13 @@ def main(argv: list[str] | None = None) -> int:
 def _cmd_autofill(args: argparse.Namespace) -> int:
     from .upload.desktop_tool import run_autofill, default_tool_dir
 
-    code = run_autofill(
+    return run_autofill(
         args.order,
         tool_dir=args.tool_dir or default_tool_dir(),
         browser=args.browser,
         export_pdf=args.export_pdf,
         skip_install=args.skip_install,
     )
-    # After a real import (not a PDF), delete any temporary RingsDB card images
-    # this order referenced — they were only needed to upload into MPC.
-    if code == 0 and not args.export_pdf and not args.keep_images:
-        _clean_ringsdb_images(args.order)
-    return code
-
-
-def _clean_ringsdb_images(order_xml: Path) -> None:
-    from xml.etree import ElementTree as ET
-    from . import ringsdb
-
-    try:
-        tree = ET.parse(order_xml)
-    except Exception:
-        return
-    paths = [Path(c.text) for c in tree.iter("id") if c.text]
-    removed = ringsdb.clean_images(referenced=paths)
-    if removed:
-        print(f"Cleaned up {removed} temporary RingsDB image(s).")
 
 
 def _cmd_upload(args: argparse.Namespace) -> int:
@@ -216,66 +180,6 @@ def _cmd_export(args: argparse.Namespace) -> int:
     plan = plan_from_manifest(load_manifest(args.manifest))
     out = args.output or args.manifest.with_name("order.xml")
     _write_order_xml(plan, out, args.stock, args.foil)
-    return 0
-
-
-def _cmd_deck(args: argparse.Namespace) -> int:
-    from . import ringsdb
-    from .backs import CardBacks, find_backs_dir
-    from .sets import default_library_root
-    from .upload.plan import plan_from_manifest
-
-    image_dir = args.cache or ringsdb.IMAGE_DIR
-
-    # Resolve the player card-back (local Card_Backs, unless overridden).
-    player_back = args.player_back
-    if player_back is None:
-        backs = CardBacks(find_backs_dir(default_library_root()))
-        player_back = backs.player
-    if player_back is None:
-        print("! No Player card-back found (toPrint/Card_Backs). "
-              "Pass --player-back; order.xml will have no cardback otherwise.")
-
-    print("Fetching RingsDB card catalog...")
-    catalog = ringsdb.fetch_cards()
-
-    source = args.source
-    deck_name = Path(source).stem if Path(source).is_file() else "deck"
-    decklist_id = ringsdb.decklist_id_from(source)
-
-    if Path(source).is_file():
-        entries = ringsdb.parse_decklist_text(Path(source).read_text(encoding="utf-8"))
-        if not entries:
-            print(f"No decklist lines parsed from {source}", file=sys.stderr)
-            return 2
-        resolved, unmatched = ringsdb.resolve_text_entries(entries, catalog)
-    elif decklist_id is not None:
-        deck_name, slots = ringsdb.fetch_decklist_slots(decklist_id)
-        resolved, unmatched = ringsdb.resolve_slots(slots, catalog), []
-    else:
-        print(f"error: '{source}' is not a file, RingsDB id, or decklist URL",
-              file=sys.stderr)
-        return 2
-
-    print(f"Deck '{deck_name}': {len(resolved)} card(s) resolved, "
-          f"downloading images to a temp folder...")
-    manifest, missing = ringsdb.build_manifest(resolved, player_back, image_dir)
-
-    for u in unmatched:
-        print(f"  UNMATCHED: {u['quantity']}x '{u['name']}' (best {u['best_score']})")
-    for m in missing:
-        print(f"  NO IMAGE: {m['name']} ({m['code']})")
-    fuzzy = [r for r in resolved if r.match == "fuzzy"]
-    for r in fuzzy:
-        print(f"  fuzzy: '{r.query}' -> '{r.card['name']}'")
-
-    plan = plan_from_manifest(manifest)
-    out_dir = Path("MPC_XML")
-    out_dir.mkdir(parents=True, exist_ok=True)
-    out = args.output or out_dir / f"{_slug(deck_name)}.order.xml"
-    _write_order_xml(plan, out, args.stock, args.foil)
-    print(f"\nCard images are temporary (in {image_dir}); `autofill` deletes them "
-          "after importing into MPC. They are never committed to git.")
     return 0
 
 

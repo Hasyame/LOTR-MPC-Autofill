@@ -24,7 +24,8 @@ A local web app (works on Windows and Linux) with a Middle-earth theme: browse
 the card library with **light card previews**, see **missing cards** per
 set/chapter (cross-referenced with Hall of Beorn), tick sets/chapters and
 generate their `order.xml` — or **create the MPC project** directly (launches
-the autofill tool). Also imports a RingsDB deck. Sets you don't have are greyed
+the autofill tool). A Manual List tab resolves a pasted card list against your
+local library. Sets you don't have are greyed
 out. The only optional dependency is Pillow (for thumbnails; without it, full
 images are served). The CLI remains fully supported.
 
@@ -194,28 +195,14 @@ python -m lotrautofill export MPC_XML/hobbit.json    # a manifest -> order.xml
 python -m lotrautofill export … --stock "(S33) Superior Smooth" --foil
 ```
 
-### Import a player deck from RingsDB
+### Manual list
 
-Print a whole player deck by importing it from [RingsDB](https://ringsdb.com):
-
-```sh
-python -m lotrautofill deck mydeck.txt          # a decklist .txt file
-python -m lotrautofill deck 12345               # a RingsDB decklist id
-python -m lotrautofill deck https://ringsdb.com/decklist/view/12345/…   # or URL
-```
-
-A `.txt` decklist has one card per line with a quantity — `3x Gandalf`,
-`2 Steward of Gondor`, `Sneak Attack x3` (a trailing `(Pack)` and section
-headers/comments are ignored). Card names are resolved against RingsDB with the
-same normalized + fuzzy matching (so `Sneak Atack` → `Sneak Attack`) and an
-`order.xml` is written to `MPC_XML/`. Every card gets the Player back
-(auto-detected in `sets_folder/Card_Backs`, or `--player-back`). Then run `autofill`
-on it as usual.
-
-Downloaded card images are **temporary**: they go to a folder in the OS temp
-directory (never inside the repo, so they are never committed to git), and
-`autofill` deletes the ones it uploaded once the MPC import is done (pass
-`--keep-images` to keep them).
+In the GUI's **Manual List** tab, paste a card list (`3x Gandalf`,
+`2 Steward of Gondor`, `Sneak Attack x3`). It is resolved against your **local
+library** (normalized + fuzzy matching): found cards can be added to the cart
+with their quantities; cards with no local image are reported and skipped.
+(Card images come from your own high-resolution `sets_folder/` — the earlier
+RingsDB import has been removed.)
 
 ### Card library database
 
@@ -270,7 +257,7 @@ python -m lotrautofill upload MPC_XML/hobbit.json             # drive MPC (heade
 - [x] **Optional driver:** Playwright upload/insert ported from mpc-autofill.
 - [x] **Chapters:** print all chapters of a set, or pick chapters per set.
 - [x] **Executable:** `build_exe.py` packages the CLI as a standalone binary.
-- [x] **Deck import:** `deck` reads a decklist `.txt`/id/URL and fetches RingsDB.
+- [x] **Manual list:** paste a card list, resolved against the local library.
 - [x] **Database:** `db` indexes the library (catalog + cardlist review list).
 - [x] **Hall of Beorn:** `reference` + cross-reference for real missing cards.
 - [x] **GUI:** `gui` — a local web front-end (theme, previews, missing cards,
@@ -291,24 +278,14 @@ The GUI is a **shop-style flow**:
   type (Player back for player cards, Encounter back otherwise). The cart
   persists in the browser.
 
+- [x] **Manual List Builder:** replaces the RingsDB import — a pasted card list
+  is checked against the local library; found cards go to the cart, missing ones
+  are reported. (RingsDB dropped — its images are low resolution.)
+- [x] **Code review + sub-package restructure** (see `lotrautofill/` layout).
+
 ## Planned
-- [ ] **Manual List Builder** (replaces the RingsDB import): the user types a
-  card list; on submit the server checks it against the local database, reports
-  any cards not found and offers to continue, then adds the rest to the cart.
-  (RingsDB is dropped — its images are low resolution; local images are better.)
 - [ ] **i18n:** GUI and CLI in **English, French, Spanish, Chinese** (a small
   per-language string table + a language switcher / `--lang`).
-- [ ] **Code quality:** best-practice cleanup — clearer names, typing,
-  docstrings, input validation and hardening (path-traversal guards, safe
-  subprocess launches), and performance (cache the library index to disk so the
-  first GUI load is fast).
-
-### Design notes (open questions)
-
-- **Set tile images:** a representative local card image (no scraping) vs. box
-  art scraped from Hall of Beorn's Products page vs. styled name-only tiles.
-- **Refactor scope:** conservative tidy-up (keep the layout) vs. restructuring
-  into sub-packages.
 
 ## Development
 
