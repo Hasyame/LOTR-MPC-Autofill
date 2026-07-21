@@ -147,14 +147,15 @@ def _classify_group(
             _resolve_orphan(ctx, category, source, orphan, faces_in_folder)
         return plain  # any no-side images fall through as singles
 
-    # 2) Same number, different names -> double-sided front/back pair.
+    # 2) Same number, different names -> double-sided pair(s). When several
+    # images share a number (an even count), pair them into consecutive couples
+    # in file order: (1st,2nd), (3rd,4th), ... Each couple is one card.
     if len({normalize(i.name) for i in plain}) > 1:
         chosen = _apply_errata(plain, ctx.options.errata)
-        if len(chosen) >= 2:
-            face, back = _order_pair(ctx, source, number, chosen[0], chosen[1])
+        for i in range(0, len(chosen) - 1, 2):
+            face, back = _order_pair(ctx, source, number, chosen[i], chosen[i + 1])
             _emit_pair(ctx, category, source, number, face, back, kind="same-number")
-            return chosen[2:]
-        return chosen
+        return chosen[-1:] if len(chosen) % 2 == 1 else []
 
     # 3) Same number, same name -> errata duplicate(s): collapse.
     return _apply_errata(plain, ctx.options.errata)

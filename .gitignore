@@ -11,6 +11,11 @@ mpc_manifest.json
 # Cloned mpc-autofill desktop tool + its venv
 /.lotr-autofill/
 
+# Downloaded RingsDB card images (should live in the OS temp dir; ignored here
+# as a safety net in case a cache is ever pointed inside the repo)
+ringsdb-cache/
+lotr-autofill-ringsdb/
+
 # PyInstaller build artifacts
 /build/
 /dist/

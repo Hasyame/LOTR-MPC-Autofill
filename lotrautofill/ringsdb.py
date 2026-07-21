@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import re
+import tempfile
 import urllib.request
 from pathlib import Path
 from typing import Optional
@@ -27,7 +28,11 @@ CARDS_URL = f"{BASE_URL}/api/public/cards/"
 CARD_URL = f"{BASE_URL}/api/public/card/{{code}}.json"
 DECKLIST_URL = f"{BASE_URL}/api/public/decklist/{{id}}.json"
 
-DEFAULT_CACHE = Path.home() / ".lotr-autofill" / "ringsdb-cache"
+# Card catalog (metadata JSON only) persists in the user's home cache.
+CATALOG_DIR = Path.home() / ".lotr-autofill"
+# Downloaded CARD IMAGES are temporary: kept only long enough to import into
+# MPC, stored in the OS temp dir (outside any repo, so never committed to git).
+IMAGE_DIR = Path(tempfile.gettempdir()) / "lotr-autofill-ringsdb"
 
 # "3x Gandalf", "3 Gandalf", "Gandalf x3" — with optional trailing "(Pack)".
 _LINE_LEADING = re.compile(r"^\s*(\d+)\s*[xX]?\s+(.+?)\s*$")
@@ -51,7 +56,7 @@ def _get_json(url: str):
 # --------------------------------------------------------------------------- #
 # Card catalog
 # --------------------------------------------------------------------------- #
-def fetch_cards(cache_dir: Path = DEFAULT_CACHE) -> dict[str, dict]:
+def fetch_cards(cache_dir: Path = CATALOG_DIR) -> dict[str, dict]:
     """All RingsDB cards as ``{code: card}``, cached to disk for a day-ish."""
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache = cache_dir / "cards.json"
@@ -161,12 +166,12 @@ def resolve_slots(slots: dict[str, int], catalog: dict[str, dict]
 # --------------------------------------------------------------------------- #
 # Images
 # --------------------------------------------------------------------------- #
-def download_image(card: dict, cache_dir: Path = DEFAULT_CACHE) -> Optional[Path]:
+def download_image(card: dict, dest_dir: Path = IMAGE_DIR) -> Optional[Path]:
     src = card.get("imagesrc")
     if not src:
         return None
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    dest = cache_dir / f"{card['code']}.png"
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / f"{card['code']}.png"
     if not dest.exists() or dest.stat().st_size == 0:
         try:
             dest.write_bytes(_get(f"{BASE_URL}{src}"))
@@ -175,16 +180,44 @@ def download_image(card: dict, cache_dir: Path = DEFAULT_CACHE) -> Optional[Path
     return dest
 
 
+def clean_images(referenced: Optional[list[Path]] = None) -> int:
+    """Delete temporary RingsDB card images.
+
+    With ``referenced``, delete only those paths that live under ``IMAGE_DIR``
+    (so local set images are never touched); otherwise clear the whole temp
+    image directory. Returns the number of files removed.
+    """
+    removed = 0
+    if referenced is not None:
+        for p in referenced:
+            p = Path(p)
+            try:
+                if IMAGE_DIR in p.resolve().parents and p.exists():
+                    p.unlink()
+                    removed += 1
+            except OSError:
+                pass
+        return removed
+    if IMAGE_DIR.exists():
+        for p in IMAGE_DIR.glob("*"):
+            try:
+                p.unlink()
+                removed += 1
+            except OSError:
+                pass
+    return removed
+
+
 # --------------------------------------------------------------------------- #
 # Manifest assembly (reuses the existing plan/order.xml pipeline)
 # --------------------------------------------------------------------------- #
 def build_manifest(resolved: list[Resolved], player_back: Optional[Path],
-                   cache_dir: Path = DEFAULT_CACHE) -> tuple[dict, list[dict]]:
+                   image_dir: Path = IMAGE_DIR) -> tuple[dict, list[dict]]:
     """Turn resolved cards into a manifest dict + a list of missing-image notes."""
     cards: list[dict] = []
     missing: list[dict] = []
     for r in resolved:
-        img = download_image(r.card, cache_dir)
+        img = download_image(r.card, image_dir)
         if img is None:
             missing.append({"name": r.card.get("name", r.query), "code": r.card["code"]})
             continue
@@ -199,4 +232,4 @@ def build_manifest(resolved: list[Resolved], player_back: Optional[Path],
             "source": "RingsDB",
             "match": r.match,
         })
-    return {"root": str(cache_dir), "cards": cards}, missing
+    return {"root": str(image_dir), "cards": cards}, missing

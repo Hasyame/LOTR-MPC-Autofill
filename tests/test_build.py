@@ -82,3 +82,23 @@ def test_errata_skip_policy(tmp_path):
     report = build(root, BuildOptions(interactive=False, errata="skip"))
     orc = _by_name(report)["Orc Drummer"]
     assert "(errata)" not in orc.front.name
+
+
+def test_same_number_even_count_pairs_into_couples(tmp_path):
+    root = tmp_path / "Set" / "Set"
+    _touch(tmp_path / "Card_Backs" / "Card_Backs",
+           "Encounter Card Back.jpg", "Player Card Back.jpg")
+    enc = root / "Encounter" / "X"
+    # Number 0001 has 4 differently-named images -> two double-sided couples.
+    _touch(enc, "0001 - Alpha.jpg", "0001 - Beta.jpg",
+           "0001 - Gamma.jpg", "0001 - Delta.jpg")
+    (enc / "cardlist.txt").write_text("", encoding="utf-8")
+
+    report = build(root, BuildOptions(interactive=False))
+    pairs = [e for e in report.entries if e.double_sided]
+    assert len(pairs) == 2
+    # Consecutive couples in sorted file order: (Alpha,Beta), (Delta,Gamma).
+    couples = {(e.front.name, e.back.name) for e in pairs}
+    assert ("0001 - Alpha.jpg", "0001 - Beta.jpg") in couples
+    assert ("0001 - Delta.jpg", "0001 - Gamma.jpg") in couples
+    assert len(report.orphans) == 0

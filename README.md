@@ -82,7 +82,7 @@ The command prints a report and writes `mpc_manifest.json` (unless
 | Case | Handling |
 |---|---|
 | Same number, **same** name (one `(errata)`) | errata duplicate → collapsed (`--errata`) |
-| Same number, **different** names | one **double-sided** card (face/back) |
+| Same number, **different** names | **double-sided** card(s); an even count is paired into consecutive couples (1st+2nd, 3rd+4th, …) in file order |
 | `NNN - 1A` + `NNN - 1B` | double-sided quest card (A = face, B = back) |
 | A/B side with no partner | orphan → Encounter back (or interactively attach a face) |
 | Encounter/Nightmare single | quantity from `cardlist.txt`; Encounter back |
@@ -193,10 +193,15 @@ python -m lotrautofill deck https://ringsdb.com/decklist/view/12345/…   # or U
 A `.txt` decklist has one card per line with a quantity — `3x Gandalf`,
 `2 Steward of Gondor`, `Sneak Attack x3` (a trailing `(Pack)` and section
 headers/comments are ignored). Card names are resolved against RingsDB with the
-same normalized + fuzzy matching (so `Sneak Atack` → `Sneak Attack`), images are
-downloaded and cached to `~/.lotr-autofill/ringsdb-cache/`, and an `order.xml`
-is written to `builds/`. Every card gets the Player back (auto-detected in
-`toPrint/Card_Backs`, or `--player-back`). Then run `autofill` on it as usual.
+same normalized + fuzzy matching (so `Sneak Atack` → `Sneak Attack`) and an
+`order.xml` is written to `builds/`. Every card gets the Player back
+(auto-detected in `toPrint/Card_Backs`, or `--player-back`). Then run `autofill`
+on it as usual.
+
+Downloaded card images are **temporary**: they go to a folder in the OS temp
+directory (never inside the repo, so they are never committed to git), and
+`autofill` deletes the ones it uploaded once the MPC import is done (pass
+`--keep-images` to keep them).
 
 ### order.xml format
 

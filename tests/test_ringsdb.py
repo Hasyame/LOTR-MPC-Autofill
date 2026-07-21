@@ -1,5 +1,6 @@
 """Network-free tests for the RingsDB deck import (parsing + resolution)."""
 
+from lotrautofill import ringsdb
 from lotrautofill.ringsdb import (
     decklist_id_from,
     parse_decklist_text,
@@ -48,3 +49,23 @@ def test_resolve_exact_and_fuzzy():
     by_name = {r.card["name"]: r for r in resolved}
     assert by_name["Aragorn"].match == "exact"
     assert by_name["Sneak Attack"].match == "fuzzy"
+
+
+def test_clean_images_only_touches_image_dir(tmp_path):
+    old = ringsdb.IMAGE_DIR
+    try:
+        img_dir = tmp_path / "imgs"
+        img_dir.mkdir()
+        inside = img_dir / "01001.png"
+        inside.write_bytes(b"x")
+        outside = tmp_path / "local_card.png"   # e.g. a toPrint image
+        outside.write_bytes(b"x")
+
+        ringsdb.IMAGE_DIR = img_dir
+        removed = ringsdb.clean_images(referenced=[inside, outside])
+
+        assert removed == 1
+        assert not inside.exists()      # temp image deleted
+        assert outside.exists()         # anything outside IMAGE_DIR is safe
+    finally:
+        ringsdb.IMAGE_DIR = old
