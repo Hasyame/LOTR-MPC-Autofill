@@ -20,9 +20,13 @@ With Python: `python -m lotrautofill <command>` (see commands below).
 python -m lotrautofill gui       # opens http://127.0.0.1:8765 in your browser
 ```
 
-A local, zero-dependency web app (works on Windows and Linux): browse the card
-library, tick sets/chapters and generate their `order.xml`, or import a RingsDB
-deck — all from the browser. The CLI remains fully supported.
+A local web app (works on Windows and Linux) with a Middle-earth theme: browse
+the card library with **light card previews**, see **missing cards** per
+set/chapter (cross-referenced with Hall of Beorn), tick sets/chapters and
+generate their `order.xml` — or **create the MPC project** directly (launches
+the autofill tool). Also imports a RingsDB deck. Sets you don't have are greyed
+out. The only optional dependency is Pillow (for thumbnails; without it, full
+images are served). The CLI remains fully supported.
 
 Or build a **standalone executable** (no Python needed to run it afterwards):
 
@@ -219,16 +223,18 @@ directory (never inside the repo, so they are never committed to git), and
 categories → cards, with counts) — the data a UI reads to browse the collection:
 
 ```sh
+python -m lotrautofill reference          # one-time: scrape Hall of Beorn (cached)
 python -m lotrautofill db                 # index sets_folder/ -> database.json
-python -m lotrautofill db --missing-only  # only sets with something to review
+python -m lotrautofill db --missing-only  # only sets that are missing cards
 ```
 
-It also lists `cardlist.txt` entries that matched no image (a small "review"
-list — usually double-sided encounter cards named `SideA/SideB`). Note: a
-reliable per-card *missing* list can't come from the folders alone (within a
-pack all categories share one number sequence, so gaps flag other folders'
-cards), and RingsDB only lists player-side cards — so encounter cards can't be
-verified against a reference.
+`db` cross-references each set/chapter with **Hall of Beorn** (run `reference`
+once to cache its data): each unit is matched to a scenario — or a cycle's union
+of scenarios — by name, giving the true expected card list. Cards Hall of Beorn
+lists that have no image anywhere in the library are reported as **missing**
+(across the whole game: 5 of ~4100, of which 4 are genuinely absent). Numbering
+gaps are *not* used (within a pack all categories share one sequence, so gaps
+would flag other folders' cards).
 
 ### order.xml format
 
