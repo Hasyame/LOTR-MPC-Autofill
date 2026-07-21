@@ -180,6 +180,24 @@ python -m lotrautofill export builds/hobbit.json    # a manifest -> order.xml
 python -m lotrautofill export … --stock "(S33) Superior Smooth" --foil
 ```
 
+### Import a player deck from RingsDB
+
+Print a whole player deck by importing it from [RingsDB](https://ringsdb.com):
+
+```sh
+python -m lotrautofill deck mydeck.txt          # a decklist .txt file
+python -m lotrautofill deck 12345               # a RingsDB decklist id
+python -m lotrautofill deck https://ringsdb.com/decklist/view/12345/…   # or URL
+```
+
+A `.txt` decklist has one card per line with a quantity — `3x Gandalf`,
+`2 Steward of Gondor`, `Sneak Attack x3` (a trailing `(Pack)` and section
+headers/comments are ignored). Card names are resolved against RingsDB with the
+same normalized + fuzzy matching (so `Sneak Atack` → `Sneak Attack`), images are
+downloaded and cached to `~/.lotr-autofill/ringsdb-cache/`, and an `order.xml`
+is written to `builds/`. Every card gets the Player back (auto-detected in
+`toPrint/Card_Backs`, or `--player-back`). Then run `autofill` on it as usual.
+
 ### order.xml format
 
 Matches the desktop tool exactly: `<details>` (quantity / stock / foil),
@@ -214,7 +232,7 @@ python -m lotrautofill upload builds/hobbit.json             # drive MPC (headed
 - [x] **Optional driver:** Playwright upload/insert ported from mpc-autofill.
 - [x] **Chapters:** print all chapters of a set, or pick chapters per set.
 - [x] **Executable:** `build_exe.py` packages the CLI as a standalone binary.
-- [ ] **Deck import:** read a decklist `.txt` and fetch cards from RingsDB.
+- [x] **Deck import:** `deck` reads a decklist `.txt`/id/URL and fetches RingsDB.
 - [ ] **GUI:** a web/desktop front-end over the CLI (CLI stays supported).
 
 ## Development

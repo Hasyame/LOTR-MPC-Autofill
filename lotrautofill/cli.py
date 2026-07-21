@@ -121,6 +121,20 @@ def main(argv: list[str] | None = None) -> int:
                    help="Assume the tool's venv/deps are already installed.")
     a.set_defaults(func=_cmd_autofill)
 
+    d = sub.add_parser(
+        "deck", help="Import a player deck from RingsDB (.txt / id / URL) -> order.xml.")
+    d.add_argument("source", help="Decklist .txt file, or a RingsDB decklist id/URL.")
+    d.add_argument("-o", "--output", type=Path, default=None,
+                   help="order.xml path (default: builds/<deck>.order.xml).")
+    d.add_argument("--player-back", type=Path, default=None,
+                   help="Player card-back image (default: auto-detected in "
+                        "toPrint/Card_Backs).")
+    d.add_argument("--stock", default="(S33) Superior Smooth")
+    d.add_argument("--foil", action="store_true")
+    d.add_argument("--cache", type=Path, default=None,
+                   help="Image/card cache dir (default: ~/.lotr-autofill/ringsdb-cache).")
+    d.set_defaults(func=_cmd_deck)
+
     args = parser.parse_args(argv)
     return args.func(args)
 
@@ -155,6 +169,64 @@ def _cmd_export(args: argparse.Namespace) -> int:
         return 2
     plan = plan_from_manifest(load_manifest(args.manifest))
     out = args.output or args.manifest.with_name("order.xml")
+    _write_order_xml(plan, out, args.stock, args.foil)
+    return 0
+
+
+def _cmd_deck(args: argparse.Namespace) -> int:
+    from . import ringsdb
+    from .backs import CardBacks, find_backs_dir
+    from .sets import default_library_root
+    from .upload.plan import plan_from_manifest
+
+    cache = args.cache or ringsdb.DEFAULT_CACHE
+
+    # Resolve the player card-back (local Card_Backs, unless overridden).
+    player_back = args.player_back
+    if player_back is None:
+        backs = CardBacks(find_backs_dir(default_library_root()))
+        player_back = backs.player
+    if player_back is None:
+        print("! No Player card-back found (toPrint/Card_Backs). "
+              "Pass --player-back; order.xml will have no cardback otherwise.")
+
+    print("Fetching RingsDB card catalog...")
+    catalog = ringsdb.fetch_cards(cache)
+
+    source = args.source
+    deck_name = Path(source).stem if Path(source).is_file() else "deck"
+    decklist_id = ringsdb.decklist_id_from(source)
+
+    if Path(source).is_file():
+        entries = ringsdb.parse_decklist_text(Path(source).read_text(encoding="utf-8"))
+        if not entries:
+            print(f"No decklist lines parsed from {source}", file=sys.stderr)
+            return 2
+        resolved, unmatched = ringsdb.resolve_text_entries(entries, catalog)
+    elif decklist_id is not None:
+        deck_name, slots = ringsdb.fetch_decklist_slots(decklist_id)
+        resolved, unmatched = ringsdb.resolve_slots(slots, catalog), []
+    else:
+        print(f"error: '{source}' is not a file, RingsDB id, or decklist URL",
+              file=sys.stderr)
+        return 2
+
+    print(f"Deck '{deck_name}': {len(resolved)} card(s) resolved, "
+          f"downloading images...")
+    manifest, missing = ringsdb.build_manifest(resolved, player_back, cache)
+
+    for u in unmatched:
+        print(f"  UNMATCHED: {u['quantity']}x '{u['name']}' (best {u['best_score']})")
+    for m in missing:
+        print(f"  NO IMAGE: {m['name']} ({m['code']})")
+    fuzzy = [r for r in resolved if r.match == "fuzzy"]
+    for r in fuzzy:
+        print(f"  fuzzy: '{r.query}' -> '{r.card['name']}'")
+
+    plan = plan_from_manifest(manifest)
+    out_dir = Path("builds")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out = args.output or out_dir / f"{_slug(deck_name)}.order.xml"
     _write_order_xml(plan, out, args.stock, args.foil)
     return 0
 
