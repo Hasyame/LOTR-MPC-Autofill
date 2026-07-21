@@ -272,7 +272,41 @@ python -m lotrautofill upload MPC_XML/hobbit.json             # drive MPC (heade
 - [x] **Executable:** `build_exe.py` packages the CLI as a standalone binary.
 - [x] **Deck import:** `deck` reads a decklist `.txt`/id/URL and fetches RingsDB.
 - [x] **Database:** `db` indexes the library (catalog + cardlist review list).
-- [x] **GUI:** `gui` — a local zero-dependency web front-end over the CLI.
+- [x] **Hall of Beorn:** `reference` + cross-reference for real missing cards.
+- [x] **GUI:** `gui` — a local web front-end (theme, previews, missing cards,
+  back selection, create-MPC-project).
+- [x] Set/chapter names shown without the ordering number prefix.
+
+## Planned
+
+A UX redesign around a **shop-style flow** (see the design notes below; details
+to be confirmed):
+
+- [ ] **Shop homepage:** a grid of set tiles (one visual per set). *Add to cart*
+  adds the whole set; opening a tile drills into chapters → cards for granular
+  selection.
+- [ ] **Cart:** review the picked sets / chapters / cards (only what is present
+  locally), then **Export XML**, **Export PDF** (via the desktop tool), or
+  **Create MPC project**. Backs are auto-assigned by card type — Player cards
+  get the Player back, everything else the Encounter back (the database already
+  knows each card's category).
+- [ ] **Manual List Builder** (replaces the RingsDB import): the user types a
+  card list; on submit the server checks it against the local database, reports
+  any cards not found and offers to continue, then adds the rest to the cart.
+  (RingsDB is dropped — its images are low resolution; local images are better.)
+- [ ] **i18n:** GUI and CLI in **English, French, Spanish, Chinese** (a small
+  per-language string table + a language switcher / `--lang`).
+- [ ] **Code quality:** best-practice cleanup — clearer names, typing,
+  docstrings, input validation and hardening (path-traversal guards, safe
+  subprocess launches), and performance (cache the library index to disk so the
+  first GUI load is fast).
+
+### Design notes (open questions)
+
+- **Set tile images:** a representative local card image (no scraping) vs. box
+  art scraped from Hall of Beorn's Products page vs. styled name-only tiles.
+- **Refactor scope:** conservative tidy-up (keep the layout) vs. restructuring
+  into sub-packages.
 
 ## Development
 
