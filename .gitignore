@@ -11,6 +11,11 @@ mpc_manifest.json
 # Cloned mpc-autofill desktop tool + its venv
 /.lotr-autofill/
 
+# PyInstaller build artifacts
+/build/
+/dist/
+*.spec
+
 # Python
 __pycache__/
 *.py[cod]

@@ -26,6 +26,25 @@ def default_tool_dir() -> Path:
     return DEFAULT_TOOL_DIR
 
 
+def _host_python() -> str:
+    """A real Python interpreter to build the tool's venv with.
+
+    When LOTRAutofill runs as a frozen executable, ``sys.executable`` is the
+    .exe, not a Python — so fall back to a Python found on PATH (the desktop
+    tool needs Python anyway).
+    """
+    if not getattr(sys, "frozen", False):
+        return sys.executable
+    for name in ("python", "python3", "py"):
+        found = shutil.which(name)
+        if found:
+            return found
+    raise RuntimeError(
+        "Python is required to run the mpc-autofill desktop tool but none was "
+        "found on PATH. Install Python 3.10+ and try again."
+    )
+
+
 def _venv_python(venv_dir: Path) -> Path:
     if os.name == "nt":
         return venv_dir / "Scripts" / "python.exe"
@@ -50,7 +69,7 @@ def ensure_tool(tool_dir: Path, skip_install: bool = False) -> Path:
         venv_dir = desktop / ".venv"
         if not _venv_python(venv_dir).exists():
             print("Creating virtualenv and installing requirements (one-time) ...")
-            _run([sys.executable, "-m", "venv", str(venv_dir)])
+            _run([_host_python(), "-m", "venv", str(venv_dir)])
             py = str(_venv_python(venv_dir))
             _run([py, "-m", "pip", "install", "--upgrade", "pip"])
             reqs = _runtime_requirements(desktop / "requirements.txt")

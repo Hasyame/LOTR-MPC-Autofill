@@ -10,6 +10,22 @@ will drive the MPC website from that manifest.
 
 Zero external dependencies — pure Python standard library (3.10+).
 
+## Run it
+
+With Python: `python -m lotrautofill <command>` (see commands below).
+
+Or build a **standalone executable** (no Python needed to run it afterwards):
+
+```sh
+pip install -e .[build]
+python build_exe.py            # -> dist/lotr-autofill.exe
+dist/lotr-autofill sets        # then use it like the CLI
+```
+
+The `.exe` bundles `build` / `pick` / `export` / `sets`. The `autofill` command
+still needs Python on the machine (the mpc-autofill desktop tool is a Python
+app); the executable finds it on PATH automatically.
+
 ## Expected folder layout
 
 ```
@@ -197,7 +213,7 @@ python -m lotrautofill upload builds/hobbit.json             # drive MPC (headed
 - [x] **Stage 2 — autofill:** one-command clone/install/run of the desktop tool.
 - [x] **Optional driver:** Playwright upload/insert ported from mpc-autofill.
 - [x] **Chapters:** print all chapters of a set, or pick chapters per set.
-- [ ] **Executable:** package the CLI as a standalone binary (no Python needed).
+- [x] **Executable:** `build_exe.py` packages the CLI as a standalone binary.
 - [ ] **Deck import:** read a decklist `.txt` and fetch cards from RingsDB.
 - [ ] **GUI:** a web/desktop front-end over the CLI (CLI stays supported).
 

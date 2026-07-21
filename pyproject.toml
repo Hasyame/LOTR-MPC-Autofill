@@ -9,6 +9,8 @@ dependencies = []
 [project.optional-dependencies]
 # Stage 2 (upload) drives MakePlayingCards with a browser. Stage 1 stays dep-free.
 upload = ["playwright>=1.40"]
+# Build a standalone executable (see build_exe.py).
+build = ["pyinstaller>=6"]
 
 [project.scripts]
 lotr-autofill = "lotrautofill.cli:main"
