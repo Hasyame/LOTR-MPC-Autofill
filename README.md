@@ -1,7 +1,7 @@
 # LOTRAutofill
 
 Build [MakePlayingCards](https://www.makeplayingcards.com/) (MPC) proxy orders
-for **The Lord of the Rings LCG**, à la MPC Autofill.
+for **The Lord of the Rings LCG**, inspired from MPC Autofill (dedicated to Magic the Gathering).
 
 The tool reads a folder of card images (organised by set / scenario / category)
 plus the `cardlist.txt` quantity files, and produces a **build manifest**: the
