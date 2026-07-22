@@ -133,6 +133,10 @@ PAGE = r"""<!doctype html>
     border-radius:20px; padding:1px 8px; }
   .thumb .qty { position:absolute; top:2px; left:2px; background:var(--gold);
     color:#20180a; border-radius:6px; padding:0 5px; font-size:11px; font-weight:800; }
+  .miss-list { color:var(--warn); font-size:13px; margin:10px 0;
+    border:1px solid var(--gold-soft); border-radius:8px; padding:8px 12px;
+    background:rgba(217,165,58,.06); }
+  .miss-list ul { margin:4px 0 0 18px; columns:2; }
 </style>
 </head>
 <body>
@@ -222,6 +226,7 @@ const I18N = {
     kind_exp:"Expansion", kind_ap:"Adventure Packs", kind_saga:"Saga",
     n_appacks:"{n} packs", n_expansions:"{n} expansions",
     add_to_list:"Add", scenarios:"Scenarios",
+    missing_cards:"Missing cards ({n})",
     cart_title:"Your list to print", stock:"Card stock", enc_back:"Encounter back",
     ply_back:"Player back", foil:"Foil", export_xml:"Export order.xml",
     export_pdf:"Export PDF", create_mpc:"Create MPC project", empty_cart:"Clear list",
@@ -261,6 +266,7 @@ const I18N = {
     kind_exp:"Extension", kind_ap:"Paquets d'aventure", kind_saga:"Saga",
     n_appacks:"{n} paquets", n_expansions:"{n} extensions",
     add_to_list:"Ajouter", scenarios:"Scénarios",
+    missing_cards:"Cartes manquantes ({n})",
     cart_title:"Votre liste à imprimer", stock:"Type de carton", enc_back:"Dos rencontre",
     ply_back:"Dos joueur", foil:"Effet foil", export_xml:"Exporter order.xml",
     export_pdf:"Exporter PDF", create_mpc:"Créer un projet MPC", empty_cart:"Vider la liste",
@@ -301,6 +307,7 @@ const I18N = {
     kind_exp:"Expansión", kind_ap:"Packs de aventura", kind_saga:"Saga",
     n_appacks:"{n} packs", n_expansions:"{n} expansiones",
     add_to_list:"Añadir", scenarios:"Escenarios",
+    missing_cards:"Cartas faltantes ({n})",
     cart_title:"Tu lista para imprimir", stock:"Tipo de cartón", enc_back:"Reverso de encuentro",
     ply_back:"Reverso de jugador", foil:"Foil", export_xml:"Exportar order.xml",
     export_pdf:"Exportar PDF", create_mpc:"Crear proyecto MPC", empty_cart:"Vaciar lista",
@@ -341,6 +348,7 @@ const I18N = {
     kind_exp:"扩展", kind_ap:"冒险包", kind_saga:"传奇",
     n_appacks:"{n} 个包", n_expansions:"{n} 个扩展",
     add_to_list:"添加", scenarios:"场景",
+    missing_cards:"缺失的卡（{n}）",
     cart_title:"您的打印清单", stock:"卡纸类型", enc_back:"遭遇卡背",
     ply_back:"玩家卡背", foil:"闪膜", export_xml:"导出 order.xml",
     export_pdf:"导出 PDF", create_mpc:"创建 MPC 项目", empty_cart:"清空清单",
@@ -589,7 +597,7 @@ async function loadUnitCards(id, hostId) {
   host.innerHTML = '<span class="muted">'+T('loading')+'</span>';
   const d = await (await fetch('/api/unit-cards?id=' + encodeURIComponent(id))).json();
   host.dataset.on = '1';
-  host.innerHTML = '<div class="thumbs">' + (d.cards||[]).map(c => {
+  let html = '<div class="thumbs">' + (d.cards||[]).map(c => {
     const key = cardKey(c.set, c.chapter, c.front);
     const qty = c.quantity > 1 ? `<span class="qty">×${c.quantity}</span>` : '';
     return `<div class="thumb ${inCart(key)?'in':''}" id="t-${cssid(key)}">
@@ -597,6 +605,12 @@ async function loadUnitCards(id, hostId) {
       <button class="add" title="${T('add_card')}" onclick='addCard(${JSON.stringify(c.set)},${JSON.stringify(c.chapter)},${JSON.stringify(c.front)},${JSON.stringify(c.name)},${c.quantity})'>+</button>
       <div class="cap">${esc(c.name)}</div></div>`;
   }).join('') + '</div>';
+  if (d.missing && d.missing.length) {
+    html += `<div class="miss-list"><b>${T('missing_cards',{n:d.missing.length})}</b><ul>`
+      + d.missing.map(m => `<li>${m.count>1?m.count+'× ':''}${esc(m.name)}</li>`).join('')
+      + '</ul></div>';
+  }
+  host.innerHTML = html;
 }
 
 /* ---------- add to print list ---------- */

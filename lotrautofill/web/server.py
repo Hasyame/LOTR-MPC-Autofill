@@ -106,7 +106,8 @@ def _make_handler(root: Path, out_dir: Path):
                             "root": c["root"]})
             elif path == "/api/unit-cards":
                 c = _cat2(cache)
-                self._json({"cards": c["units"].get(query.get("id", [""])[0], [])})
+                self._json(c["units"].get(query.get("id", [""])[0],
+                                          {"cards": [], "missing": []}))
             elif path == "/api/catalog":
                 if "catalog" not in cache:
                     cache["catalog"] = _scan_library(cache["root"])

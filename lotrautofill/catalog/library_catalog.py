@@ -64,20 +64,23 @@ def _match_unit(folder: Path, epic_cards: list, root: Path,
                           "category": e.category, "quantity": qty,
                           "set": set_name, "chapter": chapter})
             total += qty
-    missing = [c["name"] for c in epic_cards if normalize(c["name"]) not in by_name]
+    missing_by: dict[str, int] = {}
+    for c in epic_cards:
+        if normalize(c["name"]) not in by_name:
+            missing_by[c["name"]] = missing_by.get(c["name"], 0) + c["count"]
+    missing = [{"name": n, "count": q} for n, q in missing_by.items()]
     return {"cards": cards, "missing": missing, "cards_total": total}
 
 
 def _leaf(units_cache: dict, folder: Path, epic_cards: list, root: Path,
           name: str, kind: str, scenarios: list,
           set_name: str, chapter: str) -> dict:
-    """A printable box/pack node; stashes its cards in ``units_cache`` by id."""
+    """A printable box/pack node; stashes its cards + missing list by id."""
     m = _match_unit(folder, epic_cards, root, set_name, chapter)
     uid = _rel(folder, root)
-    units_cache[uid] = m["cards"]
+    units_cache[uid] = {"cards": m["cards"], "missing": m["missing"]}
     return {"id": uid, "name": name, "kind": kind, "scenarios": scenarios,
             "cards_total": m["cards_total"], "missing_total": len(m["missing"]),
-            "missing": m["missing"],
             "available": bool(m["cards"]) and m["cards_total"] > len(m["missing"])}
 
 
