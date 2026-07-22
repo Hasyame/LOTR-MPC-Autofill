@@ -35,6 +35,8 @@ def main() -> int:
         "--console",
         "--name", NAME,
         "--noconfirm",
+        # Never UPX-pack: packed exes trip antivirus heuristics even harder.
+        "--noupx",
         # Put the finished .exe in the project root (next to sets_folder), not
         # dist/ — clearer for users, and it finds the library right beside it.
         "--distpath", str(root),

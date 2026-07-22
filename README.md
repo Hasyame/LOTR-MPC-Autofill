@@ -51,7 +51,7 @@ Build a single Windows `.exe` that you just **double-click**:
 
 ```sh
 pip install -e .[build,gui]
-python build_exe.py          # -> ./lotr-autofill.exe in the project root (Gandalf icon)
+python build_exe.py          # -> ./lotr-autofill.exe in the project root
 ```
 
 Double-clicking `lotr-autofill.exe` launches the web GUI and opens your browser
@@ -65,6 +65,31 @@ Every CLI subcommand still works from a terminal (`lotr-autofill.exe sets`,
 `... build`, `... pick`, `... --lang fr sets`, …). The `autofill` command still
 needs Python on the machine (the mpc-autofill desktop tool is a Python app); the
 executable finds it on PATH automatically.
+
+### ⚠️ Windows Defender / antivirus warning (false positive)
+
+Windows Defender may flag `lotr-autofill.exe` as **`Trojan:Win32/Wacatac.B!ml`**.
+**This is a false positive.** The `!ml` suffix is Defender's *machine-learning*
+heuristic, not a signature match. It fires because of *how* the app is packaged:
+a [PyInstaller](https://pyinstaller.org) one-file executable bundles a Python
+interpreter and unpacks itself to a temp folder at launch a pattern also used
+by some malware, so thousands of legitimate PyInstaller apps get the same flag.
+
+Everything here is open source nothing is hidden. You can:
+
+- **Verify it:** scan the file on [VirusTotal](https://www.virustotal.com/)
+  (typically only Defender's ML engine flags it), or **build it yourself** from
+  this repo: `pip install -e .[build,gui]` then `python build_exe.py`.
+- **Run it anyway:** on the SmartScreen prompt click *More info → Run anyway*; if
+  it was quarantined, open *Windows Security → Virus & threat protection →
+  Protection history*, find the item and choose *Allow*.
+- **Clear the warning for everyone:** report it to Microsoft as a false positive
+  at <https://www.microsoft.com/en-us/wdsi/filesubmission>. Once reviewed
+  (usually within a day) the detection is removed for that file.
+
+The only way to remove the warning up front is to sign the `.exe` with a paid
+code-signing certificate, which isn't worth it for a free personal tool. If you
+prefer, run from source with Python instead of the `.exe`.
 
 ## Expected folder layout
 
