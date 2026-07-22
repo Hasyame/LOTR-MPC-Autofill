@@ -358,12 +358,16 @@ def _catalog(root: Path, scan: dict, nightmare: bool = False) -> dict:
     for cyc, c in cycles.items():
         alln = list(c["scen"]) + [n for v in c["subs"].values() for n in v]
         cards_total = sum(n["cards_total"] for n in alln)
+        missing_total = sum(n["missing_total"] for n in alln)
         out.append({
             "name": cyc,
             "image": prod.get(normalize(cyc)) or _cycle_image(c, prod),
-            "available": cards_total > 0,
+            # "Owned" = most of its cards are present. HoB-only cycles (Revised
+            # Core, ALeP…) share encounter sets with owned packs, so they match a
+            # few cards; requiring a majority keeps them greyed as not-owned.
+            "available": cards_total > missing_total,
             "cards_total": cards_total,
-            "missing_total": sum(n["missing_total"] for n in alln),
+            "missing_total": missing_total,
             "subgroups": [{"name": k, "scenarios": v}
                           for k, v in c["subs"].items()] or None,
             "scenarios": c["scen"] or None,

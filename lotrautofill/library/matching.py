@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import unicodedata
 from difflib import SequenceMatcher
 
 # Apostrophes and their filename placeholder ("_") are dropped entirely so that
@@ -18,10 +19,13 @@ FUZZY_CUTOFF = 0.72
 def normalize(name: str) -> str:
     """Normalize a card name for robust matching.
 
-    Lowercases, removes apostrophes/underscores, turns any other punctuation
-    into spaces, and collapses whitespace.
+    Strips diacritics (so Hall of Beorn's ``Nazgûl`` / ``Náin`` / ``Mûmak``
+    match ASCII local filenames), lowercases, removes apostrophes/underscores,
+    turns any other punctuation into spaces, and collapses whitespace.
     """
-    s = name.lower()
+    s = unicodedata.normalize("NFKD", name)
+    s = "".join(c for c in s if not unicodedata.combining(c))
+    s = s.lower()
     s = _APOSTROPHES.sub("", s)
     s = _NON_ALNUM.sub(" ", s)
     s = _WS.sub(" ", s).strip()
