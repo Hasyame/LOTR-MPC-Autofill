@@ -32,6 +32,9 @@ _PRODUCT = re.compile(
 _CODE_SUFFIX = re.compile(r"\s*\([A-Z0-9]+\)$")
 _SCEN_LINK = re.compile(r'<a\b[^>]*href="/LotR/Scenarios/([^"]+)"[^>]*>(.*?)</a>',
                         re.DOTALL)
+# A saga/deluxe cycle groups its scenarios under sub-cycles (e.g. "The Lord of
+# the Rings" -> "The Black Riders", "The Road Darkens", ...).
+_SUBGROUP = re.compile(r'<div class="scenario-sub-group">(.*?)</div>', re.DOTALL)
 _CARD_ROW = re.compile(
     r'<a title="([^"]+)"[^>]*>\s*<span[^>]*width:300px[^>]*>[^<]*</span>\s*</a>'
     r'\s*<span[^>]*width:60px[^>]*>([^<]*)</span>'
@@ -60,25 +63,34 @@ def _num(x: str) -> int:
 # Scraping
 # --------------------------------------------------------------------------- #
 def fetch_index() -> list[dict]:
-    """All scenarios as ``{cycle, name, slug}`` (campaign duplicates skipped)."""
+    """All scenarios as ``{cycle, subgroup, name, slug}`` (campaign duplicates
+    skipped). ``subgroup`` is the sub-cycle for saga/deluxe boxes, else ``None``.
+    """
     page = _get(SCENARIOS_URL).decode("utf-8", "replace")
     tokens: list[tuple[int, str, object]] = []
     for m in _H3.finditer(page):
         tokens.append((m.start(), "cycle", _clean(m.group(1))))
+    for m in _SUBGROUP.finditer(page):
+        tokens.append((m.start(), "subgroup", _clean(m.group(1))))
     for m in _SCEN_LINK.finditer(page):
         tokens.append((m.start(), "link", (m.group(1), _clean(m.group(2)))))
     tokens.sort(key=lambda t: t[0])
 
     out: list[dict] = []
     cycle: Optional[str] = None
+    subgroup: Optional[str] = None
     for _pos, kind, val in tokens:
         if kind == "cycle":
             cycle = val  # type: ignore[assignment]
+            subgroup = None            # a new cycle header resets the sub-cycle
+        elif kind == "subgroup":
+            subgroup = val or None      # type: ignore[assignment]
         else:
             slug, name = val  # type: ignore[misc]
             if name.endswith("(Campaign)"):
                 continue
-            out.append({"cycle": cycle, "name": name, "slug": slug})
+            out.append({"cycle": cycle, "subgroup": subgroup,
+                        "name": name, "slug": slug})
     return out
 
 

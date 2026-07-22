@@ -100,6 +100,15 @@ def _make_handler(root: Path, out_dir: Path):
                 if "lib" not in cache:
                     cache["lib"] = _library(cache["root"])
                 self._json(cache["lib"])
+            elif path == "/api/catalog":
+                if "catalog" not in cache:
+                    cache["catalog"] = _card_catalog(cache["root"])
+                self._json(_catalog(cache["root"], cache["catalog"]))
+            elif path == "/api/scenario-cards":
+                if "catalog" not in cache:
+                    cache["catalog"] = _card_catalog(cache["root"])
+                self._json(_scenario_cards(cache["catalog"],
+                                           query.get("slug", [""])[0]))
             elif path == "/api/backs":
                 self._json(_backs_info(cache["root"]))
             elif path == "/api/cards":
@@ -218,6 +227,98 @@ def _set_root(cache: dict, body: dict) -> dict:
     cache.pop("lib", None)
     cache.pop("catalog", None)
     return {"ok": True, "root": str(cache["root"])}
+
+
+# --------------------------------------------------------------------------- #
+# Hall of Beorn hierarchy: Cycle -> [sub-cycle] -> Scenario, matched to local
+# --------------------------------------------------------------------------- #
+def _match_card(catalog: dict, hob_name: str):
+    """Find the local card matching a Hall of Beorn card name, or ``None``.
+    Tries the name and its type-stripped / nightmare / branch variants."""
+    from ..catalog.database import _name_variants
+    from ..library.matching import normalize
+
+    for v in _name_variants(hob_name):
+        loc = catalog.get(normalize(v))
+        if loc:
+            return loc
+    return None
+
+
+def _scenario_node(catalog: dict, s: dict) -> dict:
+    """A scenario's name/slug + how many of its cards are present locally."""
+    matched = missing = 0
+    for name, q in (s.get("cards") or {}).items():
+        if (q.get("normal", 0) or 0) <= 0 and (q.get("nightmare", 0) or 0) <= 0:
+            continue
+        if _match_card(catalog, name):
+            matched += 1
+        else:
+            missing += 1
+    return {"name": s["name"], "slug": s.get("slug", ""),
+            "cards_total": matched, "missing_total": missing}
+
+
+def _catalog(root: Path, catalog: dict) -> dict:
+    """The Hall of Beorn catalog as Cycle -> [sub-cycles] -> Scenarios, with how
+    many cards of each are locally available (for the browse hierarchy)."""
+    from collections import OrderedDict
+    from ..catalog.hallofbeorn import load_reference
+    from ..library.matching import normalize
+
+    ref = load_reference() or {}
+    prod: dict[str, str] = {}
+    for p in ref.get("products", []):
+        prod.setdefault(normalize(p["name"]), p["image"].rsplit("/", 1)[-1])
+
+    cycles: "OrderedDict[str, dict]" = OrderedDict()
+    for s in ref.get("scenarios", []):
+        cyc = s.get("cycle") or "Other"
+        c = cycles.setdefault(cyc, {"name": cyc, "subs": OrderedDict(), "scen": []})
+        node = _scenario_node(catalog, s)
+        sg = s.get("subgroup")
+        (c["subs"].setdefault(sg, []).append(node) if sg
+         else c["scen"].append(node))
+
+    out: list[dict] = []
+    for cyc, c in cycles.items():
+        alln = list(c["scen"]) + [n for v in c["subs"].values() for n in v]
+        cards_total = sum(n["cards_total"] for n in alln)
+        out.append({
+            "name": cyc,
+            "image": prod.get(normalize(cyc)),
+            "available": cards_total > 0,
+            "cards_total": cards_total,
+            "missing_total": sum(n["missing_total"] for n in alln),
+            "subgroups": [{"name": k, "scenarios": v}
+                          for k, v in c["subs"].items()] or None,
+            "scenarios": c["scen"] or None,
+        })
+    out.sort(key=lambda c: not c["available"])  # available cycles first
+    return {"cycles": out, "root": str(root)}
+
+
+def _scenario_cards(catalog: dict, slug: str) -> dict:
+    """Local cards matched to one Hall of Beorn scenario (+ missing names)."""
+    from ..catalog.hallofbeorn import load_reference
+
+    ref = load_reference() or {}
+    s = next((x for x in ref.get("scenarios", []) if x.get("slug") == slug), None)
+    if not s:
+        return {"cards": [], "missing": []}
+    cards, missing, seen = [], [], set()
+    for name, q in (s.get("cards") or {}).items():
+        if (q.get("normal", 0) or 0) <= 0 and (q.get("nightmare", 0) or 0) <= 0:
+            continue
+        loc = _match_card(catalog, name)
+        if loc and loc["front"] not in seen:
+            seen.add(loc["front"])
+            cards.append({"name": loc["name"], "front": loc["front"],
+                          "set": loc["set"], "chapter": loc["chapter"],
+                          "category": loc["category"]})
+        elif not loc:
+            missing.append(name)
+    return {"name": s["name"], "cards": cards, "missing": missing}
 
 
 def _unit_cards(root: Path, set_name: str, chapter: str) -> dict:
