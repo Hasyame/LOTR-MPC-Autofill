@@ -26,15 +26,15 @@ PRICE_DATE_DISPLAY = "22/07/2026"  # DD/MM/YYYY, for the user-facing disclaimer
 
 # Price in USD per MPC deck-size tier, for one deck at qty 1, baseline stock
 # (S30 Standard Smooth), MPC game-card finish, shrink-wrapped, no foil.
-# Model: $6 base + $0.20/card (=<55) + $0.12/card (56..234) + $0.08/card
-# (235..612) — a base-heavy curve with a steep bulk taper, matching MPC's
-# published $8-ish (18-card) / $16.95 (55-card) single decks while keeping big
-# decks realistic (a full 612-card project lands ~$69, not ~$99). Still a
-# ballpark; the real number is whatever MPC shows at checkout.
+# Calibrated to a REAL EU checkout: 204 cards (216-card tier) = €64.75 of cards
+# at (S33) Superior Smooth (2026-07). MPC barely tapers with volume — the price
+# is roughly $3.50 base + ~$0.28/card (a slightly gentler ~$0.24/card above the
+# 234 tier). A full 612-card project lands ~$160 of cards. NOTE: this covers the
+# CARDS only — MPC shipping + import taxes add a lot on top (see the disclaimer).
 _DECK_PRICE_USD: dict[int, float] = {
-    18: 9.60, 36: 13.20, 55: 17.00, 72: 19.04, 90: 21.20, 108: 23.36,
-    126: 25.52, 144: 27.68, 162: 29.84, 180: 32.00, 198: 34.16, 216: 36.32,
-    234: 38.48, 396: 51.44, 504: 60.08, 612: 68.72,
+    18: 8.55, 36: 13.60, 55: 18.90, 72: 23.65, 90: 28.70, 108: 33.75,
+    126: 38.80, 144: 43.80, 162: 48.85, 180: 53.90, 198: 58.95, 216: 64.00,
+    234: 69.00, 396: 107.90, 504: 133.80, 612: 159.75,
 }
 
 # Card-stock label -> price multiplier relative to the baseline stock.
