@@ -462,7 +462,8 @@ function renderShop() {
 function cycleTile(c, i) {
   const art = c.image
     ? `background-image:url('/api/product-image?f=${encodeURIComponent(c.image)}')` : '';
-  const miss = c.missing_total ? `<span class="miss">${T('n_missing',{n:c.missing_total})}</span>` : '';
+  const miss = (c.available && c.missing_total)
+    ? `<span class="miss">${T('n_missing',{n:c.missing_total})}</span>` : '';
   const count = c.subgroups
     ? T('n_subcycles',{n:c.subgroups.length})
     : T('n_scenarios',{n:(c.scenarios||[]).length});
