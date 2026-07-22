@@ -151,6 +151,8 @@ PAGE = r"""<!doctype html>
         <button class="go mini" onclick="loadRoot()" data-i18n="lib_load">Load</button>
       </span>
       <span id="lib-msg"></span>
+      <label style="margin-left:auto"><input type="checkbox" id="nm-toggle" onchange="toggleNightmare()">
+        <span data-i18n="incl_nightmare">Include Nightmare cards</span></label>
     </div>
     <div id="shop" class="muted" data-i18n="loading_shop">Loading the archives of Middle-earth…</div>
   </div>
@@ -205,6 +207,7 @@ const I18N = {
     lib_loading:"Loading the new folder…",
     n_scenarios:"{n} scenarios", n_subcycles:"{n} sub-cycles",
     add_scenario:"Add scenario", all_cycles:"← all cycles", open:"Open",
+    incl_nightmare:"Include Nightmare cards",
     cart_title:"Your list to print", stock:"Card stock", enc_back:"Encounter back",
     ply_back:"Player back", foil:"Foil", export_xml:"Export order.xml",
     export_pdf:"Export PDF", create_mpc:"Create MPC project", empty_cart:"Clear list",
@@ -239,6 +242,7 @@ const I18N = {
     lib_loading:"Chargement du nouveau dossier…",
     n_scenarios:"{n} scénarios", n_subcycles:"{n} sous-cycles",
     add_scenario:"Ajouter le scénario", all_cycles:"← tous les cycles", open:"Ouvrir",
+    incl_nightmare:"Inclure les cartes cauchemar",
     cart_title:"Votre liste à imprimer", stock:"Type de carton", enc_back:"Dos rencontre",
     ply_back:"Dos joueur", foil:"Effet foil", export_xml:"Exporter order.xml",
     export_pdf:"Exporter PDF", create_mpc:"Créer un projet MPC", empty_cart:"Vider la liste",
@@ -274,6 +278,7 @@ const I18N = {
     lib_loading:"Cargando la nueva carpeta…",
     n_scenarios:"{n} escenarios", n_subcycles:"{n} subciclos",
     add_scenario:"Añadir escenario", all_cycles:"← todos los ciclos", open:"Abrir",
+    incl_nightmare:"Incluir cartas de pesadilla",
     cart_title:"Tu lista para imprimir", stock:"Tipo de cartón", enc_back:"Reverso de encuentro",
     ply_back:"Reverso de jugador", foil:"Foil", export_xml:"Exportar order.xml",
     export_pdf:"Exportar PDF", create_mpc:"Crear proyecto MPC", empty_cart:"Vaciar lista",
@@ -309,6 +314,7 @@ const I18N = {
     lib_loading:"正在加载新文件夹…",
     n_scenarios:"{n} 个场景", n_subcycles:"{n} 个子循环",
     add_scenario:"添加场景", all_cycles:"← 所有循环", open:"打开",
+    incl_nightmare:"包含噩梦卡",
     cart_title:"您的打印清单", stock:"卡纸类型", enc_back:"遭遇卡背",
     ply_back:"玩家卡背", foil:"闪膜", export_xml:"导出 order.xml",
     export_pdf:"导出 PDF", create_mpc:"创建 MPC 项目", empty_cart:"清空清单",
@@ -373,17 +379,25 @@ function setLang(l) {
 
 /* ---------- state ---------- */
 let LIB = null, CART = [], VIEW = 'shop', DETAIL = null, BACKS = null;
+let NIGHTMARE = localStorage.getItem('lotr_nm') === '1';
 const BACKS_SEL = { encounter:'', player:'' };
+function nmParam(){ return NIGHTMARE ? '1' : '0'; }
 try { CART = JSON.parse(localStorage.getItem('lotr_cart') || '[]'); } catch(e) {}
 
 async function load() {
   const [cat, backs] = await Promise.all([
-    fetch('/api/catalog').then(r => r.json()),
+    fetch('/api/catalog?nightmare=' + nmParam()).then(r => r.json()),
     fetch('/api/backs').then(r => r.json()),
   ]);
   LIB = cat;
   fillBacks(backs);
   renderShop(); renderCartCount(); renderLibBar();
+}
+function toggleNightmare() {
+  NIGHTMARE = document.getElementById('nm-toggle').checked;
+  localStorage.setItem('lotr_nm', NIGHTMARE ? '1' : '0');
+  document.getElementById('shop').innerHTML = '<span class="muted">'+T('loading')+'</span>';
+  load().then(() => { if (VIEW === 'detail' && DETAIL) renderDetail(); });
 }
 
 /* ---------- library folder chooser ---------- */
@@ -514,7 +528,7 @@ async function loadScen(slug, hostId) {
   const host = document.getElementById(hostId);
   if (host.dataset.on) { host.innerHTML=''; host.dataset.on=''; return; }
   host.innerHTML = '<span class="muted">'+T('loading')+'</span>';
-  const d = await (await fetch('/api/scenario-cards?slug=' + encodeURIComponent(slug))).json();
+  const d = await (await fetch('/api/scenario-cards?slug=' + encodeURIComponent(slug) + '&nightmare=' + nmParam())).json();
   host.dataset.on = '1';
   const thumbs = (d.cards||[]).map(c => {
     const key = cardKey(c.set, c.chapter, c.front);
@@ -529,7 +543,7 @@ async function loadScen(slug, hostId) {
   host.innerHTML = html;
 }
 async function addScenario(slug) {
-  const d = await (await fetch('/api/scenario-cards?slug=' + encodeURIComponent(slug))).json();
+  const d = await (await fetch('/api/scenario-cards?slug=' + encodeURIComponent(slug) + '&nightmare=' + nmParam())).json();
   (d.cards||[]).forEach(c => pushItem({type:'card', set:c.set, chapter:c.chapter,
                                        front:c.front, label:c.name}));
   renderCartCount();
@@ -657,6 +671,7 @@ function cssid(s){ return s.replace(/[^A-Za-z0-9]/g,'_'); }
 
 document.documentElement.lang = LANG;
 document.getElementById('lang').value = LANG;
+document.getElementById('nm-toggle').checked = NIGHTMARE;
 applyStatic();
 boot();
 </script>

@@ -103,12 +103,14 @@ def _make_handler(root: Path, out_dir: Path):
             elif path == "/api/catalog":
                 if "catalog" not in cache:
                     cache["catalog"] = _scan_library(cache["root"])
-                self._json(_catalog(cache["root"], cache["catalog"]))
+                nm = query.get("nightmare", ["0"])[0] in ("1", "true")
+                self._json(_catalog(cache["root"], cache["catalog"], nm))
             elif path == "/api/scenario-cards":
                 if "catalog" not in cache:
                     cache["catalog"] = _scan_library(cache["root"])
+                nm = query.get("nightmare", ["0"])[0] in ("1", "true")
                 self._json(_scenario_cards(cache["catalog"],
-                                           query.get("slug", [""])[0]))
+                                           query.get("slug", [""])[0], nm))
             elif path == "/api/backs":
                 self._json(_backs_info(cache["root"]))
             elif path == "/api/cards":
@@ -283,36 +285,53 @@ def _match_card(by_name: dict, hob_name: str):
     return None
 
 
-def _scenario_local(scan: dict, s: dict) -> tuple:
+def _scenario_local(scan: dict, s: dict, nightmare: bool = False) -> tuple:
     """(cards, missing) for a Hall of Beorn scenario. Prefer the matching local
     scenario FOLDER (complete — encounter + player + quest, nothing missing);
-    otherwise match Hall of Beorn's card list by name and append the box's shared
-    Player cards (so player cards of flat boxes are still reachable)."""
+    otherwise match Hall of Beorn's card list by name and append the box's or
+    the saga sub-cycle's shared Player cards. Nightmare cards are excluded unless
+    ``nightmare`` is set."""
     from ..library.matching import normalize
+
+    def keep(card):
+        return nightmare or card["category"] != "Nightmare"
 
     loc = scan["scen_index"].get(normalize(s["name"]))
     if loc is not None:
-        return list(scan["folders"].get(loc, [])), []
+        return [c for c in scan["folders"].get(loc, []) if keep(c)], []
 
     by_name = scan["by_name"]
     cards, missing, seen = [], [], set()
     for name, q in (s.get("cards") or {}).items():
-        if (q.get("normal", 0) or 0) <= 0 and (q.get("nightmare", 0) or 0) <= 0:
+        n_normal = q.get("normal", 0) or 0
+        n_nm = q.get("nightmare", 0) or 0
+        if n_normal <= 0 and n_nm <= 0:
+            continue
+        if not nightmare and n_normal <= 0:          # nightmare-only card
             continue
         card = _match_card(by_name, name)
-        if card and card["front"] not in seen:
+        if card and card["front"] not in seen and keep(card):
             seen.add(card["front"])
             cards.append(card)
         elif not card:
             missing.append(name)
-    for pc in scan["flat_players"].get(normalize(s.get("cycle") or ""), []):
+
+    # Player cards aren't in HoB scenario lists: pull them from the flat box or,
+    # for a saga scenario, from its sub-cycle folder.
+    players = scan["flat_players"].get(normalize(s.get("cycle") or ""), [])
+    if not players and s.get("subgroup"):
+        ploc = scan["scen_index"].get(normalize(s["subgroup"]))
+        if ploc:
+            players = [c for c in scan["folders"].get(ploc, [])
+                       if c["category"] == "Player"]
+    for pc in players:
         if pc["front"] not in seen:
             seen.add(pc["front"])
             cards.append(pc)
     return cards, missing
 
 
-def _catalog(root: Path, scan: dict) -> dict:
+def _catalog(root: Path, scan: dict, nightmare: bool = False) -> dict:
     """The Hall of Beorn catalog as Cycle -> [sub-cycles] -> Scenarios, with how
     many cards of each are locally available (for the browse hierarchy)."""
     from collections import OrderedDict
@@ -326,7 +345,7 @@ def _catalog(root: Path, scan: dict) -> dict:
 
     cycles: "OrderedDict[str, dict]" = OrderedDict()
     for s in ref.get("scenarios", []):
-        cards, missing = _scenario_local(scan, s)
+        cards, missing = _scenario_local(scan, s, nightmare)
         node = {"name": s["name"], "slug": s.get("slug", ""),
                 "cards_total": len(cards), "missing_total": len(missing)}
         cyc = s.get("cycle") or "Other"
@@ -364,7 +383,7 @@ def _cycle_image(cycle: dict, prod: dict):
     return None
 
 
-def _scenario_cards(scan: dict, slug: str) -> dict:
+def _scenario_cards(scan: dict, slug: str, nightmare: bool = False) -> dict:
     """Local cards for one scenario (+ Hall of Beorn names still missing)."""
     from ..catalog.hallofbeorn import load_reference
 
@@ -372,7 +391,7 @@ def _scenario_cards(scan: dict, slug: str) -> dict:
     s = next((x for x in ref.get("scenarios", []) if x.get("slug") == slug), None)
     if not s:
         return {"cards": [], "missing": []}
-    cards, missing = _scenario_local(scan, s)
+    cards, missing = _scenario_local(scan, s, nightmare)
     return {"name": s["name"], "cards": cards, "missing": missing}
 
 
