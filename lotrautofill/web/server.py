@@ -62,7 +62,9 @@ def run_server(root: Path | None = None, host: str = "127.0.0.1",
 
 
 def _make_handler(root: Path, out_dir: Path):
-    cache: dict = {}  # the library index is expensive; build it once per run
+    # ``root`` can change at runtime (the GUI lets the user pick a folder), so it
+    # lives in the cache alongside the expensive-to-build library/catalog index.
+    cache: dict = {"root": root}
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *args):  # quiet
@@ -96,12 +98,12 @@ def _make_handler(root: Path, out_dir: Path):
                 self._send(200, PAGE.encode("utf-8"), "text/html; charset=utf-8")
             elif path == "/api/library":
                 if "lib" not in cache:
-                    cache["lib"] = _library(root)
+                    cache["lib"] = _library(cache["root"])
                 self._json(cache["lib"])
             elif path == "/api/backs":
-                self._json(_backs_info(root))
+                self._json(_backs_info(cache["root"]))
             elif path == "/api/cards":
-                self._json(_unit_cards(root, query.get("set", [""])[0],
+                self._json(_unit_cards(cache["root"], query.get("set", [""])[0],
                                        query.get("chapter", [""])[0]))
             elif path == "/api/thumb":
                 self._thumb(query.get("p", [""])[0])
@@ -123,7 +125,7 @@ def _make_handler(root: Path, out_dir: Path):
             self.wfile.write(data)
 
         def _thumb(self, rel: str) -> None:
-            data, ctype = _thumbnail(root, rel)
+            data, ctype = _thumbnail(cache["root"], rel)
             if data is None:
                 self._json({"error": "not found"}, 404)
             else:
@@ -137,16 +139,18 @@ def _make_handler(root: Path, out_dir: Path):
         def do_POST(self):
             try:
                 if self.path == "/api/pick":
-                    self._json(_pick(root, out_dir, self._body()))
+                    self._json(_pick(cache["root"], out_dir, self._body()))
                 elif self.path == "/api/autofill":
                     self._json(_autofill(self._body()))
                 elif self.path == "/api/cart-export":
-                    self._json(_cart_export(root, out_dir, self._body()))
+                    self._json(_cart_export(cache["root"], out_dir, self._body()))
                 elif self.path == "/api/cart-price":
-                    self._json(_cart_price(root, self._body()))
+                    self._json(_cart_price(cache["root"], self._body()))
+                elif self.path == "/api/set-root":
+                    self._json(_set_root(cache, self._body()))
                 elif self.path == "/api/manual-list":
                     if "catalog" not in cache:
-                        cache["catalog"] = _card_catalog(root)
+                        cache["catalog"] = _card_catalog(cache["root"])
                     self._json(_manual_list(cache["catalog"], self._body()))
                 else:
                     self._json({"error": "not found"}, 404)
@@ -193,7 +197,27 @@ def _library(root: Path) -> dict:
                 continue
             unavailable.append(cyc)
     db["unavailable_sets"] = unavailable
+    db["root"] = str(root)
     return db
+
+
+def _set_root(cache: dict, body: dict) -> dict:
+    """Point the GUI at a different library folder (a path typed by the user).
+
+    Accepts either a library folder directly, or a parent that contains a
+    ``sets_folder/``/``toPrint/`` (it descends into it). Clears the cached
+    index so the next ``/api/library`` rebuilds from the new folder."""
+    lang = i18n.resolve_lang(body.get("lang"))
+    raw = (body.get("path") or "").strip().strip('"')
+    if not raw:
+        return {"error": i18n.t("srv_folder_empty", lang=lang)}
+    p = Path(raw).expanduser()
+    if not p.is_dir():
+        return {"error": i18n.t("srv_folder_not_found", lang=lang, path=raw)}
+    cache["root"] = default_library_root(p.resolve())
+    cache.pop("lib", None)
+    cache.pop("catalog", None)
+    return {"ok": True, "root": str(cache["root"])}
 
 
 def _unit_cards(root: Path, set_name: str, chapter: str) -> dict:

@@ -91,6 +91,18 @@ STRINGS: dict[str, dict[str, str]] = {
         "es": "order.xml no encontrado",
         "zh": "未找到 order.xml",
     },
+    "srv_folder_empty": {
+        "en": "Please enter a folder path.",
+        "fr": "Veuillez saisir un chemin de dossier.",
+        "es": "Introduce la ruta de una carpeta.",
+        "zh": "请输入文件夹路径。",
+    },
+    "srv_folder_not_found": {
+        "en": "Folder not found: {path}",
+        "fr": "Dossier introuvable : {path}",
+        "es": "Carpeta no encontrada: {path}",
+        "zh": "未找到文件夹：{path}",
+    },
 
     # ---- CLI: generic ---------------------------------------------------- #
     "cli_manifest_not_found": {

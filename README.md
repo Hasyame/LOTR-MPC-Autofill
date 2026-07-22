@@ -77,9 +77,9 @@ by some malware, so thousands of legitimate PyInstaller apps get the same flag.
 
 Everything here is open source nothing is hidden. You can:
 
-- **Verify it:** scan the file on [VirusTotal](https://www.virustotal.com/)
-  (typically only Defender's ML engine flags it), or **build it yourself** from
-  this repo: `pip install -e .[build,gui]` then `python build_exe.py`.
+- **See the scan:** [VirusTotal report for the released `.exe`](https://www.virustotal.com/gui/file/8063d8e62d05121f5178ace895e71439d6c2eb0e0ac1cb5b0ef7037c988c9af0)
+  (SHA-256 `8063d8e6…988c9af0`; typically only Defender's ML engine flags it).
+  Or **build it yourself**: `pip install -e .[build,gui]` then `python build_exe.py`.
 - **Run it anyway:** on the SmartScreen prompt click *More info → Run anyway*; if
   it was quarantined, open *Windows Security → Virus & threat protection →
   Protection history*, find the item and choose *Allow*.

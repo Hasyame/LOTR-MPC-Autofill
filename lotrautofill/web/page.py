@@ -114,6 +114,12 @@ PAGE = r"""<!doctype html>
   .price .price-h { color:var(--muted); font-size:13px; }
   .price .price-amt { color:var(--gold); font-size:20px; font-weight:700; margin:2px 0 6px; }
   .price .price-disc { font-size:11px; font-style:italic; margin-top:6px; }
+  .libbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    margin:0 0 16px; padding:8px 12px; background:var(--card);
+    border:1px solid var(--border); border-radius:8px; font-size:13px; }
+  .libbar .lib-path { color:var(--gold); word-break:break-all; flex:1; min-width:120px; }
+  .libbar #lib-input { min-width:280px; }
+  .libbar #lib-msg { color:var(--err); }
   .over-max { color:var(--warn); font-weight:600; margin:8px 0 2px;
     border:1px solid var(--gold-soft); border-radius:8px; padding:8px 10px;
     background:rgba(217,165,58,.08); }
@@ -134,7 +140,20 @@ PAGE = r"""<!doctype html>
 </header>
 
 <main>
-  <div id="view-shop"><div id="shop" class="muted" data-i18n="loading_shop">Loading the archives of Middle-earth…</div></div>
+  <div id="view-shop">
+    <div class="libbar">
+      <span class="muted" data-i18n="lib_folder">Library folder:</span>
+      <code id="lib-path" class="lib-path"></code>
+      <button class="go mini ghost" onclick="toggleLibEdit()" data-i18n="lib_change">Change</button>
+      <span id="lib-edit" class="hidden">
+        <input type="text" id="lib-input" placeholder="C:\path\to\sets_folder"
+               onkeydown="if(event.key==='Enter')loadRoot()">
+        <button class="go mini" onclick="loadRoot()" data-i18n="lib_load">Load</button>
+      </span>
+      <span id="lib-msg"></span>
+    </div>
+    <div id="shop" class="muted" data-i18n="loading_shop">Loading the archives of Middle-earth…</div>
+  </div>
   <div id="view-detail" class="hidden"></div>
 
   <div id="view-cart" class="hidden">
@@ -182,6 +201,8 @@ const I18N = {
   en: {
     nav_sets:"Sets", nav_manual:"Manual List", cart:"List to print",
     loading_shop:"Loading the archives of Middle-earth…",
+    lib_folder:"Library folder:", lib_change:"Change", lib_load:"Load",
+    lib_loading:"Loading the new folder…",
     cart_title:"Your list to print", stock:"Card stock", enc_back:"Encounter back",
     ply_back:"Player back", foil:"Foil", export_xml:"Export order.xml",
     export_pdf:"Export PDF", create_mpc:"Create MPC project", empty_cart:"Clear list",
@@ -212,6 +233,8 @@ const I18N = {
   fr: {
     nav_sets:"Extensions", nav_manual:"Liste manuelle", cart:"Liste à imprimer",
     loading_shop:"Chargement des archives de la Terre du Milieu…",
+    lib_folder:"Dossier de la librairie :", lib_change:"Changer", lib_load:"Charger",
+    lib_loading:"Chargement du nouveau dossier…",
     cart_title:"Votre liste à imprimer", stock:"Type de carton", enc_back:"Dos rencontre",
     ply_back:"Dos joueur", foil:"Effet foil", export_xml:"Exporter order.xml",
     export_pdf:"Exporter PDF", create_mpc:"Créer un projet MPC", empty_cart:"Vider la liste",
@@ -243,6 +266,8 @@ const I18N = {
   es: {
     nav_sets:"Expansiones", nav_manual:"Lista manual", cart:"Lista para imprimir",
     loading_shop:"Cargando los archivos de la Tierra Media…",
+    lib_folder:"Carpeta de la biblioteca:", lib_change:"Cambiar", lib_load:"Cargar",
+    lib_loading:"Cargando la nueva carpeta…",
     cart_title:"Tu lista para imprimir", stock:"Tipo de cartón", enc_back:"Reverso de encuentro",
     ply_back:"Reverso de jugador", foil:"Foil", export_xml:"Exportar order.xml",
     export_pdf:"Exportar PDF", create_mpc:"Crear proyecto MPC", empty_cart:"Vaciar lista",
@@ -274,6 +299,8 @@ const I18N = {
   zh: {
     nav_sets:"系列", nav_manual:"手动列表", cart:"打印清单",
     loading_shop:"正在加载中土世界的档案…",
+    lib_folder:"卡牌库文件夹：", lib_change:"更改", lib_load:"加载",
+    lib_loading:"正在加载新文件夹…",
     cart_title:"您的打印清单", stock:"卡纸类型", enc_back:"遭遇卡背",
     ply_back:"玩家卡背", foil:"闪膜", export_xml:"导出 order.xml",
     export_pdf:"导出 PDF", create_mpc:"创建 MPC 项目", empty_cart:"清空清单",
@@ -348,7 +375,49 @@ async function load() {
   ]);
   LIB = lib;
   fillBacks(backs);
-  renderShop(); renderCartCount();
+  renderShop(); renderCartCount(); renderLibBar();
+}
+
+/* ---------- library folder chooser ---------- */
+function renderLibBar() {
+  const el = document.getElementById('lib-path');
+  if (el) el.textContent = (LIB && LIB.root) || '';
+}
+function toggleLibEdit() {
+  const box = document.getElementById('lib-edit');
+  const inp = document.getElementById('lib-input');
+  document.getElementById('lib-msg').textContent = '';
+  if (box.classList.contains('hidden')) {
+    inp.value = (LIB && LIB.root) || '';
+    box.classList.remove('hidden'); inp.focus(); inp.select();
+  } else { box.classList.add('hidden'); }
+}
+async function loadRoot() {
+  const path = document.getElementById('lib-input').value.trim();
+  const msg = document.getElementById('lib-msg');
+  if (!path) return;
+  msg.className = 'muted'; msg.textContent = T('lib_loading');
+  document.getElementById('shop').innerHTML =
+    '<span class="muted">'+T('lib_loading')+'</span>';
+  try {
+    const d = await postJSON('/api/set-root', { path, lang: LANG });
+    if (d.error) throw new Error(d.error);
+    localStorage.setItem('lotr_root', d.root);
+    document.getElementById('lib-edit').classList.add('hidden');
+    msg.textContent = '';
+    await load();            // rebuild library + backs from the new folder
+    showView('shop');
+  } catch(e) { msg.className = 'err'; msg.textContent = e.message; }
+}
+async function boot() {
+  const saved = localStorage.getItem('lotr_root');
+  if (saved) {
+    try {
+      const d = await postJSON('/api/set-root', { path: saved, lang: LANG });
+      if (d.error) localStorage.removeItem('lotr_root');   // folder gone/moved
+    } catch(e) {}
+  }
+  await load();
 }
 /* ---------- card-back picker (visible thumbnails) ---------- */
 function fillBacks(b) {
@@ -573,7 +642,7 @@ function cssid(s){ return s.replace(/[^A-Za-z0-9]/g,'_'); }
 document.documentElement.lang = LANG;
 document.getElementById('lang').value = LANG;
 applyStatic();
-load();
+boot();
 </script>
 </body>
 </html>
