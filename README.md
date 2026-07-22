@@ -25,21 +25,45 @@ the card library with **light card previews**, see **missing cards** per
 set/chapter (cross-referenced with Hall of Beorn), tick sets/chapters and
 generate their `order.xml` or **create the MPC project** directly (launches
 the autofill tool). A Manual List tab resolves a pasted card list against your
-local library. Sets you don't have are greyed
-out. The only optional dependency is Pillow (for thumbnails; without it, full
-images are served). The CLI remains fully supported.
+local library. Sets you don't have are greyed out. Extras:
 
-Or build a **standalone executable** (no Python needed to run it afterwards):
+- **Interface in 4 languages** English, French, Spanish, Chinese. The GUI
+  auto-detects your **browser language** (anything other than FR/ES/ZH falls
+  back to English) and has a language picker; the CLI takes a global
+  `--lang en|fr|es|zh` (else `$LOTR_LANG` / `$LANG`).
+- **Visual card-back picker** choose the encounter and player card backs from
+  **thumbnails** (including your CUSTOM backs), not a dropdown.
+- **Price estimate** an approximate MakePlayingCards price for the cart in
+  **€ / $ / ¥**, updated as you change quantity, stock and foil (clearly dated;
+  cards only, excluding shipping and taxes).
+
+The only optional dependency is Pillow (for thumbnails; without it, full images
+are served). The CLI remains fully supported.
+
+![Shop the set grid uses Hall of Beorn box art, with per-set missing-card badges; sets you don't own are greyed out](docs/shop.png)
+
+![Cart pick your card backs from thumbnails and see an estimated MakePlayingCards price in euros, dollars and yuan](docs/cart.png)
+
+### Standalone executable easiest, no Python needed
+
+Build a single Windows `.exe` that you just **double-click**:
 
 ```sh
-pip install -e .[build]
-python build_exe.py      # -> dist/lotr-autofill.exe
-dist/lotr-autofill sets    # then use it like the CLI
+pip install -e .[build,gui]
+python build_exe.py          # -> dist/lotr-autofill.exe  (Gandalf icon)
 ```
 
-The `.exe` bundles `build` / `pick` / `export` / `sets`. The `autofill` command
-still needs Python on the machine (the mpc-autofill desktop tool is a Python
-app); the executable finds it on PATH automatically.
+Double-clicking `lotr-autofill.exe` launches the web GUI and opens your browser
+no console, no arguments. **Put your `sets_folder/` next to the `.exe`**: the app
+looks for the library beside the executable, so it works even when Windows starts
+it from another directory (a shortcut, or "Run as administrator", whose working
+directory is often `System32`). Generated `order.xml` files are written to an
+`MPC_XML/` folder next to the `.exe` too.
+
+Every CLI subcommand still works from a terminal (`lotr-autofill.exe sets`,
+`... build`, `... pick`, `... --lang fr sets`, …). The `autofill` command still
+needs Python on the machine (the mpc-autofill desktop tool is a Python app); the
+executable finds it on PATH automatically.
 
 ## Expected folder layout
 
@@ -281,11 +305,12 @@ The GUI is a **shop-style flow**:
 - [x] **Manual List Builder:** replaces the RingsDB import a pasted card list
  is checked against the local library; found cards go to the cart, missing ones
  are reported. (RingsDB dropped its images are low resolution.)
+- [x] **Visual card-back picker** and **cart price estimate** (€/$/¥, dated).
 - [x] **Code review + sub-package restructure** (see `lotrautofill/` layout).
-
-## Planned
-- [ ] **i18n:** GUI and CLI in **English, French, Spanish, Chinese** (a small
- per-language string table + a language switcher / `--lang`).
+- [x] **i18n:** GUI and CLI in **English, French, Spanish, Chinese** (GUI
+ language picker with browser auto-detect; CLI `--lang`).
+- [x] **Double-click executable:** the `.exe` launches the GUI, finds
+ `sets_folder/` next to it, and carries a Gandalf icon.
 
 ## Development
 
