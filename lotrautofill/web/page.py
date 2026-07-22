@@ -199,10 +199,12 @@ PAGE = r"""<!doctype html>
 /* ---------- i18n ---------- */
 const I18N = {
   en: {
-    nav_sets:"Sets", nav_manual:"Manual List", cart:"List to print",
+    nav_sets:"Cycles", nav_manual:"Manual List", cart:"List to print",
     loading_shop:"Loading the archives of Middle-earth…",
     lib_folder:"Library folder:", lib_change:"Change", lib_load:"Load",
     lib_loading:"Loading the new folder…",
+    n_scenarios:"{n} scenarios", n_subcycles:"{n} sub-cycles",
+    add_scenario:"Add scenario", all_cycles:"← all cycles", open:"Open",
     cart_title:"Your list to print", stock:"Card stock", enc_back:"Encounter back",
     ply_back:"Player back", foil:"Foil", export_xml:"Export order.xml",
     export_pdf:"Export PDF", create_mpc:"Create MPC project", empty_cart:"Clear list",
@@ -231,10 +233,12 @@ const I18N = {
     over_max:"⚠️ Over MPC's {max}-card limit per project — this list must be split into {n} separate MPC projects.",
   },
   fr: {
-    nav_sets:"Extensions", nav_manual:"Liste manuelle", cart:"Liste à imprimer",
+    nav_sets:"Cycles", nav_manual:"Liste manuelle", cart:"Liste à imprimer",
     loading_shop:"Chargement des archives de la Terre du Milieu…",
     lib_folder:"Dossier de la librairie :", lib_change:"Changer", lib_load:"Charger",
     lib_loading:"Chargement du nouveau dossier…",
+    n_scenarios:"{n} scénarios", n_subcycles:"{n} sous-cycles",
+    add_scenario:"Ajouter le scénario", all_cycles:"← tous les cycles", open:"Ouvrir",
     cart_title:"Votre liste à imprimer", stock:"Type de carton", enc_back:"Dos rencontre",
     ply_back:"Dos joueur", foil:"Effet foil", export_xml:"Exporter order.xml",
     export_pdf:"Exporter PDF", create_mpc:"Créer un projet MPC", empty_cart:"Vider la liste",
@@ -264,10 +268,12 @@ const I18N = {
     over_max:"⚠️ Au-delà de la limite MPC de {max} cartes par projet — cette liste devra être répartie en {n} projets MPC distincts.",
   },
   es: {
-    nav_sets:"Expansiones", nav_manual:"Lista manual", cart:"Lista para imprimir",
+    nav_sets:"Ciclos", nav_manual:"Lista manual", cart:"Lista para imprimir",
     loading_shop:"Cargando los archivos de la Tierra Media…",
     lib_folder:"Carpeta de la biblioteca:", lib_change:"Cambiar", lib_load:"Cargar",
     lib_loading:"Cargando la nueva carpeta…",
+    n_scenarios:"{n} escenarios", n_subcycles:"{n} subciclos",
+    add_scenario:"Añadir escenario", all_cycles:"← todos los ciclos", open:"Abrir",
     cart_title:"Tu lista para imprimir", stock:"Tipo de cartón", enc_back:"Reverso de encuentro",
     ply_back:"Reverso de jugador", foil:"Foil", export_xml:"Exportar order.xml",
     export_pdf:"Exportar PDF", create_mpc:"Crear proyecto MPC", empty_cart:"Vaciar lista",
@@ -297,10 +303,12 @@ const I18N = {
     over_max:"⚠️ Supera el límite de MPC de {max} cartas por proyecto — esta lista debe dividirse en {n} proyectos MPC distintos.",
   },
   zh: {
-    nav_sets:"系列", nav_manual:"手动列表", cart:"打印清单",
+    nav_sets:"循环", nav_manual:"手动列表", cart:"打印清单",
     loading_shop:"正在加载中土世界的档案…",
     lib_folder:"卡牌库文件夹：", lib_change:"更改", lib_load:"加载",
     lib_loading:"正在加载新文件夹…",
+    n_scenarios:"{n} 个场景", n_subcycles:"{n} 个子循环",
+    add_scenario:"添加场景", all_cycles:"← 所有循环", open:"打开",
     cart_title:"您的打印清单", stock:"卡纸类型", enc_back:"遭遇卡背",
     ply_back:"玩家卡背", foil:"闪膜", export_xml:"导出 order.xml",
     export_pdf:"导出 PDF", create_mpc:"创建 MPC 项目", empty_cart:"清空清单",
@@ -369,11 +377,11 @@ const BACKS_SEL = { encounter:'', player:'' };
 try { CART = JSON.parse(localStorage.getItem('lotr_cart') || '[]'); } catch(e) {}
 
 async function load() {
-  const [lib, backs] = await Promise.all([
-    fetch('/api/library').then(r => r.json()),
+  const [cat, backs] = await Promise.all([
+    fetch('/api/catalog').then(r => r.json()),
     fetch('/api/backs').then(r => r.json()),
   ]);
-  LIB = lib;
+  LIB = cat;
   fillBacks(backs);
   renderShop(); renderCartCount(); renderLibBar();
 }
@@ -445,75 +453,85 @@ function pickBack(kind, label, el) {
   estimatePrice();
 }
 
-/* ---------- shop ---------- */
+/* ---------- browse: cycles -> [sub-cycles] -> scenarios -> cards ---------- */
 function renderShop() {
   const el = document.getElementById('shop');
   el.className = 'grid';
-  el.innerHTML = LIB.sets.map((s, i) => tile(s, i)).join('') +
-    (LIB.unavailable_sets || []).map(n =>
-      `<div class="tile dim"><div class="art"></div><div class="body">
-        <div class="nm">${esc(n)}</div><div class="sub">${T('set_not_in_lib')}</div></div></div>`).join('');
+  el.innerHTML = (LIB.cycles || []).map((c, i) => cycleTile(c, i)).join('');
 }
-function tile(s, i) {
-  const art = s.image
-    ? `background-image:url('/api/product-image?f=${encodeURIComponent(s.image)}')` : '';
-  const dis = s.cards_total === 0 ? 'disabled' : '';
-  const missTag = s.missing_total ? `<span class="miss">${T('n_missing',{n:s.missing_total})}</span>` : '';
-  return `<div class="tile ${s.cards_total===0?'dim':''}">
-    <div class="art" style="${art}" onclick="openDetail(${i})">${missTag}</div>
+function cycleTile(c, i) {
+  const art = c.image
+    ? `background-image:url('/api/product-image?f=${encodeURIComponent(c.image)}')` : '';
+  const miss = c.missing_total ? `<span class="miss">${T('n_missing',{n:c.missing_total})}</span>` : '';
+  const count = c.subgroups
+    ? T('n_subcycles',{n:c.subgroups.length})
+    : T('n_scenarios',{n:(c.scenarios||[]).length});
+  return `<div class="tile ${c.available?'':'dim'}">
+    <div class="art" style="${art}" onclick="openCycle(${i})">${miss}</div>
     <div class="body">
-      <div class="nm" onclick="openDetail(${i})">${esc(s.display||s.name)}</div>
-      <div class="sub">${T('n_cards',{n:s.cards_total})}${s.has_chapters?' · '+T('n_chapters',{n:s.chapters.length}):''}</div>
-      <button class="go mini" ${dis} onclick="addSet(${i})">${T('add_set')}</button>
+      <div class="nm" onclick="openCycle(${i})">${esc(c.name)}</div>
+      <div class="sub">${T('n_cards',{n:c.cards_total})} · ${count}</div>
     </div></div>`;
 }
+function openCycle(i){ DETAIL = { cycle: i, sub: null }; renderDetail(); }
+function openSub(i, j){ DETAIL = { cycle: i, sub: j }; renderDetail(); }
 
-/* ---------- set detail ---------- */
-function openDetail(i) {
-  const s = LIB.sets[i];
+function scenarioRow(s, j) {
+  const mb = s.missing_total ? `<span class="miss-badge">${T('missing_n',{n:s.missing_total})}</span>` : '';
+  return `<div><div class="row">
+    <span class="grow">${esc(s.name)} <span class="count">${T('n_cards',{n:s.cards_total})}</span> ${mb}</span>
+    <span class="back" style="margin:0" onclick='loadScen(${JSON.stringify(s.slug)},"scen-${j}")'>${T('cards_toggle')}</span>
+    <button class="go mini" onclick='addScenario(${JSON.stringify(s.slug)})'>${T('add_scenario')}</button></div>
+    <div id="scen-${j}"></div></div>`;
+}
+function renderDetail() {
+  const c = LIB.cycles[DETAIL.cycle];
   const el = document.getElementById('view-detail');
-  let html = `<span class="back" onclick="showView('shop')">${T('all_sets')}</span>
-    <h2>${esc(s.display||s.name)}</h2>
-    <div class="row"><span class="grow count">${T('n_cards',{n:s.cards_total})}</span>
-      <button class="go mini" onclick="addSet(${i})">${T('add_whole_set')}</button></div>`;
-  if (s.has_chapters) {
-    html += s.chapters.map((c, j) => {
-      const miss = c.missing && c.missing.length
-        ? `<span class="miss-badge" onclick="showMiss('miss-${j}',${i},${j})">${T('missing_n',{n:c.missing.length})}</span>` : '';
-      return `<div><div class="row">
-        <span class="grow">${esc(c.display||c.name)} <span class="count">${T('n_cards',{n:c.unique_cards})}</span> ${miss}</span>
-        <span class="back" style="margin:0" onclick="loadCards(${i},${j},'cards-${j}')">${T('cards_toggle')}</span>
-        <button class="go mini" onclick="addChapter(${i},${j})">${T('add_chapter')}</button></div>
-        <div id="miss-${j}"></div><div id="cards-${j}"></div></div>`;
+  let html;
+  if (DETAIL.sub === null && c.subgroups) {
+    html = `<span class="back" onclick="showView('shop')">${T('all_cycles')}</span>
+      <h2>${esc(c.name)}</h2>`;
+    html += c.subgroups.map((sg, j) => {
+      const miss = sg.scenarios.reduce((a,s)=>a+s.missing_total,0);
+      const mb = miss ? `<span class="miss-badge">${T('missing_n',{n:miss})}</span>` : '';
+      return `<div class="row">
+        <span class="grow"><b>${esc(sg.name)}</b> <span class="count">${T('n_scenarios',{n:sg.scenarios.length})}</span> ${mb}</span>
+        <button class="go mini ghost" onclick="openSub(${DETAIL.cycle},${j})">${T('open')} ▸</button></div>`;
     }).join('');
   } else {
-    html += `<span class="back" style="margin:8px 0" onclick="loadCards(${i},null,'cards-x')">${T('show_cards')}</span>
-      <div id="cards-x"></div>`;
+    const scens = DETAIL.sub === null ? (c.scenarios || []) : c.subgroups[DETAIL.sub].scenarios;
+    const back = DETAIL.sub === null
+      ? `<span class="back" onclick="showView('shop')">${T('all_cycles')}</span>`
+      : `<span class="back" onclick="openCycle(${DETAIL.cycle})">← ${esc(c.name)}</span>`;
+    const title = DETAIL.sub === null ? c.name : c.subgroups[DETAIL.sub].name;
+    html = `${back}<h2>${esc(title)}</h2>` + scens.map(scenarioRow).join('');
   }
   el.innerHTML = html;
-  DETAIL = i;
   showView('detail');
 }
-function showMiss(id, i, j) {
-  const host = document.getElementById(id);
-  if (host.innerHTML) { host.innerHTML = ''; return; }
-  host.innerHTML = '<div class="miss"><b>'+T('missing_label')+'</b><ul>' +
-    LIB.sets[i].chapters[j].missing.map(m => '<li>'+esc(m)+'</li>').join('') + '</ul></div>';
-}
-async function loadCards(i, j, hostId) {
-  const s = LIB.sets[i], host = document.getElementById(hostId);
+async function loadScen(slug, hostId) {
+  const host = document.getElementById(hostId);
   if (host.dataset.on) { host.innerHTML=''; host.dataset.on=''; return; }
   host.innerHTML = '<span class="muted">'+T('loading')+'</span>';
-  const chapter = j === null ? '' : s.chapters[j].name;
-  const d = await (await fetch('/api/cards?' + new URLSearchParams({set:s.name, chapter}))).json();
+  const d = await (await fetch('/api/scenario-cards?slug=' + encodeURIComponent(slug))).json();
   host.dataset.on = '1';
-  host.innerHTML = '<div class="thumbs">' + d.cards.map(c => {
-    const key = cardKey(s.name, chapter, c.front);
+  const thumbs = (d.cards||[]).map(c => {
+    const key = cardKey(c.set, c.chapter, c.front);
     return `<div class="thumb ${inCart(key)?'in':''}" id="t-${cssid(key)}">
       <img loading="lazy" src="/api/thumb?p=${encodeURIComponent(c.front)}">
-      <button class="add" title="${T('add_card')}" onclick='addCard(${JSON.stringify(s.name)},${JSON.stringify(chapter)},${JSON.stringify(c.front)},${JSON.stringify(c.name)})'>+</button>
+      <button class="add" title="${T('add_card')}" onclick='addCard(${JSON.stringify(c.set)},${JSON.stringify(c.chapter)},${JSON.stringify(c.front)},${JSON.stringify(c.name)})'>+</button>
       <div class="cap">${esc(c.name)}</div></div>`;
-  }).join('') + '</div>';
+  }).join('');
+  let html = '<div class="thumbs">' + thumbs + '</div>';
+  if (d.missing && d.missing.length)
+    html += '<div class="miss"><b>'+T('missing_label')+'</b> ' + d.missing.map(esc).join(', ') + '</div>';
+  host.innerHTML = html;
+}
+async function addScenario(slug) {
+  const d = await (await fetch('/api/scenario-cards?slug=' + encodeURIComponent(slug))).json();
+  (d.cards||[]).forEach(c => pushItem({type:'card', set:c.set, chapter:c.chapter,
+                                       front:c.front, label:c.name}));
+  renderCartCount();
 }
 
 /* ---------- cart ---------- */
@@ -523,9 +541,6 @@ function inCart(key){ return CART.some(it => cartKey(it) === key); }
 function saveCart(){ localStorage.setItem('lotr_cart', JSON.stringify(CART)); renderCartCount(); }
 function renderCartCount(){ document.getElementById('cartN').textContent = CART.length; }
 function pushItem(it){ if(!inCart(cartKey(it))){ CART.push(it); saveCart(); } }
-function addSet(i){ const s=LIB.sets[i]; pushItem({type:'set',set:s.name,label:s.display||s.name}); renderCartCount(); }
-function addChapter(i,j){ const s=LIB.sets[i],c=s.chapters[j];
-  pushItem({type:'chapter',set:s.name,chapter:c.name,label:(s.display||s.name)+' — '+(c.display||c.name)}); renderCartCount(); }
 function addCard(set,ch,front,name){ pushItem({type:'card',set,chapter:ch,front,label:name});
   const el=document.getElementById('t-'+cssid(cardKey(set,ch,front))); if(el) el.classList.add('in'); }
 
@@ -632,7 +647,7 @@ function showView(v) {
   if (v==='cart') { renderCart(); estimatePrice(); }
 }
 function refreshView() {
-  if (VIEW==='detail' && DETAIL!=null && LIB) openDetail(DETAIL);
+  if (VIEW==='detail' && DETAIL && LIB) renderDetail();
   else if (VIEW==='cart') { renderCart(); estimatePrice(); }
 }
 async function postJSON(url, body){ return (await fetch(url,{method:'POST',body:JSON.stringify(body)})).json(); }
