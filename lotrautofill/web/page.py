@@ -206,7 +206,7 @@ const I18N = {
     est_price:"Estimated price", est_calc:"Estimating…", est_for:"for {n} cards",
     est_billed:"billed by MPC as {b} cards", est_percard:"≈ {v} per card",
     est_foil:"foil",
-    est_disclaimer:"Estimated MPC price as of {date} — cards only, shipping & taxes excluded.",
+    est_disclaimer:"Estimated MPC price as of {date} — cards only, before shipping, taxes and any MPC promotion (MPC runs frequent discounts).",
     over_max:"⚠️ Over MPC's {max}-card limit per project — this list must be split into {n} separate MPC projects.",
   },
   fr: {
@@ -237,7 +237,7 @@ const I18N = {
     est_price:"Prix estimé", est_calc:"Estimation…", est_for:"pour {n} cartes",
     est_billed:"facturé par MPC pour {b} cartes", est_percard:"≈ {v} par carte",
     est_foil:"foil",
-    est_disclaimer:"Prix MPC estimé à la date du {date} — cartes uniquement, hors frais de port et taxes.",
+    est_disclaimer:"Prix MPC estimé à la date du {date} — cartes uniquement, hors frais de port, taxes et promotions MPC (MPC fait souvent des remises).",
     over_max:"⚠️ Au-delà de la limite MPC de {max} cartes par projet — cette liste devra être répartie en {n} projets MPC distincts.",
   },
   es: {
@@ -268,7 +268,7 @@ const I18N = {
     est_price:"Precio estimado", est_calc:"Estimando…", est_for:"para {n} cartas",
     est_billed:"facturado por MPC como {b} cartas", est_percard:"≈ {v} por carta",
     est_foil:"foil",
-    est_disclaimer:"Precio MPC estimado a fecha de {date} — solo cartas, sin envío ni impuestos.",
+    est_disclaimer:"Precio MPC estimado a fecha de {date} — solo cartas, sin envío, impuestos ni promociones de MPC (MPC suele tener descuentos).",
     over_max:"⚠️ Supera el límite de MPC de {max} cartas por proyecto — esta lista debe dividirse en {n} proyectos MPC distintos.",
   },
   zh: {
@@ -298,7 +298,7 @@ const I18N = {
     est_price:"预计价格", est_calc:"正在估算…", est_for:"共 {n} 张卡",
     est_billed:"MPC 按 {b} 张卡计费", est_percard:"≈ 每张 {v}",
     est_foil:"闪膜",
-    est_disclaimer:"MPC 价格为 {date} 的估算 —— 仅含卡牌，不含运费和税费。",
+    est_disclaimer:"MPC 价格为 {date} 的估算 —— 仅含卡牌，不含运费、税费及 MPC 促销折扣（MPC 经常有折扣）。",
     over_max:"⚠️ 超过 MPC 每个项目 {max} 张卡的上限——此清单需拆分为 {n} 个独立的 MPC 项目。",
   },
 };
