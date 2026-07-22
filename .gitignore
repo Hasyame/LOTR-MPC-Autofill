@@ -26,6 +26,9 @@ lotr-autofill-ringsdb/
 /build/
 /dist/
 *.spec
+# The built executable now lands in the project root (release asset, not committed).
+/lotr-autofill.exe
+/lotr-autofill
 
 # Python
 __pycache__/

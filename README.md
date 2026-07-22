@@ -51,15 +51,15 @@ Build a single Windows `.exe` that you just **double-click**:
 
 ```sh
 pip install -e .[build,gui]
-python build_exe.py          # -> dist/lotr-autofill.exe  (Gandalf icon)
+python build_exe.py          # -> ./lotr-autofill.exe in the project root (Gandalf icon)
 ```
 
 Double-clicking `lotr-autofill.exe` launches the web GUI and opens your browser
 no console, no arguments. **Put your `sets_folder/` next to the `.exe`**: the app
-looks for the library beside the executable, so it works even when Windows starts
-it from another directory (a shortcut, or "Run as administrator", whose working
-directory is often `System32`). Generated `order.xml` files are written to an
-`MPC_XML/` folder next to the `.exe` too.
+looks for the library beside the executable (and one folder up), so it works even
+when Windows starts it from another directory (a shortcut, or "Run as
+administrator", whose working directory is often `System32`). Generated
+`order.xml` files are written to an `MPC_XML/` folder next to the `.exe` too.
 
 Every CLI subcommand still works from a terminal (`lotr-autofill.exe sets`,
 `... build`, `... pick`, `... --lang fr sets`, …). The `autofill` command still

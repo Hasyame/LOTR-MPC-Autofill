@@ -2,7 +2,7 @@
 
 Usage:
     pip install -e .[build]      # installs pyinstaller
-    python build_exe.py          # -> dist/lotr-autofill(.exe)
+    python build_exe.py          # -> ./lotr-autofill(.exe) in the project root
 
 Double-clicking the built .exe (no arguments) launches the web GUI and opens a
 browser — the easiest way to run it. The Windows icon is Gandalf
@@ -35,6 +35,11 @@ def main() -> int:
         "--console",
         "--name", NAME,
         "--noconfirm",
+        # Put the finished .exe in the project root (next to sets_folder), not
+        # dist/ — clearer for users, and it finds the library right beside it.
+        "--distpath", str(root),
+        "--workpath", str(root / "build"),
+        "--specpath", str(root),
         # Bundle every lotrautofill submodule (many are imported lazily in the
         # CLI handlers — library.*, catalog.*, mpc.*, web.*).
         "--collect-submodules", "lotrautofill",
@@ -49,7 +54,7 @@ def main() -> int:
     print("Running:", " ".join(cmd))
     result = subprocess.run(cmd)
     if result.returncode == 0:
-        exe = root / "dist" / (NAME + (".exe" if sys.platform == "win32" else ""))
+        exe = root / (NAME + (".exe" if sys.platform == "win32" else ""))
         print(f"\nBuilt: {exe}")
     return result.returncode
 
