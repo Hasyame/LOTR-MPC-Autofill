@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import sys
 from pathlib import Path
 
 from .model import CATEGORIES
@@ -25,15 +26,44 @@ def display_name(name: str) -> str:
     return _NUM_PREFIX.sub("", name)
 
 
+def _default_bases() -> list[Path]:
+    """Directories to search for a library folder, most-preferred first.
+
+    As a frozen executable the folder next to the ``.exe`` comes first: that is
+    where users drop ``sets_folder`` next to the double-clickable app, and a
+    double-clicked / "Run as administrator" exe often starts with the working
+    directory pointing elsewhere (e.g. System32). The working directory is
+    always searched too, so running from a terminal keeps working.
+    """
+    bases: list[Path] = []
+    if getattr(sys, "frozen", False):
+        bases.append(Path(sys.executable).resolve().parent)
+    bases.append(Path("."))
+    return bases
+
+
 def default_library_root(cwd: Path | None = None) -> Path:
     """Where to look for sets by default: ``sets_folder/`` (or ``toPrint/``) if
-    present, else the current directory."""
-    base = Path(cwd) if cwd else Path(".")
-    for name in LIBRARY_DIRNAMES:
-        candidate = base / name
-        if candidate.is_dir():
-            return candidate
-    return base
+    present, else the base directory. An explicit ``cwd`` is used verbatim;
+    otherwise the .exe folder (when frozen) and the working directory are
+    searched in that order."""
+    bases = [Path(cwd)] if cwd is not None else _default_bases()
+    for base in bases:
+        for name in LIBRARY_DIRNAMES:
+            candidate = base / name
+            if candidate.is_dir():
+                return candidate
+    return bases[0]
+
+
+def default_output_dir() -> Path:
+    """Where generated ``order.xml`` files go by default: ``MPC_XML/`` next to
+    the .exe when frozen (the working directory may be unwritable, e.g.
+    System32 for a double-clicked/admin-launched exe), else under the working
+    directory."""
+    base = Path(sys.executable).resolve().parent \
+        if getattr(sys, "frozen", False) else Path(".")
+    return base / OUTPUT_DIRNAME
 
 
 def discover_sets(root: Path) -> list[Path]:

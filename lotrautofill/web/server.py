@@ -23,7 +23,8 @@ from pathlib import Path
 from .. import i18n
 from ..library.build import BuildOptions, build
 from ..catalog.database import build_database
-from ..library.sets import default_library_root, discover_chapters, discover_sets
+from ..library.sets import (default_library_root, default_output_dir,
+                            discover_chapters, discover_sets)
 from ..mpc.mpc_xml import plan_to_xml
 from ..mpc.plan import plan_from_manifest
 from .page import PAGE
@@ -42,7 +43,7 @@ def run_server(root: Path | None = None, host: str = "127.0.0.1",
                port: int = 8765, out_dir: Path | None = None,
                open_browser: bool = True, lang: str | None = None) -> None:
     root = Path(root) if root else default_library_root()
-    out_dir = Path(out_dir) if out_dir else Path("MPC_XML")
+    out_dir = Path(out_dir) if out_dir else default_output_dir()
     out_dir.mkdir(parents=True, exist_ok=True)
 
     lang = i18n.resolve_lang(lang)

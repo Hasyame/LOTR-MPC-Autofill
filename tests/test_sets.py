@@ -60,6 +60,32 @@ def test_default_library_root_falls_back_to_dot(tmp_path):
     assert default_library_root(tmp_path) == tmp_path
 
 
+def test_frozen_exe_finds_sets_next_to_the_executable(tmp_path):
+    # A frozen .exe: its folder holds sets_folder, but the working directory
+    # points elsewhere (as it does for a double-clicked / admin-launched exe).
+    import sys
+    exe_dir = tmp_path / "app"
+    _make_set(exe_dir / "sets_folder", "01 - Core Set")
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+
+    had_frozen = hasattr(sys, "frozen")
+    saved = (getattr(sys, "frozen", None), sys.executable, Path.cwd())
+    try:
+        sys.frozen = True
+        sys.executable = str(exe_dir / "lotr-autofill.exe")
+        os.chdir(elsewhere)
+        root = default_library_root()  # no explicit cwd -> uses exe folder
+        assert root.resolve() == (exe_dir / "sets_folder").resolve()
+    finally:
+        if had_frozen:
+            sys.frozen = saved[0]
+        elif hasattr(sys, "frozen"):
+            del sys.frozen
+        sys.executable = saved[1]
+        os.chdir(saved[2])
+
+
 def test_chapters_detected_for_saga(tmp_path):
     s = _make_chaptered_set(tmp_path, "19 - Saga",
                             ["01 - First", "02 - Second"])
