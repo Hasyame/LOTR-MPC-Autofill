@@ -17,6 +17,7 @@ card thumbnails work; without it the GUI serves full images instead.
 from __future__ import annotations
 
 import importlib.util
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -29,6 +30,9 @@ def main() -> int:
     root = Path(__file__).parent
     assets = root / "lotrautofill" / "assets"
     icon = assets / "gandalf.ico"
+    # The bundled card database (copy counts + missing-card lists) must ride
+    # along inside the exe so users only need to supply card images.
+    card_db = root / "lotrautofill" / "catalog" / "data" / "cardlists.json"
     cmd = [
         sys.executable, "-m", "PyInstaller",
         "--onefile",
@@ -48,6 +52,9 @@ def main() -> int:
         # Playwright is a heavy optional dep imported lazily; don't bundle it.
         "--exclude-module", "playwright",
     ]
+    if card_db.is_file():
+        cmd += ["--add-data",
+                f"{card_db}{os.pathsep}lotrautofill/catalog/data"]
     if icon.is_file():
         cmd += ["--icon", str(icon)]  # Gandalf, the .exe's Windows icon only
     if importlib.util.find_spec("PIL") is not None:

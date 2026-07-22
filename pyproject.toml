@@ -32,3 +32,4 @@ packages = [
 
 [tool.setuptools.package-data]
 lotrautofill = ["assets/*.ico"]
+"lotrautofill.catalog" = ["data/*.json"]

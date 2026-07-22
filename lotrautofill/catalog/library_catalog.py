@@ -1,20 +1,42 @@
-"""Build the browse catalog from the authored hierarchy + epiccardlist.txt.
+"""Build the browse catalog from the authored hierarchy + the bundled card DB.
 
 Cycle -> [Expansion(s) + Adventure-Pack group] -> printable "units" (a box or a
-pack), matched to the local card images with the **copy counts** the
-epiccardlist states. A SAGA is a set of expansion units. Nightmare and
+pack), matched to the local card images with the **copy counts** stated by the
+bundled card database. A SAGA is a set of expansion units. Nightmare and
 standalone scenarios are handled elsewhere.
+
+The card lists ship *with the program* (``catalog/data/cardlists.json``): the
+user only needs to drop in card images, not the ``epiccardlist.txt`` files.
 """
 
 from __future__ import annotations
 
+import json
+import sys
+from functools import lru_cache
 from pathlib import Path
 
 from ..library.build import BuildOptions, build
 from ..library.matching import normalize
 from ..library.sets import discover_chapters, discover_sets, display_name
 from . import hierarchy
-from .epiccardlist import parse_epiccardlist
+
+
+@lru_cache(maxsize=1)
+def _load_db() -> dict:
+    """The bundled card database (works both frozen and from source)."""
+    meipass = getattr(sys, "_MEIPASS", None)
+    base = Path(meipass) / "lotrautofill" / "catalog" / "data" if meipass \
+        else Path(__file__).resolve().parent / "data"
+    f = base / "cardlists.json"
+    if not f.is_file():
+        return {"expansions": {}, "ap_groups": {}, "sagas": {}}
+    return json.loads(f.read_text(encoding="utf-8"))
+
+
+def _norm_index(d: dict) -> dict:
+    """A name->value view of a DB section, keyed by normalized name."""
+    return {normalize(k): v for k, v in d.items()}
 
 
 def _rel(p: Path, root: Path) -> str:
@@ -101,10 +123,10 @@ def build_catalog(root: Path) -> dict:
     index = _folder_index(root)
     units_cache: dict[str, list] = {}
 
-    def read_epic(folder: Path) -> list:
-        f = folder / "epiccardlist.txt"
-        return parse_epiccardlist(f.read_text(encoding="utf-8", errors="replace")) \
-            if f.is_file() else []
+    db = _load_db()
+    exp_db = _norm_index(db.get("expansions", {}))
+    ap_db = _norm_index(db.get("ap_groups", {}))
+    saga_db = _norm_index(db.get("sagas", {}))
 
     cycles = []
     for n, products in hierarchy.CYCLES:
@@ -115,17 +137,17 @@ def build_catalog(root: Path) -> dict:
                 prods.append({"name": pname, "kind": kind, "available": False,
                               "cards_total": 0, "missing_total": 0})
                 continue
-            epic = read_epic(folder)
             if kind == hierarchy.EXPANSION:
-                block = epic[0]["cards"] if epic else []
+                block = exp_db.get(normalize(pname), [])
                 prods.append(_leaf(units_cache, folder, block, root,
                                    pname, "EXPANSION", scenarios,
                                    folder.name, ""))
             else:  # AP_GROUP: one leaf per adventure pack
+                blocks = ap_db.get(normalize(pname), [])
                 aps = [_leaf(units_cache, sub, u["cards"], root,
                              u["title"], "AP", [u["title"]],
                              folder.name, sub.name)
-                       for u, sub in _blocks_to_subfolders(folder, epic)]
+                       for u, sub in _blocks_to_subfolders(folder, blocks)]
                 prods.append({"name": pname, "kind": "AP_GROUP",
                               "cards_total": sum(a["cards_total"] for a in aps),
                               "missing_total": sum(a["missing_total"] for a in aps),
@@ -139,8 +161,8 @@ def build_catalog(root: Path) -> dict:
         exp_scen = {normalize(en): sc for en, sc in expansions}
         units = []
         if folder is not None:
-            epic = read_epic(folder)
-            for u, sub in _blocks_to_subfolders(folder, epic):
+            blocks = saga_db.get(normalize(sname), [])
+            for u, sub in _blocks_to_subfolders(folder, blocks):
                 scen = exp_scen.get(normalize(u["title"] or ""), [])
                 units.append(_leaf(units_cache, sub, u["cards"], root,
                                    u["title"], "EXPANSION", scen,
