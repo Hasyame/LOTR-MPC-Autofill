@@ -30,16 +30,27 @@ def _default_bases() -> list[Path]:
     """Directories to search for a library folder, most-preferred first.
 
     As a frozen executable the folder next to the ``.exe`` comes first: that is
-    where users drop ``sets_folder`` next to the double-clickable app, and a
-    double-clicked / "Run as administrator" exe often starts with the working
-    directory pointing elsewhere (e.g. System32). The working directory is
-    always searched too, so running from a terminal keeps working.
+    where users drop ``sets_folder`` next to the double-clickable app. The .exe's
+    parent folder is searched next, so a build placed in ``dist/`` still finds a
+    ``sets_folder`` sitting at the project root one level up. A double-clicked /
+    "Run as administrator" exe often starts with the working directory pointing
+    elsewhere (e.g. System32); the working directory is searched last, so
+    running from a terminal keeps working.
     """
     bases: list[Path] = []
     if getattr(sys, "frozen", False):
-        bases.append(Path(sys.executable).resolve().parent)
+        exe_dir = Path(sys.executable).resolve().parent
+        bases += [exe_dir, exe_dir.parent]
     bases.append(Path("."))
-    return bases
+    # De-duplicate by resolved path while preserving order.
+    seen: set[Path] = set()
+    unique: list[Path] = []
+    for b in bases:
+        rp = b.resolve()
+        if rp not in seen:
+            seen.add(rp)
+            unique.append(b)
+    return unique
 
 
 def default_library_root(cwd: Path | None = None) -> Path:

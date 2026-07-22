@@ -86,6 +86,33 @@ def test_frozen_exe_finds_sets_next_to_the_executable(tmp_path):
         os.chdir(saved[2])
 
 
+def test_frozen_exe_finds_sets_in_the_parent_dir(tmp_path):
+    # The .exe built into dist/ still finds sets_folder at the project root.
+    import sys
+    proj = tmp_path / "proj"
+    _make_set(proj / "sets_folder", "01 - Core Set")
+    exe_dir = proj / "dist"
+    exe_dir.mkdir(parents=True)
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+
+    had_frozen = hasattr(sys, "frozen")
+    saved = (getattr(sys, "frozen", None), sys.executable, Path.cwd())
+    try:
+        sys.frozen = True
+        sys.executable = str(exe_dir / "lotr-autofill.exe")
+        os.chdir(elsewhere)
+        root = default_library_root()  # dist/ has none -> parent (proj/) wins
+        assert root.resolve() == (proj / "sets_folder").resolve()
+    finally:
+        if had_frozen:
+            sys.frozen = saved[0]
+        elif hasattr(sys, "frozen"):
+            del sys.frozen
+        sys.executable = saved[1]
+        os.chdir(saved[2])
+
+
 def test_chapters_detected_for_saga(tmp_path):
     s = _make_chaptered_set(tmp_path, "19 - Saga",
                             ["01 - First", "02 - Second"])
