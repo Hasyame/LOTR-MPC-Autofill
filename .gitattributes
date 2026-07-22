@@ -1,2 +1,13 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Keep the auto-generated release "Source code" archives lean: `git archive`
+# (used by GitHub for release/source downloads) drops these dev-only paths,
+# while `main` keeps everything for development.
+tests/               export-ignore
+run_tests.py         export-ignore
+build_exe.py         export-ignore
+pyinstaller_entry.py export-ignore
+docs/                export-ignore
+.gitattributes       export-ignore
+.gitignore           export-ignore

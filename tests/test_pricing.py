@@ -24,6 +24,16 @@ def test_estimate_shape_and_currencies():
     assert e["date"] == pricing.PRICE_DATE_DISPLAY
 
 
+def test_over_612_flags_multiple_projects():
+    over = pricing.estimate(700)
+    assert over["over_max"] is True
+    assert over["max_per_project"] == 612
+    assert over["projects"] == 2                 # ceil(700 / 612)
+    under = pricing.estimate(600)
+    assert under["over_max"] is False and under["projects"] == 1
+    assert pricing.estimate(612)["over_max"] is False   # exactly the cap is OK
+
+
 def test_foil_and_stock_raise_the_price():
     base = pricing.estimate(55, "(S30) Standard Smooth", foil=False)["prices"]["USD"]
     foil = pricing.estimate(55, "(S30) Standard Smooth", foil=True)["prices"]["USD"]

@@ -114,6 +114,9 @@ PAGE = r"""<!doctype html>
   .price .price-h { color:var(--muted); font-size:13px; }
   .price .price-amt { color:var(--gold); font-size:20px; font-weight:700; margin:2px 0 6px; }
   .price .price-disc { font-size:11px; font-style:italic; margin-top:6px; }
+  .over-max { color:var(--warn); font-weight:600; margin:8px 0 2px;
+    border:1px solid var(--gold-soft); border-radius:8px; padding:8px 10px;
+    background:rgba(217,165,58,.08); }
 </style>
 </head>
 <body>
@@ -204,6 +207,7 @@ const I18N = {
     est_billed:"billed by MPC as {b} cards", est_percard:"≈ {v} per card",
     est_foil:"foil",
     est_disclaimer:"Estimated MPC price as of {date} — cards only, shipping & taxes excluded.",
+    over_max:"⚠️ Over MPC's {max}-card limit per project — this list must be split into {n} separate MPC projects.",
   },
   fr: {
     nav_sets:"Extensions", nav_manual:"Liste manuelle", cart:"Liste à imprimer",
@@ -234,6 +238,7 @@ const I18N = {
     est_billed:"facturé par MPC pour {b} cartes", est_percard:"≈ {v} par carte",
     est_foil:"foil",
     est_disclaimer:"Prix MPC estimé à la date du {date} — cartes uniquement, hors frais de port et taxes.",
+    over_max:"⚠️ Au-delà de la limite MPC de {max} cartes par projet — cette liste devra être répartie en {n} projets MPC distincts.",
   },
   es: {
     nav_sets:"Expansiones", nav_manual:"Lista manual", cart:"Lista para imprimir",
@@ -264,6 +269,7 @@ const I18N = {
     est_billed:"facturado por MPC como {b} cartas", est_percard:"≈ {v} por carta",
     est_foil:"foil",
     est_disclaimer:"Precio MPC estimado a fecha de {date} — solo cartas, sin envío ni impuestos.",
+    over_max:"⚠️ Supera el límite de MPC de {max} cartas por proyecto — esta lista debe dividirse en {n} proyectos MPC distintos.",
   },
   zh: {
     nav_sets:"系列", nav_manual:"手动列表", cart:"打印清单",
@@ -293,6 +299,7 @@ const I18N = {
     est_billed:"MPC 按 {b} 张卡计费", est_percard:"≈ 每张 {v}",
     est_foil:"闪膜",
     est_disclaimer:"MPC 价格为 {date} 的估算 —— 仅含卡牌，不含运费和税费。",
+    over_max:"⚠️ 超过 MPC 每个项目 {max} 张卡的上限——此清单需拆分为 {n} 个独立的 MPC 项目。",
   },
 };
 const LANGS = ['en','fr','es','zh'];
@@ -502,12 +509,14 @@ function renderPrice(p) {
   const money = c => sy[c] + pr[c].toFixed(2);
   const billed = p.billed_cards !== p.cards
     ? `<div class="muted">${T('est_billed',{b:p.billed_cards})}</div>` : '';
+  const over = p.over_max
+    ? `<div class="over-max">${T('over_max',{max:p.max_per_project,n:p.projects})}</div>` : '';
   return `<div class="result">
     <div class="price-h">${T('est_price')}</div>
     <div class="price-amt">${money('EUR')} &nbsp;·&nbsp; ${money('USD')} &nbsp;·&nbsp; ${money('CNY')}</div>
     <div class="muted">${T('est_for',{n:p.cards})} · ${esc(p.stock)}${p.foil?' · '+T('est_foil'):''}
       · ${T('est_percard',{v:sy.USD+p.per_card_usd.toFixed(2)})}</div>
-    ${billed}
+    ${billed}${over}
     <div class="muted price-disc">${T('est_disclaimer',{date:p.date})}</div>
   </div>`;
 }

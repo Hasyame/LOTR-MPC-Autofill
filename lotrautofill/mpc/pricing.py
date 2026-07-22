@@ -83,6 +83,8 @@ def estimate(total_cards: int, stock: str = "(S33) Superior Smooth",
     usd = _base_usd(total_cards) * mult
     prices = {cur: round(usd * rate, 2) for cur, rate in FX.items()}
     per_card = round(usd / total_cards, 3) if total_cards else 0.0
+    # MPC caps a single project at 612 cards; larger lists need several projects.
+    projects = -(-total_cards // MPC_MAX_CARDS_PER_PROJECT) if total_cards else 0
     return {
         "cards": total_cards,
         "billed_cards": _billed_cards(total_cards),
@@ -91,6 +93,9 @@ def estimate(total_cards: int, stock: str = "(S33) Superior Smooth",
         "prices": prices,
         "symbols": CURRENCY_SYMBOL,
         "per_card_usd": per_card,
+        "max_per_project": MPC_MAX_CARDS_PER_PROJECT,
+        "projects": projects,
+        "over_max": total_cards > MPC_MAX_CARDS_PER_PROJECT,
         "date": PRICE_DATE_DISPLAY,
         "date_iso": PRICE_DATE,
     }
