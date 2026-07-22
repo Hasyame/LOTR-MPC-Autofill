@@ -38,9 +38,11 @@ def _find_folder(name: str, index: dict):
     return None
 
 
-def _match_unit(folder: Path, epic_cards: list, root: Path) -> dict:
+def _match_unit(folder: Path, epic_cards: list, root: Path,
+                set_name: str, chapter: str) -> dict:
     """Match one epiccardlist block to a folder's images. Returns present cards
-    (with per-image copy quantity), the missing names, and the copy total."""
+    (with per-image copy quantity, and the set/chapter needed to resolve them
+    for the print list), the missing names, and the copy total."""
     entries = [e for e in build(folder, BuildOptions(interactive=False)).entries
                if e.category != "Nightmare"]
     by_name: dict[str, list] = {}
@@ -59,16 +61,18 @@ def _match_unit(folder: Path, epic_cards: list, root: Path) -> dict:
         qty = max(1, round(count / len(imgs)))
         for e in imgs:
             cards.append({"name": e.name, "front": _rel(e.front, root),
-                          "category": e.category, "quantity": qty})
+                          "category": e.category, "quantity": qty,
+                          "set": set_name, "chapter": chapter})
             total += qty
     missing = [c["name"] for c in epic_cards if normalize(c["name"]) not in by_name]
     return {"cards": cards, "missing": missing, "cards_total": total}
 
 
 def _leaf(units_cache: dict, folder: Path, epic_cards: list, root: Path,
-          name: str, kind: str, scenarios: list) -> dict:
+          name: str, kind: str, scenarios: list,
+          set_name: str, chapter: str) -> dict:
     """A printable box/pack node; stashes its cards in ``units_cache`` by id."""
-    m = _match_unit(folder, epic_cards, root)
+    m = _match_unit(folder, epic_cards, root, set_name, chapter)
     uid = _rel(folder, root)
     units_cache[uid] = m["cards"]
     return {"id": uid, "name": name, "kind": kind, "scenarios": scenarios,
@@ -112,10 +116,12 @@ def build_catalog(root: Path) -> dict:
             if kind == hierarchy.EXPANSION:
                 block = epic[0]["cards"] if epic else []
                 prods.append(_leaf(units_cache, folder, block, root,
-                                   pname, "EXPANSION", scenarios))
+                                   pname, "EXPANSION", scenarios,
+                                   folder.name, ""))
             else:  # AP_GROUP: one leaf per adventure pack
                 aps = [_leaf(units_cache, sub, u["cards"], root,
-                             u["title"], "AP", [u["title"]])
+                             u["title"], "AP", [u["title"]],
+                             folder.name, sub.name)
                        for u, sub in _blocks_to_subfolders(folder, epic)]
                 prods.append({"name": pname, "kind": "AP_GROUP",
                               "cards_total": sum(a["cards_total"] for a in aps),
@@ -134,7 +140,8 @@ def build_catalog(root: Path) -> dict:
             for u, sub in _blocks_to_subfolders(folder, epic):
                 scen = exp_scen.get(normalize(u["title"] or ""), [])
                 units.append(_leaf(units_cache, sub, u["cards"], root,
-                                   u["title"], "EXPANSION", scen))
+                                   u["title"], "EXPANSION", scen,
+                                   folder.name, sub.name))
         sagas.append({"name": sname, "kind": "SAGA", "units": units,
                       "cards_total": sum(u["cards_total"] for u in units),
                       "missing_total": sum(u["missing_total"] for u in units),

@@ -100,6 +100,13 @@ def _make_handler(root: Path, out_dir: Path):
                 if "lib" not in cache:
                     cache["lib"] = _library(cache["root"])
                 self._json(cache["lib"])
+            elif path == "/api/catalog2":
+                c = _cat2(cache)
+                self._json({"cycles": c["cycles"], "sagas": c["sagas"],
+                            "root": c["root"]})
+            elif path == "/api/unit-cards":
+                c = _cat2(cache)
+                self._json({"cards": c["units"].get(query.get("id", [""])[0], [])})
             elif path == "/api/catalog":
                 if "catalog" not in cache:
                     cache["catalog"] = _scan_library(cache["root"])
@@ -227,9 +234,17 @@ def _set_root(cache: dict, body: dict) -> dict:
     if not p.is_dir():
         return {"error": i18n.t("srv_folder_not_found", lang=lang, path=raw)}
     cache["root"] = default_library_root(p.resolve())
-    cache.pop("lib", None)
-    cache.pop("catalog", None)
+    for k in ("lib", "catalog", "cat2"):
+        cache.pop(k, None)
     return {"ok": True, "root": str(cache["root"])}
+
+
+def _cat2(cache: dict) -> dict:
+    """The authored Cycle -> Expansion/AP catalog (built + cached once)."""
+    if "cat2" not in cache:
+        from ..catalog.library_catalog import build_catalog
+        cache["cat2"] = build_catalog(cache["root"])
+    return cache["cat2"]
 
 
 # --------------------------------------------------------------------------- #
