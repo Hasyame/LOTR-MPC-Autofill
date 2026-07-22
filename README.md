@@ -312,7 +312,7 @@ The GUI is a **shop-style flow**:
 - [x] **i18n:** GUI and CLI in **English, French, Spanish, Chinese** (GUI
  language picker with browser auto-detect; CLI `--lang`).
 - [x] **Double-click executable:** the `.exe` launches the GUI, finds
- `sets_folder/` next to it, and carries a Gandalf icon.
+ `sets_folder/` next to it.
 
 ## Development
 
