@@ -80,10 +80,10 @@ STRINGS: dict[str, dict[str, str]] = {
         "zh": "正在停止。",
     },
     "srv_cart_empty": {
-        "en": "Cart is empty (nothing resolved).",
-        "fr": "Le panier est vide (rien à résoudre).",
-        "es": "El carrito está vacío (nada resuelto).",
-        "zh": "购物车为空（没有可解析的卡牌）。",
+        "en": "The list is empty (nothing resolved).",
+        "fr": "La liste est vide (rien à résoudre).",
+        "es": "La lista está vacía (nada resuelto).",
+        "zh": "清单为空（没有可解析的卡牌）。",
     },
     "srv_order_not_found": {
         "en": "order.xml not found",

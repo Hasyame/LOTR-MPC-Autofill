@@ -12,8 +12,7 @@ PAGE = r"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="/favicon.ico">
-<link rel="icon" type="image/png" href="/logo.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='84'>%E2%9B%B0%EF%B8%8F</text></svg>">
 <title>LOTRAutofill</title>
 <style>
   :root {
@@ -32,11 +31,7 @@ PAGE = r"""<!doctype html>
     border-bottom:1px solid var(--border); background:linear-gradient(#1e1509,#160f07);
     position:sticky; top:0; z-index:10; }
   header h1 { margin:0; font-size:20px; color:var(--gold); flex:1;
-    text-shadow:0 1px 0 #000, 0 0 18px rgba(200,161,58,.25); cursor:pointer;
-    display:flex; align-items:center; gap:10px; }
-  header h1 .logo { height:34px; width:34px; border-radius:50%; object-fit:cover;
-    object-position:50% 30%; border:1px solid var(--gold-soft);
-    box-shadow:0 0 12px rgba(200,161,58,.35); }
+    text-shadow:0 1px 0 #000, 0 0 18px rgba(200,161,58,.25); cursor:pointer; }
   header nav button, .cartbtn { border:1px solid var(--border); background:var(--card);
     color:var(--muted); padding:7px 14px; border-radius:8px; cursor:pointer;
     font-family:inherit; font-size:14px; }
@@ -123,7 +118,7 @@ PAGE = r"""<!doctype html>
 </head>
 <body>
 <header>
-  <h1 onclick="showView('shop')"><img class="logo" src="/logo.png" alt=""> LOTRAutofill</h1>
+  <h1 onclick="showView('shop')">⛰️ LOTRAutofill</h1>
   <nav>
     <button id="nav-shop" class="active" onclick="showView('shop')" data-i18n="nav_sets">Sets</button>
     <button id="nav-deck" onclick="showView('deck')" data-i18n="nav_manual">Manual List</button>
@@ -132,7 +127,7 @@ PAGE = r"""<!doctype html>
     <option value="en">English</option><option value="fr">Français</option>
     <option value="es">Español</option><option value="zh">中文</option>
   </select>
-  <button class="cartbtn" onclick="showView('cart')">🛒 <span data-i18n="cart">Cart</span><span class="n" id="cartN">0</span></button>
+  <button class="cartbtn" onclick="showView('cart')">🖨️ <span data-i18n="cart">List to print</span><span class="n" id="cartN">0</span></button>
 </header>
 
 <main>
@@ -174,125 +169,126 @@ PAGE = r"""<!doctype html>
     <div id="deck-results"></div>
   </div>
 
-  <div class="pagefoot">⚔ &nbsp; <span data-i18n="footer">by hasyame — for personal use only</span> &nbsp; ⚔</div>
+  <div class="pagefoot">⚔ &nbsp; <span data-i18n="footer">by hasyame — for personal use only</span>
+    &nbsp;·&nbsp; <a href="https://github.com/Hasyame/LOTR-MPC-Autofill" target="_blank" rel="noopener">GitHub</a> &nbsp; ⚔</div>
 </main>
 
 <script>
 /* ---------- i18n ---------- */
 const I18N = {
   en: {
-    nav_sets:"Sets", nav_manual:"Manual List", cart:"Cart",
+    nav_sets:"Sets", nav_manual:"Manual List", cart:"List to print",
     loading_shop:"Loading the archives of Middle-earth…",
-    cart_title:"Your cart", stock:"Card stock", enc_back:"Encounter back",
+    cart_title:"Your list to print", stock:"Card stock", enc_back:"Encounter back",
     ply_back:"Player back", foil:"Foil", export_xml:"Export order.xml",
-    export_pdf:"Export PDF", create_mpc:"Create MPC project", empty_cart:"Empty cart",
+    export_pdf:"Export PDF", create_mpc:"Create MPC project", empty_cart:"Clear list",
     manual_title:"Manual list",
     manual_hint:"Paste a card list, one card per line (e.g. <code>3x Gandalf</code>).",
     manual_warn:"⚠️ Cards must be available in your local library (<code>sets_folder/</code>) to be printed — anything not found there is reported and skipped.",
     manual_check:"Check against library",
     footer:"by hasyame — for personal use only",
     set_not_in_lib:"not in your library", n_missing:"{n} missing",
-    n_cards:"{n} cards", n_chapters:"{n} chapters", add_set:"Add set to cart",
+    n_cards:"{n} cards", n_chapters:"{n} chapters", add_set:"Add set to list",
     all_sets:"← all sets", add_whole_set:"Add whole set", missing_n:"missing {n}",
     cards_toggle:"cards ▾", add_chapter:"Add chapter", show_cards:"show cards ▾",
     missing_label:"Missing:", loading:"loading…", add_card:"add card",
-    cart_empty:"Your cart is empty. Add sets, chapters or cards from the Sets tab.",
-    cart_empty_alert:"Cart is empty.", forging:"Forging…", n_fronts:"{n} fronts",
+    cart_empty:"Your list is empty. Add sets, chapters or cards from the Sets tab.",
+    cart_empty_alert:"The list is empty.", forging:"Forging…", n_fronts:"{n} fronts",
     error_prefix:"Error", checking_lib:"Checking against your library…",
     found:"{n} card(s) found", found_suffix:"in your library.",
     not_found_n:"{n} not found (will be skipped):",
-    add_found_skip:"Add {n} found card(s) to cart (skip {m})",
-    add_found:"Add {n} card(s) to cart",
-    added_to_cart:"Added {n} card(s) to your cart. Open 🛒 Cart to export.",
+    add_found_skip:"Add {n} found card(s) to the list (skip {m})",
+    add_found:"Add {n} card(s) to the list",
+    added_to_cart:"Added {n} card(s) to your list. Open 🖨️ List to print to export.",
     est_price:"Estimated price", est_calc:"Estimating…", est_for:"for {n} cards",
     est_billed:"billed by MPC as {b} cards", est_percard:"≈ {v} per card",
     est_foil:"foil",
     est_disclaimer:"Estimated MPC price as of {date} — cards only, shipping & taxes excluded.",
   },
   fr: {
-    nav_sets:"Extensions", nav_manual:"Liste manuelle", cart:"Panier",
+    nav_sets:"Extensions", nav_manual:"Liste manuelle", cart:"Liste à imprimer",
     loading_shop:"Chargement des archives de la Terre du Milieu…",
-    cart_title:"Votre panier", stock:"Type de carton", enc_back:"Dos rencontre",
+    cart_title:"Votre liste à imprimer", stock:"Type de carton", enc_back:"Dos rencontre",
     ply_back:"Dos joueur", foil:"Effet foil", export_xml:"Exporter order.xml",
-    export_pdf:"Exporter PDF", create_mpc:"Créer un projet MPC", empty_cart:"Vider le panier",
+    export_pdf:"Exporter PDF", create_mpc:"Créer un projet MPC", empty_cart:"Vider la liste",
     manual_title:"Liste manuelle",
     manual_hint:"Collez une liste de cartes, une carte par ligne (ex. <code>3x Gandalf</code>).",
     manual_warn:"⚠️ Les cartes doivent être présentes dans votre bibliothèque locale (<code>sets_folder/</code>) pour être imprimées — tout ce qui est introuvable est signalé et ignoré.",
     manual_check:"Vérifier dans la bibliothèque",
     footer:"par hasyame — pour usage personnel uniquement",
     set_not_in_lib:"absent de votre bibliothèque", n_missing:"{n} manquante(s)",
-    n_cards:"{n} cartes", n_chapters:"{n} chapitres", add_set:"Ajouter au panier",
+    n_cards:"{n} cartes", n_chapters:"{n} chapitres", add_set:"Ajouter à la liste",
     all_sets:"← toutes les extensions", add_whole_set:"Ajouter toute l'extension",
     missing_n:"{n} manquante(s)", cards_toggle:"cartes ▾", add_chapter:"Ajouter le chapitre",
     show_cards:"voir les cartes ▾", missing_label:"Manquantes :", loading:"chargement…",
     add_card:"ajouter la carte",
-    cart_empty:"Votre panier est vide. Ajoutez des extensions, chapitres ou cartes depuis l'onglet Extensions.",
-    cart_empty_alert:"Le panier est vide.", forging:"Forge en cours…", n_fronts:"{n} faces",
+    cart_empty:"Votre liste est vide. Ajoutez des extensions, chapitres ou cartes depuis l'onglet Extensions.",
+    cart_empty_alert:"La liste est vide.", forging:"Forge en cours…", n_fronts:"{n} faces",
     error_prefix:"Erreur", checking_lib:"Vérification dans votre bibliothèque…",
     found:"{n} carte(s) trouvée(s)", found_suffix:"dans votre bibliothèque.",
     not_found_n:"{n} introuvable(s) (seront ignorées) :",
-    add_found_skip:"Ajouter {n} carte(s) trouvée(s) au panier (ignorer {m})",
-    add_found:"Ajouter {n} carte(s) au panier",
-    added_to_cart:"{n} carte(s) ajoutée(s) à votre panier. Ouvrez 🛒 Panier pour exporter.",
+    add_found_skip:"Ajouter {n} carte(s) trouvée(s) à la liste (ignorer {m})",
+    add_found:"Ajouter {n} carte(s) à la liste",
+    added_to_cart:"{n} carte(s) ajoutée(s) à votre liste. Ouvrez 🖨️ Liste à imprimer pour exporter.",
     est_price:"Prix estimé", est_calc:"Estimation…", est_for:"pour {n} cartes",
     est_billed:"facturé par MPC pour {b} cartes", est_percard:"≈ {v} par carte",
     est_foil:"foil",
     est_disclaimer:"Prix MPC estimé à la date du {date} — cartes uniquement, hors frais de port et taxes.",
   },
   es: {
-    nav_sets:"Expansiones", nav_manual:"Lista manual", cart:"Carrito",
+    nav_sets:"Expansiones", nav_manual:"Lista manual", cart:"Lista para imprimir",
     loading_shop:"Cargando los archivos de la Tierra Media…",
-    cart_title:"Tu carrito", stock:"Tipo de cartón", enc_back:"Reverso de encuentro",
+    cart_title:"Tu lista para imprimir", stock:"Tipo de cartón", enc_back:"Reverso de encuentro",
     ply_back:"Reverso de jugador", foil:"Foil", export_xml:"Exportar order.xml",
-    export_pdf:"Exportar PDF", create_mpc:"Crear proyecto MPC", empty_cart:"Vaciar carrito",
+    export_pdf:"Exportar PDF", create_mpc:"Crear proyecto MPC", empty_cart:"Vaciar lista",
     manual_title:"Lista manual",
     manual_hint:"Pega una lista de cartas, una por línea (p. ej. <code>3x Gandalf</code>).",
     manual_warn:"⚠️ Las cartas deben estar en tu biblioteca local (<code>sets_folder/</code>) para imprimirse — lo que no se encuentre se informa y se omite.",
     manual_check:"Comprobar en la biblioteca",
     footer:"por hasyame — solo para uso personal",
     set_not_in_lib:"no está en tu biblioteca", n_missing:"{n} faltante(s)",
-    n_cards:"{n} cartas", n_chapters:"{n} capítulos", add_set:"Añadir al carrito",
+    n_cards:"{n} cartas", n_chapters:"{n} capítulos", add_set:"Añadir a la lista",
     all_sets:"← todas las expansiones", add_whole_set:"Añadir toda la expansión",
     missing_n:"{n} faltante(s)", cards_toggle:"cartas ▾", add_chapter:"Añadir capítulo",
     show_cards:"ver cartas ▾", missing_label:"Faltantes:", loading:"cargando…",
     add_card:"añadir carta",
-    cart_empty:"Tu carrito está vacío. Añade expansiones, capítulos o cartas desde la pestaña Expansiones.",
-    cart_empty_alert:"El carrito está vacío.", forging:"Forjando…", n_fronts:"{n} frentes",
+    cart_empty:"Tu lista está vacía. Añade expansiones, capítulos o cartas desde la pestaña Expansiones.",
+    cart_empty_alert:"La lista está vacía.", forging:"Forjando…", n_fronts:"{n} frentes",
     error_prefix:"Error", checking_lib:"Comprobando en tu biblioteca…",
     found:"{n} carta(s) encontrada(s)", found_suffix:"en tu biblioteca.",
     not_found_n:"{n} no encontrada(s) (se omitirán):",
-    add_found_skip:"Añadir {n} carta(s) encontrada(s) al carrito (omitir {m})",
-    add_found:"Añadir {n} carta(s) al carrito",
-    added_to_cart:"{n} carta(s) añadida(s) a tu carrito. Abre 🛒 Carrito para exportar.",
+    add_found_skip:"Añadir {n} carta(s) encontrada(s) a la lista (omitir {m})",
+    add_found:"Añadir {n} carta(s) a la lista",
+    added_to_cart:"{n} carta(s) añadida(s) a tu lista. Abre 🖨️ Lista para imprimir para exportar.",
     est_price:"Precio estimado", est_calc:"Estimando…", est_for:"para {n} cartas",
     est_billed:"facturado por MPC como {b} cartas", est_percard:"≈ {v} por carta",
     est_foil:"foil",
     est_disclaimer:"Precio MPC estimado a fecha de {date} — solo cartas, sin envío ni impuestos.",
   },
   zh: {
-    nav_sets:"系列", nav_manual:"手动列表", cart:"购物车",
+    nav_sets:"系列", nav_manual:"手动列表", cart:"打印清单",
     loading_shop:"正在加载中土世界的档案…",
-    cart_title:"您的购物车", stock:"卡纸类型", enc_back:"遭遇卡背",
+    cart_title:"您的打印清单", stock:"卡纸类型", enc_back:"遭遇卡背",
     ply_back:"玩家卡背", foil:"闪膜", export_xml:"导出 order.xml",
-    export_pdf:"导出 PDF", create_mpc:"创建 MPC 项目", empty_cart:"清空购物车",
+    export_pdf:"导出 PDF", create_mpc:"创建 MPC 项目", empty_cart:"清空清单",
     manual_title:"手动列表",
     manual_hint:"粘贴卡牌列表，每行一张（例如 <code>3x Gandalf</code>）。",
     manual_warn:"⚠️ 卡牌必须存在于本地库（<code>sets_folder/</code>）中才能打印——找不到的卡牌会被列出并跳过。",
     manual_check:"在库中检查",
     footer:"由 hasyame 制作 — 仅供个人使用",
     set_not_in_lib:"不在您的库中", n_missing:"缺 {n} 张",
-    n_cards:"{n} 张卡", n_chapters:"{n} 章", add_set:"加入购物车",
+    n_cards:"{n} 张卡", n_chapters:"{n} 章", add_set:"加入清单",
     all_sets:"← 所有系列", add_whole_set:"添加整个系列", missing_n:"缺 {n} 张",
     cards_toggle:"卡牌 ▾", add_chapter:"添加章节", show_cards:"显示卡牌 ▾",
     missing_label:"缺失：", loading:"加载中…", add_card:"添加卡牌",
-    cart_empty:"您的购物车为空。请从“系列”标签页添加系列、章节或卡牌。",
-    cart_empty_alert:"购物车为空。", forging:"锻造中…", n_fronts:"{n} 张正面",
+    cart_empty:"您的清单为空。请从“系列”标签页添加系列、章节或卡牌。",
+    cart_empty_alert:"清单为空。", forging:"锻造中…", n_fronts:"{n} 张正面",
     error_prefix:"错误", checking_lib:"正在库中检查…",
     found:"找到 {n} 张卡", found_suffix:"在您的库中。",
     not_found_n:"{n} 张未找到（将跳过）：",
-    add_found_skip:"将找到的 {n} 张卡加入购物车（跳过 {m} 张）",
-    add_found:"将 {n} 张卡加入购物车",
-    added_to_cart:"已将 {n} 张卡加入购物车。打开 🛒 购物车以导出。",
+    add_found_skip:"将找到的 {n} 张卡加入清单（跳过 {m} 张）",
+    add_found:"将 {n} 张卡加入清单",
+    added_to_cart:"已将 {n} 张卡加入清单。打开 🖨️ 打印清单以导出。",
     est_price:"预计价格", est_calc:"正在估算…", est_for:"共 {n} 张卡",
     est_billed:"MPC 按 {b} 张卡计费", est_percard:"≈ 每张 {v}",
     est_foil:"闪膜",

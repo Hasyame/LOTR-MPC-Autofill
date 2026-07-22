@@ -31,4 +31,4 @@ packages = [
 ]
 
 [tool.setuptools.package-data]
-lotrautofill = ["assets/*.png", "assets/*.ico"]
+lotrautofill = ["assets/*.ico"]

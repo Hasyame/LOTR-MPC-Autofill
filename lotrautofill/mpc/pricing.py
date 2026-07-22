@@ -8,6 +8,12 @@ makeplayingcards.com, update ``_DECK_PRICE_USD`` / ``STOCK_MULTIPLIER`` /
 MPC bills per "size of deck" tier (see ``config.DECK_SIZE_TIERS``): an order of
 20 cards is billed as a 36-card deck. The estimate therefore rounds the card
 count up to the next tier, and splits very large orders into 612-card decks.
+
+The per-tier table below is calibrated to prices published on
+makeplayingcards.com (checked 2026-07-22) for one deck at qty 1, baseline stock
+(S30 Standard Smooth): about $8.00 for an 18-card deck and $16.95 for a
+~55-card poker deck, with the per-card cost tapering on bigger decks (bulk).
+Large-deck figures are extrapolated, so treat them as ballpark.
 """
 
 from __future__ import annotations
@@ -15,15 +21,17 @@ from __future__ import annotations
 from .config import MPC_MAX_CARDS_PER_PROJECT, deck_size_tier
 
 # When the tables below were last checked against makeplayingcards.com.
-PRICE_DATE = "2026-07-21"          # ISO
-PRICE_DATE_DISPLAY = "21/07/2026"  # DD/MM/YYYY, for the user-facing disclaimer
+PRICE_DATE = "2026-07-22"          # ISO
+PRICE_DATE_DISPLAY = "22/07/2026"  # DD/MM/YYYY, for the user-facing disclaimer
 
-# Base price in USD per MPC deck-size tier, for the baseline stock
+# Price in USD per MPC deck-size tier, for one deck at qty 1, baseline stock
 # (S30 Standard Smooth), MPC game-card finish, shrink-wrapped, no foil.
+# Model: $3.50 base + $0.245/card (=<55) + $0.185/card (56..234) + $0.13/card
+# (235..612), anchored to MPC's $8.00 (18-card) and $16.95 (55-card) prices.
 _DECK_PRICE_USD: dict[int, float] = {
-    18: 6.90, 36: 11.50, 55: 15.50, 72: 19.00, 90: 22.50, 108: 26.00,
-    126: 29.50, 144: 33.00, 162: 36.50, 180: 40.00, 198: 43.50, 216: 47.00,
-    234: 50.50, 396: 82.00, 504: 103.00, 612: 123.00,
+    18: 7.90, 36: 12.30, 55: 16.95, 72: 20.10, 90: 23.45, 108: 26.80,
+    126: 30.10, 144: 33.45, 162: 36.75, 180: 40.10, 198: 43.45, 216: 46.75,
+    234: 50.10, 396: 71.15, 504: 85.20, 612: 99.25,
 }
 
 # Card-stock label -> price multiplier relative to the baseline stock.

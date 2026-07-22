@@ -33,16 +33,17 @@ local library. Sets you don't have are greyed out. Extras:
   `--lang en|fr|es|zh` (else `$LOTR_LANG` / `$LANG`).
 - **Visual card-back picker** choose the encounter and player card backs from
   **thumbnails** (including your CUSTOM backs), not a dropdown.
-- **Price estimate** an approximate MakePlayingCards price for the cart in
-  **€ / $ / ¥**, updated as you change quantity, stock and foil (clearly dated;
-  cards only, excluding shipping and taxes).
+- **Price estimate** an approximate MakePlayingCards price for your print list
+  in **€ / $ / ¥**, updated as you change quantity, stock and foil (clearly
+  dated; cards only, excluding shipping and taxes). This tool never sells or
+  charges anything the "list to print" is just your export selection.
 
 The only optional dependency is Pillow (for thumbnails; without it, full images
 are served). The CLI remains fully supported.
 
 ![Shop the set grid uses Hall of Beorn box art, with per-set missing-card badges; sets you don't own are greyed out](docs/shop.png)
 
-![Cart pick your card backs from thumbnails and see an estimated MakePlayingCards price in euros, dollars and yuan](docs/cart.png)
+![List to print pick your card backs from thumbnails and see an estimated MakePlayingCards price in euros, dollars and yuan](docs/cart.png)
 
 ### Standalone executable easiest, no Python needed
 
@@ -223,8 +224,8 @@ python -m lotrautofill export … --stock "(S33) Superior Smooth" --foil
 
 In the GUI's **Manual List** tab, paste a card list (`3x Gandalf`,
 `2 Steward of Gondor`, `Sneak Attack x3`). It is resolved against your **local
-library** (normalized + fuzzy matching): found cards can be added to the cart
-with their quantities; cards with no local image are reported and skipped.
+library** (normalized + fuzzy matching): found cards can be added to the print
+list with their quantities; cards with no local image are reported and skipped.
 (Card images come from your own high-resolution `sets_folder/` the earlier
 RingsDB import has been removed.)
 
@@ -294,18 +295,19 @@ The GUI is a **shop-style flow**:
 
 - [x] **Shop homepage:** a grid of set tiles using **Hall of Beorn box art**
  (a deluxe box matches by name; a cycle uses its first adventure pack's image).
- *Add set to cart* adds the whole set; opening a tile drills into chapters →
+ *Add set to list* adds the whole set; opening a tile drills into chapters →
  cards, each with an add button.
-- [x] **Cart:** review the picked sets / chapters / cards, choose stock/backs,
- then **Export order.xml**, **Export PDF** (desktop tool), or **Create MPC
- project**. All items merge into one order; backs are auto-assigned by card
- type (Player back for player cards, Encounter back otherwise). The cart
- persists in the browser.
+- [x] **List to print:** review the picked sets / chapters / cards, choose
+ stock/backs, then **Export order.xml**, **Export PDF** (desktop tool), or
+ **Create MPC project**. All items merge into one order; backs are auto-assigned
+ by card type (Player back for player cards, Encounter back otherwise). The list
+ persists in the browser. (It's a print selection, not a shopping cart nothing
+ is ever sold or charged.)
 
 - [x] **Manual List Builder:** replaces the RingsDB import a pasted card list
- is checked against the local library; found cards go to the cart, missing ones
- are reported. (RingsDB dropped its images are low resolution.)
-- [x] **Visual card-back picker** and **cart price estimate** (€/$/¥, dated).
+ is checked against the local library; found cards go to the print list, missing
+ ones are reported. (RingsDB dropped its images are low resolution.)
+- [x] **Visual card-back picker** and **print-list price estimate** (€/$/¥, dated).
 - [x] **Code review + sub-package restructure** (see `lotrautofill/` layout).
 - [x] **i18n:** GUI and CLI in **English, French, Spanish, Chinese** (GUI
  language picker with browser auto-detect; CLI `--lang`).

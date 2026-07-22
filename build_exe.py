@@ -17,7 +17,6 @@ card thumbnails work; without it the GUI serves full images instead.
 from __future__ import annotations
 
 import importlib.util
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -39,13 +38,11 @@ def main() -> int:
         # Bundle every lotrautofill submodule (many are imported lazily in the
         # CLI handlers — library.*, catalog.*, mpc.*, web.*).
         "--collect-submodules", "lotrautofill",
-        # Branding assets (site logo + favicon), served by the GUI at runtime.
-        "--add-data", f"{assets}{os.pathsep}lotrautofill/assets",
         # Playwright is a heavy optional dep imported lazily; don't bundle it.
         "--exclude-module", "playwright",
     ]
     if icon.is_file():
-        cmd += ["--icon", str(icon)]  # Gandalf, the .exe's Windows icon
+        cmd += ["--icon", str(icon)]  # Gandalf, the .exe's Windows icon only
     if importlib.util.find_spec("PIL") is not None:
         cmd += ["--hidden-import", "PIL.Image"]  # GUI thumbnails
     cmd.append(str(root / ENTRY))
