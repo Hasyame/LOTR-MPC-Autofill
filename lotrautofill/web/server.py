@@ -103,6 +103,7 @@ def _make_handler(root: Path, out_dir: Path):
             elif path == "/api/catalog2":
                 c = _cat2(cache)
                 self._json({"cycles": c["cycles"], "sagas": c["sagas"],
+                            "nightmare": c.get("nightmare", []),
                             "root": c["root"]})
             elif path == "/api/unit-cards":
                 c = _cat2(cache)

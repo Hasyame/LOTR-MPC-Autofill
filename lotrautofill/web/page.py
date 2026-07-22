@@ -137,6 +137,11 @@ PAGE = r"""<!doctype html>
     border:1px solid var(--gold-soft); border-radius:8px; padding:8px 12px;
     background:rgba(217,165,58,.06); }
   .miss-list ul { margin:4px 0 0 18px; columns:2; }
+  .cyc-h.nm { color:var(--warn); border-color:var(--gold-soft); }
+  .nm-grp { border:1px solid var(--border); border-radius:8px;
+    margin:0 0 8px; padding:6px 10px 8px; background:rgba(255,255,255,.015); }
+  .nm-grp-h { display:flex; align-items:center; gap:10px; margin:2px 0 6px;
+    font-weight:700; color:var(--gold); }
 </style>
 </head>
 <body>
@@ -223,6 +228,7 @@ const I18N = {
     add_scenario:"Add scenario", all_cycles:"← all cycles", open:"Open",
     incl_nightmare:"Include Nightmare cards",
     cycle_n:"Cycle {n}", sagas:"Sagas", add_cycle:"Add cycle",
+    nightmare:"Nightmare decks", nightmare_sub:"Optional harder-mode cards, one deck per scenario.",
     kind_exp:"Expansion", kind_ap:"Adventure Packs", kind_saga:"Saga",
     n_appacks:"{n} packs", n_expansions:"{n} expansions",
     add_to_list:"Add", scenarios:"Scenarios",
@@ -263,6 +269,7 @@ const I18N = {
     add_scenario:"Ajouter le scénario", all_cycles:"← tous les cycles", open:"Ouvrir",
     incl_nightmare:"Inclure les cartes cauchemar",
     cycle_n:"Cycle {n}", sagas:"Sagas", add_cycle:"Ajouter le cycle",
+    nightmare:"Decks Nightmare", nightmare_sub:"Cartes de mode difficile (optionnelles), un deck par scénario.",
     kind_exp:"Extension", kind_ap:"Paquets d'aventure", kind_saga:"Saga",
     n_appacks:"{n} paquets", n_expansions:"{n} extensions",
     add_to_list:"Ajouter", scenarios:"Scénarios",
@@ -304,6 +311,7 @@ const I18N = {
     add_scenario:"Añadir escenario", all_cycles:"← todos los ciclos", open:"Abrir",
     incl_nightmare:"Incluir cartas de pesadilla",
     cycle_n:"Ciclo {n}", sagas:"Sagas", add_cycle:"Añadir ciclo",
+    nightmare:"Mazos Nightmare", nightmare_sub:"Cartas de modo difícil (opcionales), un mazo por escenario.",
     kind_exp:"Expansión", kind_ap:"Packs de aventura", kind_saga:"Saga",
     n_appacks:"{n} packs", n_expansions:"{n} expansiones",
     add_to_list:"Añadir", scenarios:"Escenarios",
@@ -345,6 +353,7 @@ const I18N = {
     add_scenario:"添加场景", all_cycles:"← 所有循环", open:"打开",
     incl_nightmare:"包含噩梦卡",
     cycle_n:"循环 {n}", sagas:"传奇", add_cycle:"添加整轮",
+    nightmare:"噩梦牌组", nightmare_sub:"可选的高难度卡牌，每个场景一个牌组。",
     kind_exp:"扩展", kind_ap:"冒险包", kind_saga:"传奇",
     n_appacks:"{n} 个包", n_expansions:"{n} 个扩展",
     add_to_list:"添加", scenarios:"场景",
@@ -515,8 +524,28 @@ function renderShop() {
     html += `<div class="cyc-h"><span>${T('sagas')}</span></div><div class="grid">` +
       LIB.sagas.map((s, si) => sagaTile(si, s)).join('') + `</div>`;
   }
+  if ((LIB.nightmare || []).length) {
+    html += `<div class="cyc-h nm"><span>${T('nightmare')}</span></div>
+      <div class="muted" style="margin:0 0 10px 2px">${T('nightmare_sub')}</div>`;
+    LIB.nightmare.forEach((g, gi) => {
+      html += `<div class="nm-grp"><div class="nm-grp-h">
+        <span class="grow">${esc(g.name)}</span>
+        <button class="go mini ghost" onclick="addNmGroup(${gi})">${T('add_to_list')}</button></div>`
+        + g.units.map((u, j) => nmRow(u, gi, j)).join('') + `</div>`;
+    });
+  }
   el.innerHTML = html;
 }
+function nmRow(u, gi, j) {
+  const mb = u.missing_total ? `<span class="miss-badge">${T('missing_n',{n:u.missing_total})}</span>` : '';
+  const hid = `nm-${gi}-${j}`;
+  return `<div><div class="row">
+    <span class="grow">${esc(u.name)} <span class="count">${T('n_cards',{n:u.cards_total})}</span> ${mb}</span>
+    <span class="back" style="margin:0" onclick='loadUnitCards(${JSON.stringify(u.id)},"${hid}")'>${T('cards_toggle')}</span>
+    <button class="go mini" onclick='addUnit(${JSON.stringify(u.id)})'>${T('add_to_list')}</button></div>
+    <div id="${hid}"></div></div>`;
+}
+async function addNmGroup(gi) { await addUnits((LIB.nightmare[gi].units||[]).map(u=>u.id)); }
 function _art(image, onclick, extra) {
   const bg = image ? `background-image:url('/api/product-image?f=${encodeURIComponent(image)}')` : '';
   return `<div class="art" style="${bg}" onclick="${onclick}">${extra || ''}</div>`;

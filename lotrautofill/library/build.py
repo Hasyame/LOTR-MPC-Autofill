@@ -36,6 +36,7 @@ class BuildOptions:
         interactive: Optional[bool] = None,
         encounter_back: Optional[Path] = None,
         player_back: Optional[Path] = None,
+        cardlists: Optional[dict] = None,
     ):
         self.errata = errata
         self.player_copies = player_copies
@@ -44,6 +45,9 @@ class BuildOptions:
         # Explicit common-back overrides (skip the interactive/ default choice).
         self.encounter_back = encounter_back
         self.player_back = player_back
+        # Optional bundled card lists, keyed by a folder's relative source path,
+        # used instead of on-disk cardlist.txt (so counts can ship with the app).
+        self.cardlists = cardlists
 
 
 class _Context:
@@ -121,7 +125,11 @@ def _build_folder(ctx: _Context, category: str, folder: Path) -> None:
     if not images:
         return
     source = _rel_source(folder, ctx.report.root)
-    cardlist = _load_cardlist(folder) if category in CARDLIST_CATEGORIES else None
+    cardlist = None
+    if category in CARDLIST_CATEGORIES:
+        override = ctx.options.cardlists
+        cardlist = override.get(source) if override is not None \
+            else _load_cardlist(folder)
 
     ctx.folder_pairs = []
     groups = _group_by_number(images)

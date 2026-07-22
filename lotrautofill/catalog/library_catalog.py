@@ -18,6 +18,7 @@ from pathlib import Path
 
 from ..library.build import BuildOptions, build
 from ..library.matching import normalize
+from ..library.model import CATEGORY_NIGHTMARE
 from ..library.sets import discover_chapters, discover_sets, display_name
 from . import hierarchy
 
@@ -117,6 +118,72 @@ def _blocks_to_subfolders(set_folder: Path, epic_units: list) -> list:
     return out
 
 
+def _nightmare_groups(root: Path, units_cache: dict, nm_db: dict) -> list:
+    """Nightmare decks, one printable unit per scenario, grouped by their set.
+
+    Nightmare is a first-class category on disk; ``build`` already tags those
+    cards. We build each ``Nightmare`` folder on its own, split its entries by
+    scenario sub-folder, and take the copy counts from the bundled card DB
+    (keyed by unit id), falling back to the folder's ``cardlist.txt``.
+    Unmatched lines become the missing list.
+    """
+    from ..library.parsing import image_folders_for_category
+
+    nm_folders = [p for p in root.rglob("*")
+                  if p.is_dir() and p.name == CATEGORY_NIGHTMARE]
+    groups: dict[str, dict] = {}
+    order: list[str] = []
+    for nm in sorted(nm_folders):
+        top = display_name(nm.relative_to(root).parts[0])
+        # Feed the bundled cardlists in, keyed by each image folder's source
+        # (relative to the Nightmare folder) so a user needs only the images.
+        overrides: dict[str, list] = {}
+        for f in image_folders_for_category(CATEGORY_NIGHTMARE, nm):
+            listed = nm_db.get(_rel(f, root))
+            if listed is not None:
+                src = nm.name if f == nm else f.name
+                overrides[src] = [(c["count"], c["name"]) for c in listed]
+        opts = BuildOptions(interactive=False,
+                            cardlists=overrides if overrides else None)
+        report = build(nm, opts)
+        by_src: dict[str, list] = {}
+        for e in report.entries:
+            by_src.setdefault(e.source, []).append(e)
+        miss_by_src: dict[str, list] = {}
+        for u in report.unmatched_cardlist:
+            miss_by_src.setdefault(u["source"], []).append(u)
+
+        units = []
+        for src in sorted(by_src):
+            entries = by_src[src]
+            # AP-style Nightmare: images sit directly in the Nightmare folder
+            # (source == "Nightmare"), so the scenario is its parent folder.
+            direct = src == nm.name
+            img_folder = nm if direct else nm / src
+            scen = display_name(nm.parent.name) if direct else display_name(src)
+            uid = _rel(img_folder, root)
+            cards = [{"name": e.name, "front": _rel(e.front, root),
+                      "category": e.category, "quantity": e.quantity,
+                      "set": top, "chapter": scen} for e in entries]
+            cards_total = sum(e.quantity for e in entries)
+            missing = [{"name": u["name"], "count": u["quantity"]}
+                       for u in miss_by_src.get(src, [])]
+            units_cache[uid] = {"cards": cards, "missing": missing}
+            units.append({"id": uid, "name": scen, "kind": "NIGHTMARE",
+                          "cards_total": cards_total, "missing_total": len(missing),
+                          "available": bool(cards) and cards_total > len(missing)})
+        if not units:
+            continue
+        g = groups.get(top)
+        if g is None:
+            g = {"name": top, "units": []}
+            groups[top] = g
+            order.append(top)
+        g["units"].extend(units)
+
+    return [groups[k] for k in order]
+
+
 def build_catalog(root: Path) -> dict:
     """The full browse catalog: cycles + sagas, plus a ``units`` id->cards map."""
     root = Path(root).resolve()
@@ -172,8 +239,10 @@ def build_catalog(root: Path) -> dict:
                       "missing_total": sum(u["missing_total"] for u in units),
                       "available": any(u["available"] for u in units)})
 
+    nightmare = _nightmare_groups(root, units_cache, db.get("nightmare", {}))
+
     result = {"root": str(root), "cycles": cycles, "sagas": sagas,
-              "units": units_cache}
+              "nightmare": nightmare, "units": units_cache}
     _attach_images(result)
     return result
 

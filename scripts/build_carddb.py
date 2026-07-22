@@ -21,7 +21,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from lotrautofill.catalog import hierarchy  # noqa: E402
 from lotrautofill.catalog.epiccardlist import parse_epiccardlist  # noqa: E402
+from lotrautofill.library.build import _load_cardlist  # noqa: E402
 from lotrautofill.library.matching import normalize  # noqa: E402
+from lotrautofill.library.model import CATEGORY_NIGHTMARE  # noqa: E402
+from lotrautofill.library.parsing import image_folders_for_category  # noqa: E402
 from lotrautofill.library.sets import (  # noqa: E402
     default_library_root, discover_sets, display_name,
 )
@@ -60,9 +63,26 @@ def _blocks(units: list) -> list:
     return [{"title": u["title"], "cards": _cards(u)} for u in units]
 
 
+def _rel(p: Path, root: Path) -> str:
+    return str(p.resolve().relative_to(root)).replace("\\", "/")
+
+
+def _nightmare(root: Path) -> dict:
+    """Nightmare cardlists keyed by unit id (folder path relative to root)."""
+    out: dict = {}
+    for nm in sorted(p for p in root.rglob("*")
+                     if p.is_dir() and p.name == CATEGORY_NIGHTMARE):
+        for f in image_folders_for_category(CATEGORY_NIGHTMARE, nm):
+            cl = _load_cardlist(f)
+            if cl:
+                out[_rel(f, root)] = [{"name": n, "count": c} for c, n in cl]
+    return out
+
+
 def build(root: Path) -> dict:
+    root = root.resolve()
     index = _index(root)
-    db: dict = {"expansions": {}, "ap_groups": {}, "sagas": {}}
+    db: dict = {"expansions": {}, "ap_groups": {}, "sagas": {}, "nightmare": {}}
     for _n, products in hierarchy.CYCLES:
         for pname, kind, _scen in products:
             folder = _find(pname, index)
@@ -77,6 +97,7 @@ def build(root: Path) -> dict:
     for sname, folder_name, _exp in hierarchy.SAGAS:
         folder = _find(folder_name, index)
         db["sagas"][sname] = _blocks(_read(folder)) if folder else []
+    db["nightmare"] = _nightmare(root)
     return db
 
 
@@ -87,7 +108,8 @@ def main() -> int:
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(db, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"expansions: {len(db['expansions'])} "
-          f"ap_groups: {len(db['ap_groups'])} sagas: {len(db['sagas'])}")
+          f"ap_groups: {len(db['ap_groups'])} sagas: {len(db['sagas'])} "
+          f"nightmare: {len(db['nightmare'])}")
     print("Wrote", OUT, f"({OUT.stat().st_size} bytes)")
     return 0
 

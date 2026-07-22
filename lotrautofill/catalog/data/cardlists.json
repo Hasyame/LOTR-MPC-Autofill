@@ -15006,5 +15006,2363 @@
     ]
    }
   ]
+ },
+ "nightmare": {
+  "01 - Core Set/01 - Core Set/Nightmare/Escape from Dol Guldur": [
+   {
+    "name": "Torture Master",
+    "count": 3
+   },
+   {
+    "name": "Crazed Captive",
+    "count": 2
+   },
+   {
+    "name": "Spider of Dol Guldur",
+    "count": 3
+   },
+   {
+    "name": "Torture Chamber",
+    "count": 2
+   },
+   {
+    "name": "Dungeon Labyrinth",
+    "count": 3
+   },
+   {
+    "name": "Sentinel of Shadow",
+    "count": 2
+   },
+   {
+    "name": "Catacomb Inspection",
+    "count": 2
+   },
+   {
+    "name": "Dark Interrogation",
+    "count": 2
+   }
+  ],
+  "01 - Core Set/01 - Core Set/Nightmare/Journey Along the Anduin": [
+   {
+    "name": "Brown Water Rats",
+    "count": 3
+   },
+   {
+    "name": "Gladden Marshlands",
+    "count": 3
+   },
+   {
+    "name": "Smoking Blood",
+    "count": 2
+   },
+   {
+    "name": "Marshland Outlaws",
+    "count": 2
+   },
+   {
+    "name": "A Flooded Ford",
+    "count": 2
+   },
+   {
+    "name": "Pursuit on the Shore",
+    "count": 2
+   },
+   {
+    "name": "Troll Attack",
+    "count": 2
+   },
+   {
+    "name": "Anduin Troll Spawn",
+    "count": 3
+   }
+  ],
+  "01 - Core Set/01 - Core Set/Nightmare/Passage Through Mirkwood": [
+   {
+    "name": "Forest Flies",
+    "count": 3
+   },
+   {
+    "name": "Ungoliant's Brood",
+    "count": 3
+   },
+   {
+    "name": "The Spider's Web",
+    "count": 3
+   },
+   {
+    "name": "Spiders of Mirkwood",
+    "count": 2
+   },
+   {
+    "name": "Abandoned Camp",
+    "count": 3
+   },
+   {
+    "name": "Backtrack!",
+    "count": 2
+   },
+   {
+    "name": "Glade of the Spawn",
+    "count": 2
+   },
+   {
+    "name": "Ungoliant's Spawn",
+    "count": 1
+   }
+  ],
+  "02 - Shadows of Mirkwood/02 - Shadows of Mirkwood/01 - The Hunt for Gollum/Nightmare": [
+   {
+    "name": "The Enemy's Trail",
+    "count": 2
+   },
+   {
+    "name": "Ravenous Hawk",
+    "count": 3
+   },
+   {
+    "name": "Watched Path",
+    "count": 2
+   },
+   {
+    "name": "Hunter's Lookout",
+    "count": 2
+   },
+   {
+    "name": "Hunting Warg",
+    "count": 2
+   },
+   {
+    "name": "Restless Hunters",
+    "count": 3
+   },
+   {
+    "name": "Dark Pools",
+    "count": 3
+   },
+   {
+    "name": "The Trail Grows Cold",
+    "count": 2
+   }
+  ],
+  "02 - Shadows of Mirkwood/02 - Shadows of Mirkwood/02 - Conflict at the Carrock/Nightmare": [
+   {
+    "name": "Rob & Bob",
+    "count": 1
+   },
+   {
+    "name": "Stuart",
+    "count": 1
+   },
+   {
+    "name": "Rupert",
+    "count": 1
+   },
+   {
+    "name": "Morris",
+    "count": 1
+   },
+   {
+    "name": "Louis",
+    "count": 1
+   },
+   {
+    "name": "Troll Lair",
+    "count": 3
+   },
+   {
+    "name": "Hives and Hives",
+    "count": 3
+   },
+   {
+    "name": "Time for Supper",
+    "count": 3
+   },
+   {
+    "name": "Savage Hill-troll",
+    "count": 4
+   }
+  ],
+  "02 - Shadows of Mirkwood/02 - Shadows of Mirkwood/03 - A Journey to Rhosgobel/Nightmare": [
+   {
+    "name": "Labyrinthine Woods",
+    "count": 3
+   },
+   {
+    "name": "Pitch-dark Thicket",
+    "count": 2
+   },
+   {
+    "name": "Dark-wood Grove",
+    "count": 3
+   },
+   {
+    "name": "Shot from the Sky",
+    "count": 3
+   },
+   {
+    "name": "Goblin Eagle-hunter",
+    "count": 3
+   },
+   {
+    "name": "Noxious Supplies",
+    "count": 3
+   },
+   {
+    "name": "Treetop Bird-eater",
+    "count": 2
+   }
+  ],
+  "02 - Shadows of Mirkwood/02 - Shadows of Mirkwood/04 - The Hills of Emyn Muil/Nightmare": [
+   {
+    "name": "Tunneling Nameless Thing",
+    "count": 3
+   },
+   {
+    "name": "Orc Interceptor",
+    "count": 2
+   },
+   {
+    "name": "Brambles and Thorns",
+    "count": 3
+   },
+   {
+    "name": "Sarn Gebir Rapids",
+    "count": 2
+   },
+   {
+    "name": "A Hurrying Darkness",
+    "count": 2
+   },
+   {
+    "name": "Blast of Savage Wind",
+    "count": 3
+   },
+   {
+    "name": "Hazardous Terrain",
+    "count": 2
+   },
+   {
+    "name": "Retraced Steps",
+    "count": 2
+   }
+  ],
+  "02 - Shadows of Mirkwood/02 - Shadows of Mirkwood/05 - The Dead Marshes/Nightmare": [
+   {
+    "name": "The Mere of Dead Faces",
+    "count": 1
+   },
+   {
+    "name": "Stagnant Quagmire",
+    "count": 3
+   },
+   {
+    "name": "Things in the Pools",
+    "count": 3
+   },
+   {
+    "name": "Marsh-wight",
+    "count": 2
+   },
+   {
+    "name": "Lost Soul of Lorien",
+    "count": 3
+   },
+   {
+    "name": "Ill-fated Guard",
+    "count": 3
+   },
+   {
+    "name": "Candles of Corpses",
+    "count": 1
+   },
+   {
+    "name": "Swarming Mosquitoes",
+    "count": 2
+   },
+   {
+    "name": "Devilry of the Dark Land",
+    "count": 1
+   }
+  ],
+  "02 - Shadows of Mirkwood/02 - Shadows of Mirkwood/06 - Return to Mirkwood/Nightmare": [
+   {
+    "name": "Ambushing Orcs",
+    "count": 3
+   },
+   {
+    "name": "Pursuing Warg-rider",
+    "count": 2
+   },
+   {
+    "name": "Web-spinner",
+    "count": 3
+   },
+   {
+    "name": "Deceptive Path",
+    "count": 2
+   },
+   {
+    "name": "Web-wall",
+    "count": 3
+   },
+   {
+    "name": "Isolation",
+    "count": 2
+   },
+   {
+    "name": "Befouled Equipment",
+    "count": 2
+   },
+   {
+    "name": "Wickedness and Mischief",
+    "count": 2
+   }
+  ],
+  "03 - Khazad-dûm/03 - Khazad-dûm/Nightmare/Flight from Moria": [
+   {
+    "name": "Swarming Goblin",
+    "count": 3
+   },
+   {
+    "name": "Coal-Black Orc",
+    "count": 3
+   },
+   {
+    "name": "Shadowed Corridor",
+    "count": 4
+   },
+   {
+    "name": "Dismay and Fear",
+    "count": 3
+   },
+   {
+    "name": "An Evil Fortune",
+    "count": 3
+   }
+  ],
+  "03 - Khazad-dûm/03 - Khazad-dûm/Nightmare/Into the Pit": [
+   {
+    "name": "Patrol Sentry",
+    "count": 4
+   },
+   {
+    "name": "Goblin Lurker",
+    "count": 3
+   },
+   {
+    "name": "Shadow Dweller",
+    "count": 2
+   },
+   {
+    "name": "Twisting Shadows",
+    "count": 3
+   },
+   {
+    "name": "Narrow Fissure",
+    "count": 3
+   },
+   {
+    "name": "Shadow-fall",
+    "count": 3
+   }
+  ],
+  "03 - Khazad-dûm/03 - Khazad-dûm/Nightmare/The Seventh Level": [
+   {
+    "name": "Overseer Maurul",
+    "count": 1
+   },
+   {
+    "name": "Chamber of Records",
+    "count": 1
+   },
+   {
+    "name": "Orc Taskmaster",
+    "count": 2
+   },
+   {
+    "name": "Goblin Skirmisher",
+    "count": 3
+   },
+   {
+    "name": "Pit Goblin",
+    "count": 2
+   },
+   {
+    "name": "Deep-mines",
+    "count": 3
+   },
+   {
+    "name": "Western Hall",
+    "count": 2
+   },
+   {
+    "name": "Balin's Doom",
+    "count": 3
+   },
+   {
+    "name": "Beats and Echoes",
+    "count": 2
+   }
+  ],
+  "04 - Dwarrowdelf/04 - Dwarrowdelf/01 - The Redhorn Gate/Nightmare": [
+   {
+    "name": "Wolfpelt Goblin",
+    "count": 3
+   },
+   {
+    "name": "Silvertine Marauder",
+    "count": 4
+   },
+   {
+    "name": "Snow-giant",
+    "count": 2
+   },
+   {
+    "name": "Ice Cavern",
+    "count": 3
+   },
+   {
+    "name": "Frozen Silverlode",
+    "count": 3
+   },
+   {
+    "name": "Blinding Blizzard",
+    "count": 2
+   },
+   {
+    "name": "Caradhras the Cruel",
+    "count": 2
+   }
+  ],
+  "04 - Dwarrowdelf/04 - Dwarrowdelf/02 - Road to Rivendell/Nightmare": [
+   {
+    "name": "Uruk Elf-stalker",
+    "count": 3
+   },
+   {
+    "name": "Goblin Trapper",
+    "count": 3
+   },
+   {
+    "name": "Raiding Party",
+    "count": 2
+   },
+   {
+    "name": "Vicious Trackers",
+    "count": 2
+   },
+   {
+    "name": "Treacherous Bluffs",
+    "count": 3
+   },
+   {
+    "name": "Concealed Woods",
+    "count": 3
+   },
+   {
+    "name": "Tumultuous Assault",
+    "count": 2
+   }
+  ],
+  "04 - Dwarrowdelf/04 - Dwarrowdelf/03 - The Watcher in the Water/Nightmare": [
+   {
+    "name": "The Watcher",
+    "count": 1
+   },
+   {
+    "name": "Writhing Tentacle",
+    "count": 3
+   },
+   {
+    "name": "Choking Tentacle",
+    "count": 4
+   },
+   {
+    "name": "Banks of Sirannon",
+    "count": 3
+   },
+   {
+    "name": "Hideous Depths",
+    "count": 3
+   },
+   {
+    "name": "Pulled Under",
+    "count": 2
+   },
+   {
+    "name": "Riddling From Beneath",
+    "count": 3
+   }
+  ],
+  "04 - Dwarrowdelf/04 - Dwarrowdelf/04 - The Long Dark/Nightmare": [
+   {
+    "name": "Goblin Stalker",
+    "count": 4
+   },
+   {
+    "name": "Trapdoor Spider",
+    "count": 3
+   },
+   {
+    "name": "Sentinel of the Deep",
+    "count": 2
+   },
+   {
+    "name": "Eastern Mines",
+    "count": 2
+   },
+   {
+    "name": "Bottomless Chasm",
+    "count": 3
+   },
+   {
+    "name": "Dreadful Deep",
+    "count": 3
+   },
+   {
+    "name": "Lost and Helpless",
+    "count": 2
+   }
+  ],
+  "04 - Dwarrowdelf/04 - Dwarrowdelf/05 - Foundations of Stone/Nightmare": [
+   {
+    "name": "Mithril Seeker",
+    "count": 3
+   },
+   {
+    "name": "Giant Cave Centipede",
+    "count": 2
+   },
+   {
+    "name": "Unspeakable Thing",
+    "count": 3
+   },
+   {
+    "name": "Primeval Thing",
+    "count": 2
+   },
+   {
+    "name": "Nest of Horrors",
+    "count": 3
+   },
+   {
+    "name": "Shivering River",
+    "count": 3
+   },
+   {
+    "name": "Chill of the Roots",
+    "count": 3
+   }
+  ],
+  "04 - Dwarrowdelf/04 - Dwarrowdelf/06 - Shadow and Flame/Nightmare": [
+   {
+    "name": "Terrible Strength",
+    "count": 2
+   },
+   {
+    "name": "The Dark Fire",
+    "count": 2
+   },
+   {
+    "name": "Blazing Grip",
+    "count": 2
+   },
+   {
+    "name": "Morgoth's Bidding",
+    "count": 2
+   },
+   {
+    "name": "Flame of Udun",
+    "count": 2
+   },
+   {
+    "name": "Servant of Flame",
+    "count": 3
+   },
+   {
+    "name": "Captain of Mordor",
+    "count": 2
+   },
+   {
+    "name": "Fiery Depths",
+    "count": 2
+   },
+   {
+    "name": "Crumbling Stairs",
+    "count": 2
+   }
+  ],
+  "05 - Heirs of Númenor/05 - Heirs of Númenor/Nightmare/Into Ithilien": [
+   {
+    "name": "Mumak Elite",
+    "count": 2
+   },
+   {
+    "name": "Haradrim Marksman",
+    "count": 3
+   },
+   {
+    "name": "Haradrim Captain",
+    "count": 2
+   },
+   {
+    "name": "Ithilien Overlook",
+    "count": 3
+   },
+   {
+    "name": "Dense Thickets",
+    "count": 3
+   },
+   {
+    "name": "Cormallen Fields",
+    "count": 2
+   },
+   {
+    "name": "Obsidian Arrows",
+    "count": 2
+   },
+   {
+    "name": "Savage Fray",
+    "count": 2
+   }
+  ],
+  "05 - Heirs of Númenor/05 - Heirs of Númenor/Nightmare/Peril in Pelargir": [
+   {
+    "name": "Cunning Informant",
+    "count": 3
+   },
+   {
+    "name": "Harbor Brute",
+    "count": 2
+   },
+   {
+    "name": "Pelargir Ringleader",
+    "count": 2
+   },
+   {
+    "name": "Dockside Street",
+    "count": 3
+   },
+   {
+    "name": "Pelargir Alley",
+    "count": 2
+   },
+   {
+    "name": "Bedlam in the Streets",
+    "count": 3
+   },
+   {
+    "name": "The Thieves' Ploy",
+    "count": 2
+   },
+   {
+    "name": "They're Getting Away!",
+    "count": 2
+   }
+  ],
+  "05 - Heirs of Númenor/05 - Heirs of Númenor/Nightmare/The Siege of Cair Andros": [
+   {
+    "name": "Southron Mounted Archer",
+    "count": 3
+   },
+   {
+    "name": "Orc Saboteur",
+    "count": 3
+   },
+   {
+    "name": "Orc Ravager",
+    "count": 4
+   },
+   {
+    "name": "Besieged Courtyard",
+    "count": 2
+   },
+   {
+    "name": "Walls of Cair Andros",
+    "count": 2
+   },
+   {
+    "name": "Anduin Wharf",
+    "count": 2
+   },
+   {
+    "name": "Ruin and Wroth",
+    "count": 3
+   }
+  ],
+  "06 - Against the Shadow/06 - Against the Shadow/01 - The Steward_s Fear/Nightmare": [
+   {
+    "name": "Rise to Power",
+    "count": 1
+   },
+   {
+    "name": "Assassination",
+    "count": 1
+   },
+   {
+    "name": "Murderous Turncoat",
+    "count": 3
+   },
+   {
+    "name": "Faithless Conspirator",
+    "count": 3
+   },
+   {
+    "name": "Traitors' Den",
+    "count": 2
+   },
+   {
+    "name": "Rath Celerdain",
+    "count": 2
+   },
+   {
+    "name": "Arched Tunnel",
+    "count": 2
+   },
+   {
+    "name": "False Accusations",
+    "count": 2
+   },
+   {
+    "name": "The Cabal's Champion",
+    "count": 3
+   }
+  ],
+  "06 - Against the Shadow/06 - Against the Shadow/02 - The Drúadan Forest/Nightmare": [
+   {
+    "name": "Dru-buri-Dru",
+    "count": 1
+   },
+   {
+    "name": "Druadan Warrior",
+    "count": 3
+   },
+   {
+    "name": "Druadan Stalker",
+    "count": 3
+   },
+   {
+    "name": "Devil's Mark",
+    "count": 3
+   },
+   {
+    "name": "Eilenach",
+    "count": 2
+   },
+   {
+    "name": "Stonewain Valley",
+    "count": 2
+   },
+   {
+    "name": "Drums of the Wild Men",
+    "count": 2
+   },
+   {
+    "name": "Poison-darts",
+    "count": 3
+   }
+  ],
+  "06 - Against the Shadow/06 - Against the Shadow/03 - Encounter at Amon Dîn/Nightmare": [
+   {
+    "name": "Orc Raiders",
+    "count": 2
+   },
+   {
+    "name": "Pillaging Orc",
+    "count": 3
+   },
+   {
+    "name": "Besieged Homestead",
+    "count": 3
+   },
+   {
+    "name": "Overrun Village",
+    "count": 2
+   },
+   {
+    "name": "Trapped Villagers",
+    "count": 3
+   },
+   {
+    "name": "Run for your Lives!",
+    "count": 2
+   },
+   {
+    "name": "Save Us!",
+    "count": 2
+   },
+   {
+    "name": "Those Now Sundered",
+    "count": 2
+   }
+  ],
+  "06 - Against the Shadow/06 - Against the Shadow/04 - Assault on Osgiliath/Nightmare": [
+   {
+    "name": "Invading Orc",
+    "count": 3
+   },
+   {
+    "name": "Haradrim Warrior",
+    "count": 3
+   },
+   {
+    "name": "Palace Remains",
+    "count": 1
+   },
+   {
+    "name": "Crumbled Battlements",
+    "count": 2
+   },
+   {
+    "name": "Eastern Quarter",
+    "count": 2
+   },
+   {
+    "name": "Western Quarter",
+    "count": 2
+   },
+   {
+    "name": "Relentless Attack",
+    "count": 2
+   },
+   {
+    "name": "Overrun Defenses",
+    "count": 2
+   },
+   {
+    "name": "Pressed on All Sides",
+    "count": 2
+   }
+  ],
+  "06 - Against the Shadow/06 - Against the Shadow/05 - The Blood of Gondor/Nightmare": [
+   {
+    "name": "Black Numenorean",
+    "count": 1
+   },
+   {
+    "name": "Orc Trickster",
+    "count": 4
+   },
+   {
+    "name": "Uruk Marksman",
+    "count": 3
+   },
+   {
+    "name": "Edge of Ithilien",
+    "count": 3
+   },
+   {
+    "name": "Mountains of Shadow",
+    "count": 3
+   },
+   {
+    "name": "Surrounded by Shadow",
+    "count": 3
+   },
+   {
+    "name": "Sudden Onslaught",
+    "count": 2
+   }
+  ],
+  "06 - Against the Shadow/06 - Against the Shadow/06 - The Morgul Vale/Nightmare": [
+   {
+    "name": "Warrior of Nurn",
+    "count": 3
+   },
+   {
+    "name": "Orc Captor",
+    "count": 3
+   },
+   {
+    "name": "Sentry of the White Bridge",
+    "count": 2
+   },
+   {
+    "name": "Banks of Morgulduin",
+    "count": 2
+   },
+   {
+    "name": "Ephel Duath",
+    "count": 3
+   },
+   {
+    "name": "White-Flowered Fields",
+    "count": 2
+   },
+   {
+    "name": "The Tower Beckons",
+    "count": 2
+   },
+   {
+    "name": "Noxious Fumes",
+    "count": 2
+   }
+  ],
+  "07 - The Voice of Isengard/07 - The Voice of Isengard/Nightmare/Into Fangorn": [
+   {
+    "name": "Huorn of Fangorn",
+    "count": 3
+   },
+   {
+    "name": "Blocking Huorn",
+    "count": 2
+   },
+   {
+    "name": "Wicked Huorn",
+    "count": 2
+   },
+   {
+    "name": "Tangled Forest",
+    "count": 3
+   },
+   {
+    "name": "Entwood",
+    "count": 3
+   },
+   {
+    "name": "Dark Corner of Fangorn",
+    "count": 2
+   },
+   {
+    "name": "Stifling Woods",
+    "count": 2
+   },
+   {
+    "name": "Fangorn's Anger",
+    "count": 2
+   }
+  ],
+  "07 - The Voice of Isengard/07 - The Voice of Isengard/Nightmare/The Fords of Isen": [
+   {
+    "name": "Dunland Assassin",
+    "count": 2
+   },
+   {
+    "name": "Vengeful Hillman",
+    "count": 3
+   },
+   {
+    "name": "Savage Hillman",
+    "count": 3
+   },
+   {
+    "name": "Western Shore",
+    "count": 3
+   },
+   {
+    "name": "Eastern Shore",
+    "count": 3
+   },
+   {
+    "name": "Isen River",
+    "count": 3
+   },
+   {
+    "name": "Brutal Assault",
+    "count": 2
+   }
+  ],
+  "07 - The Voice of Isengard/07 - The Voice of Isengard/Nightmare/To Catch an Orc": [
+   {
+    "name": "Vigilant Orc",
+    "count": 4
+   },
+   {
+    "name": "Methedras Lookout",
+    "count": 3
+   },
+   {
+    "name": "Guard Warg",
+    "count": 2
+   },
+   {
+    "name": "Methedras Peak",
+    "count": 2
+   },
+   {
+    "name": "Orc Trail",
+    "count": 2
+   },
+   {
+    "name": "Mugash's Cunning",
+    "count": 2
+   },
+   {
+    "name": "Patrolling Orcs",
+    "count": 2
+   },
+   {
+    "name": "Mugash's Rage",
+    "count": 2
+   }
+  ],
+  "08 - The Ring-maker/08 - The Ring-maker/01 - The Dunland Trap/Nightmare": [
+   {
+    "name": "Boar Clan Ambusher",
+    "count": 3
+   },
+   {
+    "name": "Boar Clan Skirmisher",
+    "count": 4
+   },
+   {
+    "name": "Plains of Dunland",
+    "count": 2
+   },
+   {
+    "name": "Munuv Duv River",
+    "count": 3
+   },
+   {
+    "name": "Hithaeglir Woods",
+    "count": 3
+   },
+   {
+    "name": "Boar Clan Assault",
+    "count": 2
+   },
+   {
+    "name": "Stalked by Dunlendings",
+    "count": 2
+   }
+  ],
+  "08 - The Ring-maker/08 - The Ring-maker/02 - The Three Trials/Nightmare": [
+   {
+    "name": "Wolf Spirit",
+    "count": 3
+   },
+   {
+    "name": "Boar Spirit",
+    "count": 3
+   },
+   {
+    "name": "Raven Spirit",
+    "count": 3
+   },
+   {
+    "name": "Sacred Forest",
+    "count": 3
+   },
+   {
+    "name": "Haunted Pillars",
+    "count": 2
+   },
+   {
+    "name": "Cursed Burden",
+    "count": 3
+   },
+   {
+    "name": "Trial of Ancestors",
+    "count": 2
+   }
+  ],
+  "08 - The Ring-maker/08 - The Ring-maker/03 - Trouble in Tharbad/Nightmare": [
+   {
+    "name": "Bellach's Hunter",
+    "count": 2
+   },
+   {
+    "name": "Orc Seeker",
+    "count": 3
+   },
+   {
+    "name": "Blood Hound",
+    "count": 3
+   },
+   {
+    "name": "City of Spies",
+    "count": 3
+   },
+   {
+    "name": "Dark Pathway",
+    "count": 3
+   },
+   {
+    "name": "Waylaid by Agents",
+    "count": 2
+   },
+   {
+    "name": "Tharbad Patrol",
+    "count": 3
+   }
+  ],
+  "08 - The Ring-maker/08 - The Ring-maker/04 - The Nîn-in-Eilph/Nightmare": [
+   {
+    "name": "Deadly Marsh Adder",
+    "count": 3
+   },
+   {
+    "name": "Swarms of Mosquitos",
+    "count": 3
+   },
+   {
+    "name": "Desolate Meadow",
+    "count": 3
+   },
+   {
+    "name": "Peat Bog",
+    "count": 4
+   },
+   {
+    "name": "Quicksand",
+    "count": 2
+   },
+   {
+    "name": "Rotten Stench",
+    "count": 2
+   }
+  ],
+  "08 - The Ring-maker/08 - The Ring-maker/05 - Celebrimbor_s Secret/Nightmare": [
+   {
+    "name": "Bellach's Bodyguard",
+    "count": 3
+   },
+   {
+    "name": "Little Snuffler",
+    "count": 3
+   },
+   {
+    "name": "Bones of Hollin",
+    "count": 3
+   },
+   {
+    "name": "Dusty Labyrinth",
+    "count": 3
+   },
+   {
+    "name": "Hateful Search",
+    "count": 3
+   },
+   {
+    "name": "Sauron's Agent",
+    "count": 2
+   },
+   {
+    "name": "Closing In",
+    "count": 2
+   }
+  ],
+  "08 - The Ring-maker/08 - The Ring-maker/06 - The Antlered Crown/Nightmare": [
+   {
+    "name": "Dunlending Horde",
+    "count": 2
+   },
+   {
+    "name": "Raven Clan Elite",
+    "count": 4
+   },
+   {
+    "name": "Raven Clan Druid",
+    "count": 3
+   },
+   {
+    "name": "Raven Stronghold",
+    "count": 4
+   },
+   {
+    "name": "Highlands of Dunland",
+    "count": 2
+   },
+   {
+    "name": "Raven Talisman",
+    "count": 2
+   },
+   {
+    "name": "Gathering Forces",
+    "count": 2
+   }
+  ],
+  "09 - The Lost Realm/09 - The Lost Realm/Nightmare/Deadmen_s Dike": [
+   {
+    "name": "Undead Horde",
+    "count": 2
+   },
+   {
+    "name": "Cursed Dead",
+    "count": 2
+   },
+   {
+    "name": "Palace Ruins",
+    "count": 2
+   },
+   {
+    "name": "Fornost Street",
+    "count": 4
+   },
+   {
+    "name": "Decrepit City",
+    "count": 3
+   },
+   {
+    "name": "Paralyzing Fear",
+    "count": 3
+   },
+   {
+    "name": "Curse of Angmar",
+    "count": 2
+   },
+   {
+    "name": "Gather Your Courage",
+    "count": 1
+   }
+  ],
+  "09 - The Lost Realm/09 - The Lost Realm/Nightmare/Invaders in Chetwood": [
+   {
+    "name": "Orc Abductor",
+    "count": 3
+   },
+   {
+    "name": "Soldier of Angmar",
+    "count": 2
+   },
+   {
+    "name": "Norhtern Chetwood",
+    "count": 3
+   },
+   {
+    "name": "Outskirts of Archet",
+    "count": 2
+   },
+   {
+    "name": "Greenway Path",
+    "count": 2
+   },
+   {
+    "name": "A Great Host",
+    "count": 2
+   },
+   {
+    "name": "Kill Them!",
+    "count": 3
+   },
+   {
+    "name": "Shadow the War Party",
+    "count": 1
+   },
+   {
+    "name": "Protect the Bree-landers",
+    "count": 1
+   }
+  ],
+  "09 - The Lost Realm/09 - The Lost Realm/Nightmare/The Weather Hills": [
+   {
+    "name": "Captive Villager",
+    "count": 3
+   },
+   {
+    "name": "Rearguard Ambusher",
+    "count": 3
+   },
+   {
+    "name": "Angmar Raider",
+    "count": 4
+   },
+   {
+    "name": "Weather-torn Valley",
+    "count": 2
+   },
+   {
+    "name": "Ruined Watch-tower",
+    "count": 3
+   },
+   {
+    "name": "Rain-washed Tracks",
+    "count": 3
+   },
+   {
+    "name": "Track the Orcs",
+    "count": 1
+   }
+  ],
+  "10 - Angmar Awakened/10 - Angmar Awakened/01 - The Wastes of Eriador/Nightmare": [
+   {
+    "name": "Pack Hunters",
+    "count": 5
+   },
+   {
+    "name": "Shrouded Wilderness",
+    "count": 3
+   },
+   {
+    "name": "Snowy Badlands",
+    "count": 3
+   },
+   {
+    "name": "Cunning Wolves",
+    "count": 3
+   },
+   {
+    "name": "Torernt of Hail",
+    "count": 3
+   },
+   {
+    "name": "Forced Off Track",
+    "count": 1
+   },
+   {
+    "name": "Make a Stand",
+    "count": 1
+   }
+  ],
+  "10 - Angmar Awakened/10 - Angmar Awakened/02 - Escape from Mount Gram/Nightmare": [
+   {
+    "name": "Jailor Gornakh",
+    "count": 1
+   },
+   {
+    "name": "Prison Guard",
+    "count": 3
+   },
+   {
+    "name": "Prison Cell",
+    "count": 4
+   },
+   {
+    "name": "Torture Chamber",
+    "count": 2
+   },
+   {
+    "name": "Cruel Torment",
+    "count": 3
+   },
+   {
+    "name": "Goblin Patrol",
+    "count": 2
+   },
+   {
+    "name": "Raid Golfinbul's Vault",
+    "count": 1
+   },
+   {
+    "name": "Orc of Thaurdir",
+    "count": 3
+   }
+  ],
+  "10 - Angmar Awakened/10 - Angmar Awakened/03 - Across the Ettenmoors/Nightmare": [
+   {
+    "name": "Hoarwell River Serpent",
+    "count": 2
+   },
+   {
+    "name": "Scavenging Stone-troll",
+    "count": 2
+   },
+   {
+    "name": "Giant Beetle",
+    "count": 2
+   },
+   {
+    "name": "Rocky Foothills",
+    "count": 2
+   },
+   {
+    "name": "Vast Troll-fells",
+    "count": 2
+   },
+   {
+    "name": "Crashing Thunder",
+    "count": 3
+   },
+   {
+    "name": "Barren and Desolate",
+    "count": 3
+   },
+   {
+    "name": "Isolated",
+    "count": 1
+   },
+   {
+    "name": "Rescue from the Trolls",
+    "count": 1
+   }
+  ],
+  "10 - Angmar Awakened/10 - Angmar Awakened/04 - The Treachery of Rhudaur/Nightmare": [
+   {
+    "name": "Thaurdir's Hunter",
+    "count": 2
+   },
+   {
+    "name": "Undead Thrall",
+    "count": 2
+   },
+   {
+    "name": "Forgotten Courtyard",
+    "count": 2
+   },
+   {
+    "name": "Charred Cellar",
+    "count": 2
+   },
+   {
+    "name": "Malevolent Forces",
+    "count": 2
+   },
+   {
+    "name": "Apostate of Angmar",
+    "count": 3
+   },
+   {
+    "name": "Secret Antechamber",
+    "count": 3
+   },
+   {
+    "name": "Life Drain",
+    "count": 3
+   }
+  ],
+  "10 - Angmar Awakened/10 - Angmar Awakened/05 - The Battle of Carn Dûm/Nightmare": [
+   {
+    "name": "Orc Wight",
+    "count": 3
+   },
+   {
+    "name": "Thaurdir's Elite",
+    "count": 2
+   },
+   {
+    "name": "Stronghold Tower",
+    "count": 3
+   },
+   {
+    "name": "Gates of Carn Dum",
+    "count": 2
+   },
+   {
+    "name": "Death and Decay",
+    "count": 3
+   },
+   {
+    "name": "Howling of Wargs",
+    "count": 2
+   },
+   {
+    "name": "Black Mare",
+    "count": 1
+   },
+   {
+    "name": "Protect the Flanks",
+    "count": 1
+   },
+   {
+    "name": "Rally the Fighters",
+    "count": 1
+   },
+   {
+    "name": "Sever the Head",
+    "count": 1
+   }
+  ],
+  "10 - Angmar Awakened/10 - Angmar Awakened/06 - The Dread Realm/Nightmare": [
+   {
+    "name": "Silent Guardian",
+    "count": 2
+   },
+   {
+    "name": "Necromancer of Carn Dum",
+    "count": 3
+   },
+   {
+    "name": "Inner Sanctum",
+    "count": 2
+   },
+   {
+    "name": "Cursed Halls",
+    "count": 3
+   },
+   {
+    "name": "Power Beyond Death",
+    "count": 3
+   },
+   {
+    "name": "Daechanar's Curse",
+    "count": 3
+   },
+   {
+    "name": "All is Lost",
+    "count": 2
+   },
+   {
+    "name": "The Wtich-king's Gift",
+    "count": 1
+   }
+  ],
+  "11 - The Grey Havens/11 - The Grey Havens/Nightmare/Raid on the Grey Havens": [
+   {
+    "name": "Corsair Pillager",
+    "count": 3
+   },
+   {
+    "name": "Corsair Pyromaniac",
+    "count": 3
+   },
+   {
+    "name": "Elite Marauder",
+    "count": 1
+   },
+   {
+    "name": "Narelenya",
+    "count": 1
+   },
+   {
+    "name": "Dawn Star",
+    "count": 1
+   },
+   {
+    "name": "Silver Wing",
+    "count": 1
+   },
+   {
+    "name": "Burning Tower",
+    "count": 2
+   },
+   {
+    "name": "Sudden Assault",
+    "count": 3
+   },
+   {
+    "name": "Infiltration",
+    "count": 2
+   }
+  ],
+  "11 - The Grey Havens/11 - The Grey Havens/Nightmare/The Fate of Numenor": [
+   {
+    "name": "Cursed Temple",
+    "count": 1
+   },
+   {
+    "name": "Drowned Graves",
+    "count": 2
+   },
+   {
+    "name": "Flooded Ruins",
+    "count": 1
+   },
+   {
+    "name": "Lush Jungle",
+    "count": 2
+   },
+   {
+    "name": "Desecrated Grounds",
+    "count": 2
+   },
+   {
+    "name": "Forsaken City",
+    "count": 2
+   },
+   {
+    "name": "Shrine to Morgoth",
+    "count": 1
+   },
+   {
+    "name": "Guardian of the Golden King",
+    "count": 2
+   },
+   {
+    "name": "Overgrown Steps",
+    "count": 3
+   },
+   {
+    "name": "Corrupted Flora",
+    "count": 3
+   },
+   {
+    "name": "Calphon's Folly",
+    "count": 2
+   }
+  ],
+  "11 - The Grey Havens/11 - The Grey Havens/Nightmare/Voyage Across Belegaer": [
+   {
+    "name": "Brash Corsair",
+    "count": 3
+   },
+   {
+    "name": "Sahir's Pursuer",
+    "count": 2
+   },
+   {
+    "name": "Open Waters",
+    "count": 2
+   },
+   {
+    "name": "Shattered Sea",
+    "count": 2
+   },
+   {
+    "name": "Rogue Wave",
+    "count": 3
+   },
+   {
+    "name": "Dreams of Numenor",
+    "count": 2
+   },
+   {
+    "name": "Raging Squall",
+    "count": 2
+   }
+  ],
+  "12 - Dream-chaser/12 - Dream-chaser/01 - Flight of the Stormcaller/Nightmare": [
+   {
+    "name": "Raider of the Storm",
+    "count": 4
+   },
+   {
+    "name": "Tide-runner",
+    "count": 2
+   },
+   {
+    "name": "Venom's Bite",
+    "count": 1
+   },
+   {
+    "name": "Sharp Jetties",
+    "count": 3
+   },
+   {
+    "name": "Cliffside Inlet",
+    "count": 3
+   },
+   {
+    "name": "Dark and Stormy",
+    "count": 3
+   },
+   {
+    "name": "Sahir's Getting Away!",
+    "count": 3
+   }
+  ],
+  "12 - Dream-chaser/12 - Dream-chaser/02 - The Thing in the Depths/Nightmare": [
+   {
+    "name": "Captain's Quarters",
+    "count": 1
+   },
+   {
+    "name": "Aft Cabin",
+    "count": 3
+   },
+   {
+    "name": "Tumultuous Waters",
+    "count": 3
+   },
+   {
+    "name": "Corsair Duelist",
+    "count": 3
+   },
+   {
+    "name": "Slithering Arm",
+    "count": 3
+   },
+   {
+    "name": "Crashing Arm",
+    "count": 3
+   },
+   {
+    "name": "Deep Maelstrom",
+    "count": 3
+   }
+  ],
+  "12 - Dream-chaser/12 - Dream-chaser/03 - Temple of the Deceived/Nightmare": [
+   {
+    "name": "Desecrated Ruins/Edge of the Temple",
+    "count": 2
+   },
+   {
+    "name": "Temple Foothills/Edge of the Temple",
+    "count": 2
+   },
+   {
+    "name": "Cursed Temple/Edge of the Temple",
+    "count": 2
+   },
+   {
+    "name": "King's Knight",
+    "count": 2
+   },
+   {
+    "name": "Cursed Soldier",
+    "count": 3
+   },
+   {
+    "name": "Deceitful Island",
+    "count": 2
+   },
+   {
+    "name": "Call of the Curse",
+    "count": 3
+   },
+   {
+    "name": "Sudden Precipice",
+    "count": 3
+   }
+  ],
+  "12 - Dream-chaser/12 - Dream-chaser/04 - The Drowned Ruins/Nightmare": [
+   {
+    "name": "Overgrown Passage/Jagged Cavern",
+    "count": 1
+   },
+   {
+    "name": "Overgrown Passage/Submerged Crawlway",
+    "count": 1
+   },
+   {
+    "name": "Sharp Precipice/Jagged Cavern",
+    "count": 1
+   },
+   {
+    "name": "Sharp Precipice/Submerged Crawlway",
+    "count": 1
+   },
+   {
+    "name": "Submerged Dead",
+    "count": 4
+   },
+   {
+    "name": "Great Shark",
+    "count": 2
+   },
+   {
+    "name": "Undersea Cave Troll",
+    "count": 2
+   },
+   {
+    "name": "Flooded Caverns",
+    "count": 2
+   },
+   {
+    "name": "Pit into the Depths",
+    "count": 3
+   },
+   {
+    "name": "Sulfur Cloud",
+    "count": 2
+   }
+  ],
+  "12 - Dream-chaser/12 - Dream-chaser/05 - A Storm on Cobas Haven/Nightmare": [
+   {
+    "name": "Aearlang",
+    "count": 1
+   },
+   {
+    "name": "Docks of Dol Amroth",
+    "count": 1
+   },
+   {
+    "name": "Ramming Ship",
+    "count": 2
+   },
+   {
+    "name": "Fang of Sahir",
+    "count": 3
+   },
+   {
+    "name": "City Under Siege",
+    "count": 3
+   },
+   {
+    "name": "Sea-wall",
+    "count": 3
+   },
+   {
+    "name": "War-torn Waters",
+    "count": 2
+   },
+   {
+    "name": "Broken Rudder",
+    "count": 2
+   },
+   {
+    "name": "Grappled!",
+    "count": 2
+   }
+  ],
+  "12 - Dream-chaser/12 - Dream-chaser/06 - The City of Corsairs/Nightmare": [
+   {
+    "name": "Patrol Ship",
+    "count": 2
+   },
+   {
+    "name": "Corsair Loyalist",
+    "count": 2
+   },
+   {
+    "name": "Walls of Umbar",
+    "count": 2
+   },
+   {
+    "name": "Umbar Bridge",
+    "count": 2
+   },
+   {
+    "name": "Inspiring Fury",
+    "count": 2
+   },
+   {
+    "name": "The Cursed Sword",
+    "count": 1
+   },
+   {
+    "name": "Umbar Patrol",
+    "count": 3
+   },
+   {
+    "name": "Raise the Alarm!",
+    "count": 2
+   },
+   {
+    "name": "Slave Trade",
+    "count": 3
+   }
+  ],
+  "19 - The Hobbit Saga/19 - The Hobbit Saga/01 - Over Hill and Under Hill/Nightmare/Dungeons Deep and Caverns Dim": [
+   {
+    "name": "The Lower Gate",
+    "count": 1
+   },
+   {
+    "name": "Pine Slopes",
+    "count": 3
+   },
+   {
+    "name": "Wicked Wolf",
+    "count": 3
+   },
+   {
+    "name": "We Hates It!",
+    "count": 3
+   },
+   {
+    "name": "Lower Gate Sentries",
+    "count": 3
+   },
+   {
+    "name": "Where Isss It?",
+    "count": 3
+   },
+   {
+    "name": "Fallen Stones",
+    "count": 3
+   }
+  ],
+  "19 - The Hobbit Saga/19 - The Hobbit Saga/01 - Over Hill and Under Hill/Nightmare/Over the Misty Mountains Grim": [
+   {
+    "name": "Narrow Ledge",
+    "count": 3
+   },
+   {
+    "name": "Dim Valley",
+    "count": 4
+   },
+   {
+    "name": "Lightning Splinters",
+    "count": 2
+   },
+   {
+    "name": "The Great Goblin",
+    "count": 1
+   },
+   {
+    "name": "Goblin Prowler",
+    "count": 4
+   },
+   {
+    "name": "Dark Passages",
+    "count": 3
+   },
+   {
+    "name": "Swish, smack! Whip crack!",
+    "count": 2
+   }
+  ],
+  "19 - The Hobbit Saga/19 - The Hobbit Saga/01 - Over Hill and Under Hill/Nightmare/We Must Away, Ere Break of Day": [
+   {
+    "name": "A Murder of Crows",
+    "count": 3
+   },
+   {
+    "name": "Red River-bank",
+    "count": 3
+   },
+   {
+    "name": "Wicked Hilltops",
+    "count": 3
+   },
+   {
+    "name": "Comfortable Light",
+    "count": 3
+   },
+   {
+    "name": "Mince Them Fine",
+    "count": 3
+   },
+   {
+    "name": "Night Wanes Slow",
+    "count": 2
+   },
+   {
+    "name": "One by One",
+    "count": 2
+   }
+  ],
+  "19 - The Hobbit Saga/19 - The Hobbit Saga/02 - On the Doorstep/Nightmare/Flies and Spiders": [
+   {
+    "name": "Attercop",
+    "count": 3
+   },
+   {
+    "name": "Venemous Spider",
+    "count": 5
+   },
+   {
+    "name": "Dark Colony",
+    "count": 2
+   },
+   {
+    "name": "Mirkwood Path",
+    "count": 2
+   },
+   {
+    "name": "Patch of Midnight",
+    "count": 3
+   },
+   {
+    "name": "A Horrible Battle",
+    "count": 2
+   },
+   {
+    "name": "Spider Bite",
+    "count": 2
+   }
+  ],
+  "19 - The Hobbit Saga/19 - The Hobbit Saga/02 - On the Doorstep/Nightmare/The Battle of Five Armies": [
+   {
+    "name": "Great Warg",
+    "count": 3
+   },
+   {
+    "name": "Frenzied Warg-Rider",
+    "count": 4
+   },
+   {
+    "name": "Gundabad Elite",
+    "count": 4
+   },
+   {
+    "name": "Embattled Village",
+    "count": 2
+   },
+   {
+    "name": "Eastern Ridge",
+    "count": 3
+   },
+   {
+    "name": "Dread Has Come!",
+    "count": 3
+   }
+  ],
+  "19 - The Hobbit Saga/19 - The Hobbit Saga/02 - On the Doorstep/Nightmare/The Lonely Mountain": [
+   {
+    "name": "Erebor Bats",
+    "count": 4
+   },
+   {
+    "name": "Secret Tunnel",
+    "count": 3
+   },
+   {
+    "name": "Southern Spur",
+    "count": 3
+   },
+   {
+    "name": "The Front Gate",
+    "count": 2
+   },
+   {
+    "name": "The Dragon's Ire",
+    "count": 4
+   },
+   {
+    "name": "Lust for Treasure",
+    "count": 3
+   }
+  ],
+  "20 - The Lord of the Rings Saga/20 - The Lord of the Rings Saga/01 - The Black Riders/Nightmare/A Knife in the Dark": [
+   {
+    "name": "Menacing Wraith",
+    "count": 2
+   },
+   {
+    "name": "Southern Spy",
+    "count": 4
+   },
+   {
+    "name": "Weathertop",
+    "count": 1
+   },
+   {
+    "name": "Weather Hills",
+    "count": 3
+   },
+   {
+    "name": "The Old Road",
+    "count": 3
+   },
+   {
+    "name": "Forsaken Inn",
+    "count": 2
+   },
+   {
+    "name": "The Ring's Will",
+    "count": 2
+   },
+   {
+    "name": "Blade Tip",
+    "count": 2
+   }
+  ],
+  "20 - The Lord of the Rings Saga/20 - The Lord of the Rings Saga/01 - The Black Riders/Nightmare/A Shadow of the Past": [
+   {
+    "name": "Khamul the Easterling",
+    "count": 1
+   },
+   {
+    "name": "Dark Horseman",
+    "count": 2
+   },
+   {
+    "name": "Eastfarthing",
+    "count": 3
+   },
+   {
+    "name": "Green-Hill Country",
+    "count": 3
+   },
+   {
+    "name": "Stock Woods",
+    "count": 3
+   },
+   {
+    "name": "In the Name of Mordor!",
+    "count": 2
+   },
+   {
+    "name": "Followed by Shadows",
+    "count": 3
+   },
+   {
+    "name": "Sniffing and Hissing",
+    "count": 2
+   }
+  ],
+  "20 - The Lord of the Rings Saga/20 - The Lord of the Rings Saga/01 - The Black Riders/Nightmare/Flight to the Ford": [
+   {
+    "name": "Fell Rider",
+    "count": 4
+   },
+   {
+    "name": "Ford of Bruinen",
+    "count": 1
+   },
+   {
+    "name": "Trollshaw Forest",
+    "count": 3
+   },
+   {
+    "name": "Great East Road",
+    "count": 3
+   },
+   {
+    "name": "Pathless Wilderness",
+    "count": 2
+   },
+   {
+    "name": "Ettendales",
+    "count": 2
+   },
+   {
+    "name": "Come Back!",
+    "count": 2
+   },
+   {
+    "name": "The Twilight World",
+    "count": 2
+   }
+  ],
+  "20 - The Lord of the Rings Saga/20 - The Lord of the Rings Saga/02 - The Road Darkens/Nightmare/Breaking of the Fellowship": [
+   {
+    "name": "Isengard Archer",
+    "count": 3
+   },
+   {
+    "name": "Isengard Tracker",
+    "count": 4
+   },
+   {
+    "name": "Langflood River",
+    "count": 3
+   },
+   {
+    "name": "Western Emyn Muil",
+    "count": 3
+   },
+   {
+    "name": "Arrows in the Night",
+    "count": 2
+   },
+   {
+    "name": "Hunting the Ring",
+    "count": 2
+   },
+   {
+    "name": "Discord and Distrust",
+    "count": 2
+   }
+  ],
+  "20 - The Lord of the Rings Saga/20 - The Lord of the Rings Saga/02 - The Road Darkens/Nightmare/Journey in the Dark": [
+   {
+    "name": "Slab-bearer",
+    "count": 1
+   },
+   {
+    "name": "Zirakzigil Archer",
+    "count": 4
+   },
+   {
+    "name": "Glowing Fissure",
+    "count": 3
+   },
+   {
+    "name": "Darkened Mine",
+    "count": 3
+   },
+   {
+    "name": "Fiery Whip",
+    "count": 1
+   },
+   {
+    "name": "Flaming Sword",
+    "count": 1
+   },
+   {
+    "name": "Very Weary",
+    "count": 3
+   },
+   {
+    "name": "Cut Off",
+    "count": 2
+   }
+  ],
+  "20 - The Lord of the Rings Saga/20 - The Lord of the Rings Saga/02 - The Road Darkens/Nightmare/The Ring Goes South": [
+   {
+    "name": "Pale-green Tentacle",
+    "count": 4
+   },
+   {
+    "name": "Hunting Hawk",
+    "count": 2
+   },
+   {
+    "name": "Misty Mountain Warg",
+    "count": 3
+   },
+   {
+    "name": "Expanse of Hollin",
+    "count": 3
+   },
+   {
+    "name": "Slopes of Hithaeglir",
+    "count": 3
+   },
+   {
+    "name": "Hunted in Hollin",
+    "count": 2
+   },
+   {
+    "name": "Shelterless Land",
+    "count": 2
+   }
+  ],
+  "20 - The Lord of the Rings Saga/20 - The Lord of the Rings Saga/03 - The Treason of Saruman/Nightmare/Helm_s Deep": [
+   {
+    "name": "Host of Isengard",
+    "count": 3
+   },
+   {
+    "name": "Bloodied Berserker",
+    "count": 4
+   },
+   {
+    "name": "Helm's Dike",
+    "count": 2
+   },
+   {
+    "name": "Hornburg Wall",
+    "count": 3
+   },
+   {
+    "name": "Glittering Caves",
+    "count": 2
+   },
+   {
+    "name": "Rain of Arrows",
+    "count": 3
+   },
+   {
+    "name": "Crippling Weariness",
+    "count": 2
+   }
+  ],
+  "20 - The Lord of the Rings Saga/20 - The Lord of the Rings Saga/03 - The Treason of Saruman/Nightmare/The Road to Isengard": [
+   {
+    "name": "Orthanc Archer",
+    "count": 3
+   },
+   {
+    "name": "Half-orc of Isengard",
+    "count": 3
+   },
+   {
+    "name": "Poisonous Shaft",
+    "count": 3
+   },
+   {
+    "name": "Fortress of Isengard",
+    "count": 3
+   },
+   {
+    "name": "Fire and Foul Fumes",
+    "count": 3
+   },
+   {
+    "name": "Traitor of Many Colors",
+    "count": 2
+   },
+   {
+    "name": "Daunting Power",
+    "count": 2
+   }
+  ],
+  "20 - The Lord of the Rings Saga/20 - The Lord of the Rings Saga/03 - The Treason of Saruman/Nightmare/The Uruk-hai": [
+   {
+    "name": "Mauhur",
+    "count": 1
+   },
+   {
+    "name": "Lugdush",
+    "count": 1
+   },
+   {
+    "name": "Orc of the White Hand",
+    "count": 4
+   },
+   {
+    "name": "Wold of Rohan",
+    "count": 2
+   },
+   {
+    "name": "Enchanted Land",
+    "count": 3
+   },
+   {
+    "name": "The Uruk's Trail",
+    "count": 3
+   },
+   {
+    "name": "Ugluk's Command",
+    "count": 3
+   },
+   {
+    "name": "Orc-draught",
+    "count": 2
+   }
+  ],
+  "20 - The Lord of the Rings Saga/20 - The Lord of the Rings Saga/04 - The Land of Shadow/Nightmare/Journey to the Cross-roads": [
+   {
+    "name": "Southron Warrior",
+    "count": 4
+   },
+   {
+    "name": "Southron Rearguard",
+    "count": 2
+   },
+   {
+    "name": "Wooded Glade",
+    "count": 3
+   },
+   {
+    "name": "Dense Fern-brake",
+    "count": 2
+   },
+   {
+    "name": "Shadowy Thicket",
+    "count": 3
+   },
+   {
+    "name": "Blind Wrath",
+    "count": 3
+   },
+   {
+    "name": "Ware! Ware!",
+    "count": 2
+   }
+  ],
+  "20 - The Lord of the Rings Saga/20 - The Lord of the Rings Saga/04 - The Land of Shadow/Nightmare/Shelob_s Lair": [
+   {
+    "name": "Foul-smelling Cave",
+    "count": 2
+   },
+   {
+    "name": "Torech Ungol",
+    "count": 3
+   },
+   {
+    "name": "Cobwebbed Tunnel",
+    "count": 3
+   },
+   {
+    "name": "Orc of Minas Morgul",
+    "count": 3
+   },
+   {
+    "name": "Under-gate Sentry",
+    "count": 3
+   },
+   {
+    "name": "Impenetrable Dark",
+    "count": 3
+   },
+   {
+    "name": "Growing Stench",
+    "count": 2
+   }
+  ],
+  "20 - The Lord of the Rings Saga/20 - The Lord of the Rings Saga/04 - The Land of Shadow/Nightmare/The Passage of the Marshes": [
+   {
+    "name": "Festering Mire",
+    "count": 3
+   },
+   {
+    "name": "Candle-lit Pool",
+    "count": 3
+   },
+   {
+    "name": "Great Reed Thicket",
+    "count": 2
+   },
+   {
+    "name": "Pale Faces",
+    "count": 3
+   },
+   {
+    "name": "Rotting Thing",
+    "count": 3
+   },
+   {
+    "name": "Rot and Vapors",
+    "count": 3
+   },
+   {
+    "name": "Gollum's Rage",
+    "count": 2
+   }
+  ]
  }
 }
