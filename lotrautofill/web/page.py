@@ -123,6 +123,16 @@ PAGE = r"""<!doctype html>
   .over-max { color:var(--warn); font-weight:600; margin:8px 0 2px;
     border:1px solid var(--gold-soft); border-radius:8px; padding:8px 10px;
     background:rgba(217,165,58,.08); }
+  .cyc-h { display:flex; align-items:center; gap:12px; margin:24px 0 10px;
+    font-family:"Trajan Pro","Palatino Linotype",Georgia,serif; color:var(--gold);
+    font-size:16px; border-bottom:1px solid var(--border); padding-bottom:6px; }
+  .cyc-h span { flex:1; }
+  .tile .art { position:relative; }
+  .kind-badge { position:absolute; top:6px; right:6px; font-size:10px;
+    background:rgba(13,9,6,.72); color:var(--gold); border:1px solid var(--gold-soft);
+    border-radius:20px; padding:1px 8px; }
+  .thumb .qty { position:absolute; top:2px; left:2px; background:var(--gold);
+    color:#20180a; border-radius:6px; padding:0 5px; font-size:11px; font-weight:800; }
 </style>
 </head>
 <body>
@@ -208,6 +218,10 @@ const I18N = {
     n_scenarios:"{n} scenarios", n_subcycles:"{n} sub-cycles",
     add_scenario:"Add scenario", all_cycles:"← all cycles", open:"Open",
     incl_nightmare:"Include Nightmare cards",
+    cycle_n:"Cycle {n}", sagas:"Sagas", add_cycle:"Add cycle",
+    kind_exp:"Expansion", kind_ap:"Adventure Packs", kind_saga:"Saga",
+    n_appacks:"{n} packs", n_expansions:"{n} expansions",
+    add_to_list:"Add", scenarios:"Scenarios",
     cart_title:"Your list to print", stock:"Card stock", enc_back:"Encounter back",
     ply_back:"Player back", foil:"Foil", export_xml:"Export order.xml",
     export_pdf:"Export PDF", create_mpc:"Create MPC project", empty_cart:"Clear list",
@@ -243,6 +257,10 @@ const I18N = {
     n_scenarios:"{n} scénarios", n_subcycles:"{n} sous-cycles",
     add_scenario:"Ajouter le scénario", all_cycles:"← tous les cycles", open:"Ouvrir",
     incl_nightmare:"Inclure les cartes cauchemar",
+    cycle_n:"Cycle {n}", sagas:"Sagas", add_cycle:"Ajouter le cycle",
+    kind_exp:"Extension", kind_ap:"Paquets d'aventure", kind_saga:"Saga",
+    n_appacks:"{n} paquets", n_expansions:"{n} extensions",
+    add_to_list:"Ajouter", scenarios:"Scénarios",
     cart_title:"Votre liste à imprimer", stock:"Type de carton", enc_back:"Dos rencontre",
     ply_back:"Dos joueur", foil:"Effet foil", export_xml:"Exporter order.xml",
     export_pdf:"Exporter PDF", create_mpc:"Créer un projet MPC", empty_cart:"Vider la liste",
@@ -279,6 +297,10 @@ const I18N = {
     n_scenarios:"{n} escenarios", n_subcycles:"{n} subciclos",
     add_scenario:"Añadir escenario", all_cycles:"← todos los ciclos", open:"Abrir",
     incl_nightmare:"Incluir cartas de pesadilla",
+    cycle_n:"Ciclo {n}", sagas:"Sagas", add_cycle:"Añadir ciclo",
+    kind_exp:"Expansión", kind_ap:"Packs de aventura", kind_saga:"Saga",
+    n_appacks:"{n} packs", n_expansions:"{n} expansiones",
+    add_to_list:"Añadir", scenarios:"Escenarios",
     cart_title:"Tu lista para imprimir", stock:"Tipo de cartón", enc_back:"Reverso de encuentro",
     ply_back:"Reverso de jugador", foil:"Foil", export_xml:"Exportar order.xml",
     export_pdf:"Exportar PDF", create_mpc:"Crear proyecto MPC", empty_cart:"Vaciar lista",
@@ -315,6 +337,10 @@ const I18N = {
     n_scenarios:"{n} 个场景", n_subcycles:"{n} 个子循环",
     add_scenario:"添加场景", all_cycles:"← 所有循环", open:"打开",
     incl_nightmare:"包含噩梦卡",
+    cycle_n:"循环 {n}", sagas:"传奇", add_cycle:"添加整轮",
+    kind_exp:"扩展", kind_ap:"冒险包", kind_saga:"传奇",
+    n_appacks:"{n} 个包", n_expansions:"{n} 个扩展",
+    add_to_list:"添加", scenarios:"场景",
     cart_title:"您的打印清单", stock:"卡纸类型", enc_back:"遭遇卡背",
     ply_back:"玩家卡背", foil:"闪膜", export_xml:"导出 order.xml",
     export_pdf:"导出 PDF", create_mpc:"创建 MPC 项目", empty_cart:"清空清单",
@@ -386,7 +412,7 @@ try { CART = JSON.parse(localStorage.getItem('lotr_cart') || '[]'); } catch(e) {
 
 async function load() {
   const [cat, backs] = await Promise.all([
-    fetch('/api/catalog?nightmare=' + nmParam()).then(r => r.json()),
+    fetch('/api/catalog2').then(r => r.json()),
     fetch('/api/backs').then(r => r.json()),
   ]);
   LIB = cat;
@@ -467,87 +493,127 @@ function pickBack(kind, label, el) {
   estimatePrice();
 }
 
-/* ---------- browse: cycles -> [sub-cycles] -> scenarios -> cards ---------- */
+/* ---------- browse: Cycle -> Expansion/AP -> cards ---------- */
 function renderShop() {
   const el = document.getElementById('shop');
-  el.className = 'grid';
-  el.innerHTML = (LIB.cycles || []).map((c, i) => cycleTile(c, i)).join('');
-}
-function cycleTile(c, i) {
-  const art = c.image
-    ? `background-image:url('/api/product-image?f=${encodeURIComponent(c.image)}')` : '';
-  const miss = (c.available && c.missing_total)
-    ? `<span class="miss">${T('n_missing',{n:c.missing_total})}</span>` : '';
-  const count = c.subgroups
-    ? T('n_subcycles',{n:c.subgroups.length})
-    : T('n_scenarios',{n:(c.scenarios||[]).length});
-  return `<div class="tile ${c.available?'':'dim'}">
-    <div class="art" style="${art}" onclick="openCycle(${i})">${miss}</div>
-    <div class="body">
-      <div class="nm" onclick="openCycle(${i})">${esc(c.name)}</div>
-      <div class="sub">${T('n_cards',{n:c.cards_total})} · ${count}</div>
-    </div></div>`;
-}
-function openCycle(i){ DETAIL = { cycle: i, sub: null }; renderDetail(); }
-function openSub(i, j){ DETAIL = { cycle: i, sub: j }; renderDetail(); }
-
-function scenarioRow(s, j) {
-  const mb = s.missing_total ? `<span class="miss-badge">${T('missing_n',{n:s.missing_total})}</span>` : '';
-  return `<div><div class="row">
-    <span class="grow">${esc(s.name)} <span class="count">${T('n_cards',{n:s.cards_total})}</span> ${mb}</span>
-    <span class="back" style="margin:0" onclick='loadScen(${JSON.stringify(s.slug)},"scen-${j}")'>${T('cards_toggle')}</span>
-    <button class="go mini" onclick='addScenario(${JSON.stringify(s.slug)})'>${T('add_scenario')}</button></div>
-    <div id="scen-${j}"></div></div>`;
-}
-function renderDetail() {
-  const c = LIB.cycles[DETAIL.cycle];
-  const el = document.getElementById('view-detail');
-  let html;
-  if (DETAIL.sub === null && c.subgroups) {
-    html = `<span class="back" onclick="showView('shop')">${T('all_cycles')}</span>
-      <h2>${esc(c.name)}</h2>`;
-    html += c.subgroups.map((sg, j) => {
-      const miss = sg.scenarios.reduce((a,s)=>a+s.missing_total,0);
-      const mb = miss ? `<span class="miss-badge">${T('missing_n',{n:miss})}</span>` : '';
-      return `<div class="row">
-        <span class="grow"><b>${esc(sg.name)}</b> <span class="count">${T('n_scenarios',{n:sg.scenarios.length})}</span> ${mb}</span>
-        <button class="go mini ghost" onclick="openSub(${DETAIL.cycle},${j})">${T('open')} ▸</button></div>`;
-    }).join('');
-  } else {
-    const scens = DETAIL.sub === null ? (c.scenarios || []) : c.subgroups[DETAIL.sub].scenarios;
-    const back = DETAIL.sub === null
-      ? `<span class="back" onclick="showView('shop')">${T('all_cycles')}</span>`
-      : `<span class="back" onclick="openCycle(${DETAIL.cycle})">← ${esc(c.name)}</span>`;
-    const title = DETAIL.sub === null ? c.name : c.subgroups[DETAIL.sub].name;
-    html = `${back}<h2>${esc(title)}</h2>` + scens.map(scenarioRow).join('');
+  el.className = '';
+  let html = '';
+  (LIB.cycles || []).forEach((cy, ci) => {
+    html += `<div class="cyc-h"><span>${T('cycle_n',{n:cy.n})}</span>
+      <button class="go mini ghost" onclick="addCycle(${ci})">${T('add_cycle')}</button></div>
+      <div class="grid">` + cy.products.map((p, pi) => productTile(ci, pi, p)).join('') + `</div>`;
+  });
+  if ((LIB.sagas || []).length) {
+    html += `<div class="cyc-h"><span>${T('sagas')}</span></div><div class="grid">` +
+      LIB.sagas.map((s, si) => sagaTile(si, s)).join('') + `</div>`;
   }
   el.innerHTML = html;
+}
+function _art(image, onclick, extra) {
+  const bg = image ? `background-image:url('/api/product-image?f=${encodeURIComponent(image)}')` : '';
+  return `<div class="art" style="${bg}" onclick="${onclick}">${extra || ''}</div>`;
+}
+function productTile(ci, pi, p) {
+  const miss = (p.available && p.missing_total) ? `<span class="miss">${T('n_missing',{n:p.missing_total})}</span>` : '';
+  const badge = `<span class="kind-badge">${p.kind==='EXPANSION'?T('kind_exp'):T('kind_ap')}</span>`;
+  const sub = p.kind==='AP_GROUP'
+    ? `${T('n_cards',{n:p.cards_total})} · ${T('n_appacks',{n:(p.units||[]).length})}`
+    : T('n_cards',{n:p.cards_total});
+  return `<div class="tile ${p.available?'':'dim'}">
+    ${_art(p.image, `openProduct(${ci},${pi})`, miss+badge)}
+    <div class="body">
+      <div class="nm" onclick="openProduct(${ci},${pi})">${esc(p.name)}</div>
+      <div class="sub">${sub}</div>
+      <button class="go mini" ${p.available?'':'disabled'} onclick="addProduct(${ci},${pi})">${T('add_to_list')}</button>
+    </div></div>`;
+}
+function sagaTile(si, s) {
+  const miss = (s.available && s.missing_total) ? `<span class="miss">${T('n_missing',{n:s.missing_total})}</span>` : '';
+  return `<div class="tile ${s.available?'':'dim'}">
+    ${_art(s.image, `openSaga(${si})`, miss+`<span class="kind-badge">${T('kind_saga')}</span>`)}
+    <div class="body">
+      <div class="nm" onclick="openSaga(${si})">${esc(s.name)}</div>
+      <div class="sub">${T('n_cards',{n:s.cards_total})} · ${T('n_expansions',{n:(s.units||[]).length})}</div>
+      <button class="go mini" ${s.available?'':'disabled'} onclick="addSaga(${si})">${T('add_to_list')}</button>
+    </div></div>`;
+}
+
+/* ---------- detail: a box's cards, or a list of packs/expansions ---------- */
+function openProduct(ci, pi) {
+  const p = LIB.cycles[ci].products[pi];
+  DETAIL = (p.kind === 'AP_GROUP')
+    ? { t:'apgroup', ci, pi }
+    : { t:'unit', id:p.id, name:p.name, scenarios:p.scenarios||[] };
+  renderDetail();
+}
+function openSaga(si) { DETAIL = { t:'saga', si }; renderDetail(); }
+function renderDetail() {
+  const el = document.getElementById('view-detail');
+  const back = `<span class="back" onclick="showView('shop')">${T('all_cycles')}</span>`;
+  if (DETAIL.t === 'unit') {
+    const scen = DETAIL.scenarios.length
+      ? `<div class="muted">${T('scenarios')}: ${DETAIL.scenarios.map(esc).join(' · ')}</div>` : '';
+    el.innerHTML = `${back}<h2>${esc(DETAIL.name)}</h2>${scen}
+      <div style="margin:10px 0"><button class="go" onclick='addUnit(${JSON.stringify(DETAIL.id)})'>${T('add_to_list')}</button></div>
+      <div id="unit-host"></div>`;
+    showView('detail');
+    loadUnitCards(DETAIL.id, 'unit-host');
+    return;
+  }
+  let title, units, addAll;
+  if (DETAIL.t === 'apgroup') {
+    const p = LIB.cycles[DETAIL.ci].products[DETAIL.pi];
+    title = p.name; units = p.units || []; addAll = `addProduct(${DETAIL.ci},${DETAIL.pi})`;
+  } else {
+    const s = LIB.sagas[DETAIL.si];
+    title = s.name; units = s.units || []; addAll = `addSaga(${DETAIL.si})`;
+  }
+  el.innerHTML = `${back}<h2>${esc(title)}</h2>
+    <div style="margin:8px 0"><button class="go mini" onclick="${addAll}">${T('add_to_list')}</button></div>`
+    + units.map((u, j) => unitRow(u, j)).join('');
   showView('detail');
 }
-async function loadScen(slug, hostId) {
+function unitRow(u, j) {
+  const mb = u.missing_total ? `<span class="miss-badge">${T('missing_n',{n:u.missing_total})}</span>` : '';
+  const scen = (u.scenarios && u.scenarios.length > 1)
+    ? `<div class="muted" style="margin:0 0 4px 2px">${u.scenarios.map(esc).join(' · ')}</div>` : '';
+  return `<div><div class="row">
+    <span class="grow">${esc(u.name)} <span class="count">${T('n_cards',{n:u.cards_total})}</span> ${mb}</span>
+    <span class="back" style="margin:0" onclick='loadUnitCards(${JSON.stringify(u.id)},"u-${j}")'>${T('cards_toggle')}</span>
+    <button class="go mini" onclick='addUnit(${JSON.stringify(u.id)})'>${T('add_to_list')}</button></div>
+    ${scen}<div id="u-${j}"></div></div>`;
+}
+async function loadUnitCards(id, hostId) {
   const host = document.getElementById(hostId);
   if (host.dataset.on) { host.innerHTML=''; host.dataset.on=''; return; }
   host.innerHTML = '<span class="muted">'+T('loading')+'</span>';
-  const d = await (await fetch('/api/scenario-cards?slug=' + encodeURIComponent(slug) + '&nightmare=' + nmParam())).json();
+  const d = await (await fetch('/api/unit-cards?id=' + encodeURIComponent(id))).json();
   host.dataset.on = '1';
-  const thumbs = (d.cards||[]).map(c => {
+  host.innerHTML = '<div class="thumbs">' + (d.cards||[]).map(c => {
     const key = cardKey(c.set, c.chapter, c.front);
+    const qty = c.quantity > 1 ? `<span class="qty">×${c.quantity}</span>` : '';
     return `<div class="thumb ${inCart(key)?'in':''}" id="t-${cssid(key)}">
-      <img loading="lazy" src="/api/thumb?p=${encodeURIComponent(c.front)}">
-      <button class="add" title="${T('add_card')}" onclick='addCard(${JSON.stringify(c.set)},${JSON.stringify(c.chapter)},${JSON.stringify(c.front)},${JSON.stringify(c.name)})'>+</button>
+      <img loading="lazy" src="/api/thumb?p=${encodeURIComponent(c.front)}">${qty}
+      <button class="add" title="${T('add_card')}" onclick='addCard(${JSON.stringify(c.set)},${JSON.stringify(c.chapter)},${JSON.stringify(c.front)},${JSON.stringify(c.name)},${c.quantity})'>+</button>
       <div class="cap">${esc(c.name)}</div></div>`;
-  }).join('');
-  let html = '<div class="thumbs">' + thumbs + '</div>';
-  if (d.missing && d.missing.length)
-    html += '<div class="miss"><b>'+T('missing_label')+'</b> ' + d.missing.map(esc).join(', ') + '</div>';
-  host.innerHTML = html;
+  }).join('') + '</div>';
 }
-async function addScenario(slug) {
-  const d = await (await fetch('/api/scenario-cards?slug=' + encodeURIComponent(slug) + '&nightmare=' + nmParam())).json();
+
+/* ---------- add to print list ---------- */
+async function addUnit(id) {
+  const d = await (await fetch('/api/unit-cards?id=' + encodeURIComponent(id))).json();
   (d.cards||[]).forEach(c => pushItem({type:'card', set:c.set, chapter:c.chapter,
-                                       front:c.front, label:c.name}));
+    front:c.front, quantity:c.quantity, label:c.name}));
   renderCartCount();
 }
+async function addUnits(ids) { for (const id of ids) await addUnit(id); }
+function _leafIds(p) { return p.kind==='AP_GROUP' ? (p.units||[]).map(u=>u.id) : [p.id]; }
+async function addProduct(ci, pi) { await addUnits(_leafIds(LIB.cycles[ci].products[pi])); }
+async function addCycle(ci) {
+  const ids = []; LIB.cycles[ci].products.forEach(p => ids.push(..._leafIds(p)));
+  await addUnits(ids);
+}
+async function addSaga(si) { await addUnits((LIB.sagas[si].units||[]).map(u=>u.id)); }
 
 /* ---------- cart ---------- */
 function cartKey(it){ return it.type+'|'+(it.set||'')+'|'+(it.chapter||'')+'|'+(it.front||''); }
@@ -556,7 +622,7 @@ function inCart(key){ return CART.some(it => cartKey(it) === key); }
 function saveCart(){ localStorage.setItem('lotr_cart', JSON.stringify(CART)); renderCartCount(); }
 function renderCartCount(){ document.getElementById('cartN').textContent = CART.length; }
 function pushItem(it){ if(!inCart(cartKey(it))){ CART.push(it); saveCart(); } }
-function addCard(set,ch,front,name){ pushItem({type:'card',set,chapter:ch,front,label:name});
+function addCard(set,ch,front,name,qty){ pushItem({type:'card',set,chapter:ch,front,quantity:qty,label:name});
   const el=document.getElementById('t-'+cssid(cardKey(set,ch,front))); if(el) el.classList.add('in'); }
 
 function renderCart() {

@@ -147,5 +147,40 @@ def build_catalog(root: Path) -> dict:
                       "missing_total": sum(u["missing_total"] for u in units),
                       "available": any(u["available"] for u in units)})
 
-    return {"root": str(root), "cycles": cycles, "sagas": sagas,
-            "units": units_cache}
+    result = {"root": str(root), "cycles": cycles, "sagas": sagas,
+              "units": units_cache}
+    _attach_images(result)
+    return result
+
+
+def _attach_images(cat: dict) -> None:
+    """Attach a Hall of Beorn box-art filename to each product/unit by name."""
+    from .hallofbeorn import load_reference
+
+    ref = load_reference() or {}
+    img: dict[str, str] = {}
+    for p in ref.get("products", []):
+        img.setdefault(normalize(p["name"]), p["image"].rsplit("/", 1)[-1])
+
+    def first_unit_img(node: dict):
+        for u in node.get("units", []):
+            if u.get("image"):
+                return u["image"]
+        return None
+
+    def setimg(node: dict) -> None:
+        node["image"] = img.get(normalize(node.get("name", "")))
+
+    for cy in cat["cycles"]:
+        for p in cy["products"]:
+            for u in p.get("units", []):
+                setimg(u)
+            setimg(p)
+            if not p["image"]:                 # AP group -> first pack's image
+                p["image"] = first_unit_img(p)
+    for s in cat["sagas"]:
+        for u in s["units"]:
+            setimg(u)
+        setimg(s)
+        if not s["image"]:
+            s["image"] = first_unit_img(s)
