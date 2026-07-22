@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from lotrautofill.build import BuildOptions, build
+from lotrautofill.library.build import BuildOptions, build
 
 
 def _touch(folder: Path, *names: str) -> None:

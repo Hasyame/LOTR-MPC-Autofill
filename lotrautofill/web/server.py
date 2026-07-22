@@ -2,7 +2,8 @@
 
 Serves a single-page UI and a small JSON API that reuses the CLI's building
 blocks: browse the card library, generate ``order.xml`` for chosen
-sets/chapters, and import a RingsDB deck. Bind to localhost only.
+sets/chapters, and resolve a manual card list against the local library. Bind
+to localhost only.
 """
 
 from __future__ import annotations
@@ -10,6 +11,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import sys
 import tempfile
 import threading
 import urllib.parse
@@ -18,11 +20,12 @@ import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from ..build import BuildOptions, build
-from ..database import build_database
-from ..sets import default_library_root, discover_chapters, discover_sets
-from ..upload.mpc_xml import plan_to_xml
-from ..upload.plan import plan_from_manifest
+from .. import i18n
+from ..library.build import BuildOptions, build
+from ..catalog.database import build_database
+from ..library.sets import default_library_root, discover_chapters, discover_sets
+from ..mpc.mpc_xml import plan_to_xml
+from ..mpc.plan import plan_from_manifest
 from .page import PAGE
 
 # Light thumbnails are cached here (needs Pillow; falls back to the original).
@@ -37,22 +40,24 @@ _MAX_BODY = 4 * 1024 * 1024  # cap request bodies (cart/manual list) at 4 MB
 
 def run_server(root: Path | None = None, host: str = "127.0.0.1",
                port: int = 8765, out_dir: Path | None = None,
-               open_browser: bool = True) -> None:
+               open_browser: bool = True, lang: str | None = None) -> None:
     root = Path(root) if root else default_library_root()
     out_dir = Path(out_dir) if out_dir else Path("MPC_XML")
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    lang = i18n.resolve_lang(lang)
     handler = _make_handler(root.resolve(), out_dir.resolve())
     httpd = ThreadingHTTPServer((host, port), handler)
     url = f"http://{host}:{port}/"
-    print(f"LOTRAutofill GUI running at {url}\nLibrary: {root.resolve()}\n"
-          "Press Ctrl+C to stop.")
+    print(i18n.t("gui_running", lang=lang, url=url))
+    print(i18n.t("gui_library", lang=lang, path=root.resolve()))
+    print(i18n.t("gui_stop_hint", lang=lang))
     if open_browser:
         threading.Timer(0.5, lambda: webbrowser.open(url)).start()
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print("\nStopping.")
+        print("\n" + i18n.t("gui_stopping", lang=lang))
         httpd.shutdown()
 
 
@@ -89,6 +94,12 @@ def _make_handler(root: Path, out_dir: Path):
             path, query = parsed.path, urllib.parse.parse_qs(parsed.query)
             if path == "/" or path.startswith("/index"):
                 self._send(200, PAGE.encode("utf-8"), "text/html; charset=utf-8")
+            elif path == "/logo.png":
+                self._binary(_asset_bytes("gandalf.png"), "image/png",
+                             cache_control="max-age=604800")
+            elif path == "/favicon.ico":
+                self._binary(_asset_bytes("gandalf.ico"), "image/x-icon",
+                             cache_control="max-age=604800")
             elif path == "/api/library":
                 if "lib" not in cache:
                     cache["lib"] = _library(root)
@@ -137,6 +148,8 @@ def _make_handler(root: Path, out_dir: Path):
                     self._json(_autofill(self._body()))
                 elif self.path == "/api/cart-export":
                     self._json(_cart_export(root, out_dir, self._body()))
+                elif self.path == "/api/cart-price":
+                    self._json(_cart_price(root, self._body()))
                 elif self.path == "/api/manual-list":
                     if "catalog" not in cache:
                         cache["catalog"] = _card_catalog(root)
@@ -153,8 +166,8 @@ def _make_handler(root: Path, out_dir: Path):
 # API implementations (reuse the CLI building blocks)
 # --------------------------------------------------------------------------- #
 def _library(root: Path) -> dict:
-    from ..hallofbeorn import load_reference
-    from ..matching import normalize
+    from ..catalog.hallofbeorn import load_reference
+    from ..library.matching import normalize
 
     db = build_database(root)
     # Trim the heavy per-card lists; the UI fetches cards per unit for previews.
@@ -213,6 +226,16 @@ def _rel(p: Path, root: Path) -> str | None:
         return None
 
 
+def _asset_bytes(name: str) -> bytes | None:
+    """Read a bundled branding asset (logo/icon). Works both from source and
+    from a PyInstaller one-file build (assets land under ``sys._MEIPASS``)."""
+    meipass = getattr(sys, "_MEIPASS", None)
+    base = (Path(meipass) / "lotrautofill" / "assets") if meipass \
+        else Path(__file__).resolve().parent.parent / "assets"
+    p = base / name
+    return p.read_bytes() if p.is_file() else None
+
+
 def _thumbnail(root: Path, rel: str) -> tuple[bytes | None, str]:
     """A light JPEG thumbnail of a card image (Pillow); original if unavailable."""
     if not rel:
@@ -262,7 +285,7 @@ def _map_set_images(sets: list, products: list) -> None:
     A deluxe box matches a product by name; a cycle (no single product) falls
     back to its first chapter's (adventure pack's) image.
     """
-    from ..matching import normalize
+    from ..library.matching import normalize
 
     index: dict[str, str] = {}
     for p in products:
@@ -305,19 +328,20 @@ def _build_unit_xml(folder: Path, label: str, out_dir: Path, stock: str,
 
 
 def _backs_info(root: Path) -> dict:
-    from ..backs import CardBacks, ENCOUNTER_BACK, PLAYER_BACK, find_backs_dir
+    from ..library.backs import CardBacks, ENCOUNTER_BACK, PLAYER_BACK, find_backs_dir
 
     backs = CardBacks(find_backs_dir(root))
     enc, ply = [], []
     for c in backs.choices:
-        (ply if "player" in c.label.lower() else enc).append(c.label)
+        item = {"label": c.label, "path": _rel(c.path, root)}
+        (ply if "player" in c.label.lower() else enc).append(item)
     return {"encounter": enc, "player": ply,
             "default_encounter": Path(ENCOUNTER_BACK).stem,
             "default_player": Path(PLAYER_BACK).stem}
 
 
 def _resolve_back(root: Path, label) -> Path | None:
-    from ..backs import CardBacks, find_backs_dir
+    from ..library.backs import CardBacks, find_backs_dir
 
     if not label:
         return None
@@ -339,7 +363,7 @@ def _pick(root: Path, out_dir: Path, body: dict) -> dict:
         folder = _unit_folder(root, set_name, chapter)
         if folder is None:
             continue
-        from ..sets import display_name
+        from ..library.sets import display_name
         label = (f"{display_name(set_name)} — {display_name(chapter)}"
                  if chapter else display_name(set_name))
         results.append(
@@ -348,11 +372,11 @@ def _pick(root: Path, out_dir: Path, body: dict) -> dict:
 
 
 def _autofill(body: dict) -> dict:
-    from ..upload.desktop_tool import launch_autofill_terminal
+    from ..mpc.desktop_tool import launch_autofill_terminal
 
     xml = body.get("order_xml")
     if not xml or not Path(xml).is_file():
-        return {"error": "order.xml not found"}
+        return {"error": i18n.t("srv_order_not_found", lang=i18n.resolve_lang(body.get("lang")))}
     message = launch_autofill_terminal(Path(xml))
     return {"launched": True, "message": message}
 
@@ -360,7 +384,7 @@ def _autofill(body: dict) -> dict:
 def _card_catalog(root: Path) -> dict:
     """Every locally-available card as ``{normalized name: {set, chapter, front,
     name, category}}`` — the reference the Manual List resolves against."""
-    from ..matching import normalize
+    from ..library.matching import normalize
 
     catalog: dict[str, dict] = {}
     for s in discover_sets(root):
@@ -380,8 +404,8 @@ def _manual_list(catalog: dict, body: dict) -> dict:
     Returns the cards found (with their location + quantity, ready for the cart)
     and the ones with no local image (reported, so the user can decide).
     """
-    from ..decklist import parse_decklist_text
-    from ..matching import best_match, normalize
+    from ..library.decklist import parse_decklist_text
+    from ..library.matching import best_match, normalize
 
     resolved, missing = [], []
     for qty, name in parse_decklist_text(body.get("text", "")):
@@ -395,14 +419,10 @@ def _manual_list(catalog: dict, body: dict) -> dict:
     return {"resolved": resolved, "missing": missing}
 
 
-def _cart_export(root: Path, out_dir: Path, body: dict) -> dict:
-    """Resolve the cart (set / chapter / card items) to one order.xml, then
-    export it as XML, a PDF proof, or an MPC project."""
+def _resolve_cart_plan(root: Path, body: dict):
+    """Resolve the cart (set / chapter / card items) into a single UploadPlan,
+    honoring the chosen encounter/player backs. Returns ``None`` if empty."""
     items = body.get("items", [])
-    stock = body.get("stock", "(S33) Superior Smooth")
-    foil = bool(body.get("foil"))
-    fmt = body.get("format", "xml")
-    name = body.get("name") or "cart"
     enc_back = _resolve_back(root, body.get("encounter_back"))
     ply_back = _resolve_back(root, body.get("player_back"))
 
@@ -429,20 +449,50 @@ def _cart_export(root: Path, out_dir: Path, body: dict) -> dict:
             chosen[str(e.front)] = e
 
     if not chosen:
-        return {"error": "Cart is empty (nothing resolved)."}
+        return None
 
     manifest = {"root": str(root), "cards": [
         {"front": str(e.front), "back": str(e.back) if e.back else None,
          "quantity": e.quantity, "name": e.name, "category": e.category,
          "double_sided": e.double_sided} for e in chosen.values()]}
-    plan = plan_from_manifest(manifest)
+    return plan_from_manifest(manifest)
+
+
+def _cart_price(root: Path, body: dict) -> dict:
+    """Estimate the MPC price of the current cart without writing any file."""
+    from ..mpc import pricing
+
+    plan = _resolve_cart_plan(root, body)
+    if plan is None:
+        return {"error": i18n.t("srv_cart_empty", lang=i18n.resolve_lang(body.get("lang")))}
+    stock = body.get("stock", "(S33) Superior Smooth")
+    foil = bool(body.get("foil"))
+    return {"cards": plan.total_cards, "fronts": len(plan.unique_fronts),
+            "price": pricing.estimate(plan.total_cards, stock, foil)}
+
+
+def _cart_export(root: Path, out_dir: Path, body: dict) -> dict:
+    """Resolve the cart (set / chapter / card items) to one order.xml, then
+    export it as XML, a PDF proof, or an MPC project."""
+    from ..mpc import pricing
+
+    stock = body.get("stock", "(S33) Superior Smooth")
+    foil = bool(body.get("foil"))
+    fmt = body.get("format", "xml")
+    name = body.get("name") or "cart"
+
+    plan = _resolve_cart_plan(root, body)
+    if plan is None:
+        return {"error": i18n.t("srv_cart_empty", lang=i18n.resolve_lang(body.get("lang")))}
+
     out = out_dir / f"{_slug(name)}.order.xml"
     out.write_text(plan_to_xml(plan, stock=stock, foil=foil), encoding="utf-8")
 
     result = {"order_xml": str(out), "cards": plan.total_cards,
-              "fronts": len(plan.unique_fronts), "format": fmt}
+              "fronts": len(plan.unique_fronts), "format": fmt,
+              "price": pricing.estimate(plan.total_cards, stock, foil)}
     if fmt in ("pdf", "mpc"):
-        from ..upload.desktop_tool import launch_autofill_terminal
+        from ..mpc.desktop_tool import launch_autofill_terminal
         result["message"] = launch_autofill_terminal(out, export_pdf=(fmt == "pdf"))
     return result
 

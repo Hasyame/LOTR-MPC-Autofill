@@ -29,7 +29,7 @@ def run(manifest_path: Path, dry_run: bool = True, headed: bool = True,
         return 0
 
     try:
-        from .mpc import MpcDriver  # noqa: F401  (lazy: needs playwright)
+        from .driver import MpcDriver  # noqa: F401  (lazy: needs playwright)
     except ImportError as exc:
         print(f"\nBrowser automation unavailable: {exc}\n"
               "Install it with:  pip install -e .[upload] && playwright install chromium")

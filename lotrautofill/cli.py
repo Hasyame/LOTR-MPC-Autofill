@@ -7,9 +7,10 @@ import json
 import sys
 from pathlib import Path
 
-from . import __version__
-from .build import BuildOptions, build
-from .model import BuildReport
+from . import __version__, i18n
+from .i18n import t
+from .library.build import BuildOptions, build
+from .library.model import BuildReport
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -25,7 +26,12 @@ def main(argv: list[str] | None = None) -> int:
         description="Build MPC proxy orders for The Lord of the Rings LCG.",
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
-    sub = parser.add_subparsers(dest="command", required=True)
+    parser.add_argument(
+        "--lang", choices=i18n.LANGS, default=None,
+        help="Language for messages: en/fr/es/zh (default: from $LANG, else en).",
+    )
+    # No subcommand (e.g. double-clicking the .exe) launches the GUI.
+    sub = parser.add_subparsers(dest="command", required=False)
 
     b = sub.add_parser("build", help="Scan a card folder and build a manifest.")
     b.add_argument("folder", type=Path, help="Set or scenario folder to scan.")
@@ -147,11 +153,18 @@ def main(argv: list[str] | None = None) -> int:
     g.set_defaults(func=_cmd_gui)
 
     args = parser.parse_args(argv)
+    i18n.set_lang(i18n.resolve_lang(args.lang))
+    if args.command is None:
+        # Double-click / bare run: start the GUI with defaults.
+        from .web import run_server
+        from .library.sets import default_library_root
+        run_server(root=default_library_root(), lang=i18n.current_lang())
+        return 0
     return args.func(args)
 
 
 def _cmd_autofill(args: argparse.Namespace) -> int:
-    from .upload.desktop_tool import run_autofill, default_tool_dir
+    from .mpc.desktop_tool import run_autofill, default_tool_dir
 
     return run_autofill(
         args.order,
@@ -163,19 +176,19 @@ def _cmd_autofill(args: argparse.Namespace) -> int:
 
 
 def _cmd_upload(args: argparse.Namespace) -> int:
-    from .upload.runner import run
+    from .mpc.runner import run
 
     if not args.manifest.is_file():
-        print(f"error: manifest not found: {args.manifest}", file=sys.stderr)
+        print(t("cli_manifest_not_found", path=args.manifest), file=sys.stderr)
         return 2
     return run(args.manifest, dry_run=args.dry_run, headed=args.headed)
 
 
 def _cmd_export(args: argparse.Namespace) -> int:
-    from .upload.plan import load_manifest, plan_from_manifest
+    from .mpc.plan import load_manifest, plan_from_manifest
 
     if not args.manifest.is_file():
-        print(f"error: manifest not found: {args.manifest}", file=sys.stderr)
+        print(t("cli_manifest_not_found", path=args.manifest), file=sys.stderr)
         return 2
     plan = plan_from_manifest(load_manifest(args.manifest))
     out = args.output or args.manifest.with_name("order.xml")
@@ -184,33 +197,33 @@ def _cmd_export(args: argparse.Namespace) -> int:
 
 
 def _cmd_gui(args: argparse.Namespace) -> int:
-    from .webgui import run_server
-    from .sets import default_library_root
+    from .web import run_server
+    from .library.sets import default_library_root
 
     run_server(root=args.root or default_library_root(), port=args.port,
-               open_browser=args.open_browser)
+               open_browser=args.open_browser, lang=i18n.current_lang())
     return 0
 
 
 def _cmd_reference(args: argparse.Namespace) -> int:
-    from .hallofbeorn import CACHE_FILE, build_reference
+    from .catalog.hallofbeorn import CACHE_FILE, build_reference
 
     def progress(i, n, name):
         print(f"\r  {i}/{n}  {name[:48]:<48}", end="", flush=True)
 
-    print("Scraping Hall of Beorn scenarios (one-time; cached)...")
+    print(t("cli_scrape_start"))
     ref = build_reference(progress=progress)
-    print(f"\nCached {len(ref['scenarios'])} scenarios to {CACHE_FILE}")
+    print("\n" + t("cli_scrape_done", n=len(ref["scenarios"]), path=CACHE_FILE))
     return 0
 
 
 def _cmd_db(args: argparse.Namespace) -> int:
     import json
-    from .database import build_database
-    from .sets import default_library_root
+    from .catalog.database import build_database
+    from .library.sets import default_library_root
 
     root = args.root or default_library_root()
-    print(f"Indexing card library under {root.resolve()} ...")
+    print(t("cli_indexing", path=root.resolve()))
     db = build_database(root)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -219,16 +232,15 @@ def _cmd_db(args: argparse.Namespace) -> int:
 
     total_cards = sum(s["cards_total"] for s in db["sets"])
     total_missing = sum(s.get("missing_total", 0) for s in db["sets"])
-    ref = "Hall of Beorn cross-reference on" if db.get("has_reference") else \
-        "no Hall of Beorn reference (run `lotr-autofill reference` first)"
-    print(f"\n{len(db['sets'])} sets, {total_cards} cards indexed "
-          f"({ref}). {total_missing} missing card(s):\n")
+    ref = t("cli_ref_on") if db.get("has_reference") else t("cli_ref_off")
+    print("\n" + t("cli_db_summary", sets=len(db["sets"]), cards=total_cards,
+                    ref=ref, missing=total_missing) + "\n")
     for s in db["sets"]:
         missing = s.get("missing_total", 0)
         if args.missing_only and missing == 0:
             continue
         chapters = f", {len(s['chapters'])} chapters" if s["has_chapters"] else ""
-        flag = f"  [{missing} MISSING]" if missing else ""
+        flag = "  " + t("cli_missing_flag", n=missing) if missing else ""
         name = s.get("display", s["name"])
         print(f"  {name:<40} {s['cards_total']:>4} cards{chapters}{flag}")
         for ch in s["chapters"]:
@@ -236,41 +248,41 @@ def _cmd_db(args: argparse.Namespace) -> int:
                 continue
             where = f"{ch.get('display', ch['name'])}: " if s["has_chapters"] else ""
             shown = ", ".join(ch["missing"][:6]) + ("…" if len(ch["missing"]) > 6 else "")
-            print(f"      missing — {where}{shown}")
-    print(f"\nDatabase written to: {args.output}")
+            print(f"      {t('cli_missing_prefix')} {where}{shown}")
+    print("\n" + t("cli_db_written", path=args.output))
     return 0
 
 
 def _cmd_sets(args: argparse.Namespace) -> int:
-    from .sets import discover_sets, default_library_root, display_name
+    from .library.sets import discover_sets, default_library_root, display_name
 
     root = args.root or default_library_root()
     sets = discover_sets(root)
     if not sets:
-        print(f"No printable set folders found under {root.resolve()}")
+        print(t("cli_no_sets", path=root.resolve()))
         return 0
-    print(f"Printable sets under {root.resolve()}:")
+    print(t("cli_printable_sets", path=root.resolve()))
     for i, s in enumerate(sets, 1):
         print(f"  [{i}] {display_name(s.name)}")
     return 0
 
 
 def _cmd_pick(args: argparse.Namespace) -> int:
-    from .sets import (discover_sets, discover_chapters, default_library_root,
+    from .library.sets import (discover_sets, discover_chapters, default_library_root,
                        display_name)
-    from .build import BuildOptions, build
-    from .upload.plan import plan_from_manifest
-    from .interactive import default_enabled
+    from .library.build import BuildOptions, build
+    from .mpc.plan import plan_from_manifest
+    from .library.interactive import default_enabled
 
     root = args.root or default_library_root()
     sets = discover_sets(root)
     if not sets:
-        print(f"No printable set folders found under {root.resolve()}")
+        print(t("cli_no_sets", path=root.resolve()))
         return 1
 
     chosen = _choose_sets(sets)
     if not chosen:
-        print("Nothing selected.")
+        print(t("cli_nothing_selected"))
         return 0
 
     # Resolve each chosen set into print units: the whole set, or its chapters.
@@ -285,7 +297,7 @@ def _cmd_pick(args: argparse.Namespace) -> int:
             units.append((f"{display_name(s.name)} — {display_name(ch.name)}", ch))
 
     if not units:
-        print("Nothing selected.")
+        print(t("cli_nothing_selected"))
         return 0
 
     interactive = default_enabled() if args.interactive is None else args.interactive
@@ -305,13 +317,14 @@ def _cmd_pick(args: argparse.Namespace) -> int:
 
 
 def _choose_chapters(set_folder: Path, chapters: list) -> list:
-    from .sets import display_name
-    print(f"\n'{display_name(set_folder.name)}' has {len(chapters)} chapters:")
+    from .library.sets import display_name
+    print("\n" + t("cli_set_has_chapters", name=display_name(set_folder.name),
+                    n=len(chapters)))
     for i, ch in enumerate(chapters, 1):
         print(f"  [{i}] {display_name(ch.name)}")
-    print("  [a] all chapters (one order.xml each)")
+    print("  " + t("cli_all_chapters"))
     try:
-        raw = input("Chapters to print (comma-separated), 'a' for all: ").strip().lower()
+        raw = input(t("cli_prompt_chapters")).strip().lower()
     except EOFError:
         return list(chapters)
     if raw in ("a", "all", ""):
@@ -324,13 +337,13 @@ def _choose_chapters(set_folder: Path, chapters: list) -> list:
 
 
 def _choose_sets(sets: list) -> list:
-    from .sets import display_name
-    print("Which set(s) do you want to print?")
+    from .library.sets import display_name
+    print(t("cli_which_sets"))
     for i, s in enumerate(sets, 1):
         print(f"  [{i}] {display_name(s.name)}")
-    print("  [a] all")
+    print("  " + t("cli_all"))
     try:
-        raw = input("Enter numbers (comma-separated), 'a' for all: ").strip().lower()
+        raw = input(t("cli_prompt_sets")).strip().lower()
     except EOFError:
         return []
     if raw in ("a", "all"):
@@ -343,15 +356,14 @@ def _choose_sets(sets: list) -> list:
 
 
 def _write_order_xml(plan, out: Path, stock: str, foil: bool) -> None:
-    from .upload.mpc_xml import plan_to_xml
+    from .mpc.mpc_xml import plan_to_xml
 
     if plan.missing_files:
-        print(f"! {len(plan.missing_files)} image(s) missing — order.xml may be "
-              "incomplete.")
+        print(t("cli_img_missing", n=len(plan.missing_files)))
     xml = plan_to_xml(plan, stock=stock, foil=foil)
     out.write_text(xml, encoding="utf-8")
-    print(f"order.xml written to: {out}  "
-          f"({plan.total_cards} cards, {len(plan.unique_fronts)} fronts)")
+    print(t("cli_orderxml_written", path=out, cards=plan.total_cards,
+            fronts=len(plan.unique_fronts)))
 
 
 def _manifest_dict(report, options) -> dict:
@@ -370,7 +382,7 @@ def _slug(name: str) -> str:
 def _cmd_build(args: argparse.Namespace) -> int:
     folder: Path = args.folder
     if not folder.is_dir():
-        print(f"error: not a directory: {folder}", file=sys.stderr)
+        print(t("cli_not_a_dir", path=folder), file=sys.stderr)
         return 2
 
     options = BuildOptions(
@@ -385,7 +397,7 @@ def _cmd_build(args: argparse.Namespace) -> int:
     if not args.no_manifest:
         out = args.output or (folder.resolve() / "mpc_manifest.json")
         write_manifest(report, out, options)
-        print(f"\nManifest written to: {out}")
+        print("\n" + t("cli_manifest_written", path=out))
 
     return 0
 
@@ -419,9 +431,9 @@ def write_manifest(report: BuildReport, out: Path, options: BuildOptions) -> Non
 
 
 def print_report(report: BuildReport) -> None:
-    print(f"Root: {report.root}")
-    print(f"Unique cards : {report.unique_cards}")
-    print(f"Total slots  : {report.total_slots}")
+    print(t("rep_root", path=report.root))
+    print(t("rep_unique", n=report.unique_cards))
+    print(t("rep_slots", n=report.total_slots))
 
     by_cat: dict[str, tuple[int, int]] = {}
     for e in report.entries:
@@ -430,18 +442,18 @@ def print_report(report: BuildReport) -> None:
     for cat, (u, s) in sorted(by_cat.items()):
         print(f"  {cat:<10} {u:>3} cards / {s:>3} slots")
 
-    _section("Double-sided pairs (verify face/back)", report.double_sided_pairs,
+    _section(t("sec_double"), report.double_sided_pairs,
              lambda m: f"{m['source']} #{m['number']} [{m['kind']}]: "
                        f"{m['face']} / {m['back']}")
-    _section("Fuzzy (typo) matches — please verify", report.fuzzy_matches,
+    _section(t("sec_fuzzy"), report.fuzzy_matches,
              lambda m: f"{m['source']}: '{m['cardlist']}' -> '{m['file']}' ({m['score']})")
-    _section("UNMATCHED cardlist entries", report.unmatched_cardlist,
+    _section(t("sec_unmatched"), report.unmatched_cardlist,
              lambda m: f"{m['source']}: {m['quantity']}x '{m['name']}' (best {m['best_score']})")
-    _section("Orphan sides (need face/back — check these)", report.orphans,
+    _section(t("sec_orphan"), report.orphans,
              lambda m: f"{m['source']}: {m['file']} (side {m['side']})")
-    _section("Auto-included (not in cardlist, added at 1)", report.auto_included,
+    _section(t("sec_auto"), report.auto_included,
              lambda m: f"{m['source']}: {m['file']}")
-    _section("Warnings", report.warnings, lambda w: str(w))
+    _section(t("sec_warnings"), report.warnings, lambda w: str(w))
 
 
 def _section(title, items, fmt) -> None:

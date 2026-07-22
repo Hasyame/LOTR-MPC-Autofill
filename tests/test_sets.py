@@ -3,13 +3,13 @@
 import os
 from pathlib import Path
 
-from lotrautofill.sets import (
+from lotrautofill.library.sets import (
     default_library_root,
     discover_chapters,
     discover_sets,
     display_name,
 )
-from lotrautofill.upload.desktop_tool import _venv_python
+from lotrautofill.mpc.desktop_tool import _venv_python
 
 
 def _make_set(root: Path, name: str, category: str = "Player") -> None:

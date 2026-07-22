@@ -1,6 +1,6 @@
 """Tests for the decklist text parser."""
 
-from lotrautofill.decklist import parse_decklist_text
+from lotrautofill.library.decklist import parse_decklist_text
 
 
 def test_parse_various_quantity_formats():
