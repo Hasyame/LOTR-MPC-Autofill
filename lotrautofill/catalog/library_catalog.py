@@ -12,6 +12,7 @@ user only needs to drop in card images, not the ``epiccardlist.txt`` files.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from functools import lru_cache
 from pathlib import Path
@@ -19,8 +20,15 @@ from pathlib import Path
 from ..library.build import BuildOptions, build
 from ..library.matching import normalize
 from ..library.model import CATEGORY_NIGHTMARE
-from ..library.sets import discover_chapters, discover_sets, display_name
+from ..library.parsing import list_images
+from ..library.sets import (
+    _has_direct_category, discover_chapters, discover_sets, display_name,
+)
 from . import hierarchy
+
+# Loose scenario-root images that are the back face of a title card; the front
+# is kept and printed single-sided, so the reverse is not a separate slot.
+_REVERSE_RE = re.compile(r"\((reverse|back)\)\s*$", re.IGNORECASE)
 
 
 @lru_cache(maxsize=1)
@@ -184,6 +192,60 @@ def _nightmare_groups(root: Path, units_cache: dict, nm_db: dict) -> list:
     return [groups[k] for k in order]
 
 
+def _loose_cards(folder: Path, root: Path, set_name: str, scen: str) -> list:
+    """Scenario-root reference cards (intro / title), one slot each. Reverse
+    faces are dropped — the front prints single-sided like the rest."""
+    return [{"name": i.name, "front": _rel(i.path, root), "category": "Quest",
+             "quantity": 1, "set": set_name, "chapter": scen}
+            for i in list_images(folder) if not _REVERSE_RE.search(i.name)]
+
+
+def _standalone_groups(root: Path, index: dict, units_cache: dict,
+                       sa_db: dict) -> list:
+    """Standalone scenarios, one printable unit per scenario, grouped by set.
+
+    A scenario builds normally (Encounter counts from the bundled DB, Quest
+    double-sides, any Player cards) plus its loose scenario-root intro/title
+    cards. Unmatched Encounter lines become the missing list.
+    """
+    groups = []
+    for set_name in hierarchy.STANDALONE:
+        folder = _find_folder(set_name, index)
+        if folder is None:
+            continue
+        chapters = discover_chapters(folder)
+        if chapters:
+            scen_folders = chapters
+        else:                                   # single-scenario set
+            conts = [p for p in sorted(folder.rglob("*"))
+                     if p.is_dir() and _has_direct_category(p)]
+            scen_folders = conts[:1] or [folder]
+
+        units = []
+        for sf in scen_folders:
+            scen = display_name(sf.name if chapters else set_name)
+            listed = sa_db.get(_rel(sf / "Encounter", root))
+            overrides = {"Encounter": [(c["count"], c["name"]) for c in listed]} \
+                if listed is not None else None
+            report = build(sf, BuildOptions(interactive=False, cardlists=overrides))
+            cards = [{"name": e.name, "front": _rel(e.front, root),
+                      "category": e.category, "quantity": e.quantity,
+                      "set": display_name(set_name), "chapter": scen}
+                     for e in report.entries]
+            cards += _loose_cards(sf, root, display_name(set_name), scen)
+            cards_total = sum(c["quantity"] for c in cards)
+            missing = [{"name": u["name"], "count": u["quantity"]}
+                       for u in report.unmatched_cardlist]
+            uid = _rel(sf, root)
+            units_cache[uid] = {"cards": cards, "missing": missing}
+            units.append({"id": uid, "name": scen, "kind": "STANDALONE",
+                          "cards_total": cards_total, "missing_total": len(missing),
+                          "available": bool(cards) and cards_total > len(missing)})
+        if units:
+            groups.append({"name": display_name(set_name), "units": units})
+    return groups
+
+
 def build_catalog(root: Path) -> dict:
     """The full browse catalog: cycles + sagas, plus a ``units`` id->cards map."""
     root = Path(root).resolve()
@@ -240,9 +302,12 @@ def build_catalog(root: Path) -> dict:
                       "available": any(u["available"] for u in units)})
 
     nightmare = _nightmare_groups(root, units_cache, db.get("nightmare", {}))
+    standalone = _standalone_groups(root, index, units_cache,
+                                    db.get("standalone", {}))
 
     result = {"root": str(root), "cycles": cycles, "sagas": sagas,
-              "nightmare": nightmare, "units": units_cache}
+              "nightmare": nightmare, "standalone": standalone,
+              "units": units_cache}
     _attach_images(result)
     return result
 

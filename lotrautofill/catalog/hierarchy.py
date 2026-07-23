@@ -94,3 +94,11 @@ SAGAS: list[tuple[str, str, list[tuple[str, list[str]]]]] = [
          ["Flies and Spiders", "The Lonely Mountain", "The Battle of Five Armies"]),
     ]),
 ]
+
+# Standalone products — self-contained scenarios that belong to no cycle or
+# saga. Each entry is a top-level set folder (matched by display name); its
+# scenarios are its chapter sub-folders, or the set itself if it has none.
+STANDALONE: list[str] = [
+    "Standalone Scenarios",
+    "The Hunt for the Dreadnaught",
+]

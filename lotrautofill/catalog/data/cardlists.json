@@ -17364,5 +17364,773 @@
     "count": 2
    }
   ]
+ },
+ "standalone": {
+  "21 - Standalone Scenarios/21 - Standalone Scenarios/01 - The Massing at Osgiliath/Encounter": [
+   {
+    "name": "The Witch-king",
+    "count": 1
+   },
+   {
+    "name": "Snaga Scouts",
+    "count": 4
+   },
+   {
+    "name": "Wolves from Mordor",
+    "count": 4
+   },
+   {
+    "name": "Wainriders",
+    "count": 4
+   },
+   {
+    "name": "Wainrider Captain",
+    "count": 3
+   },
+   {
+    "name": "Uruk Vanguard",
+    "count": 3
+   },
+   {
+    "name": "Captured Watchtower",
+    "count": 3
+   },
+   {
+    "name": "Emyn Arnen Overlook",
+    "count": 1
+   },
+   {
+    "name": "Morgulduin",
+    "count": 2
+   },
+   {
+    "name": "Pelennor Fields",
+    "count": 2
+   },
+   {
+    "name": "Ruins of Osgiliath",
+    "count": 3
+   },
+   {
+    "name": "Cut Off",
+    "count": 4
+   },
+   {
+    "name": "Dark Pursuit",
+    "count": 2
+   },
+   {
+    "name": "Massing at Osgiliath",
+    "count": 3
+   },
+   {
+    "name": "Ranger of Ithilien",
+    "count": 2
+   }
+  ],
+  "21 - Standalone Scenarios/21 - Standalone Scenarios/02 - The Stone of Erech/Encounter": [
+   {
+    "name": "Derufin",
+    "count": 1
+   },
+   {
+    "name": "The Lord of the Dead",
+    "count": 1
+   },
+   {
+    "name": "The Stone of Erech",
+    "count": 1
+   },
+   {
+    "name": "Tarlang's Neck",
+    "count": 1
+   },
+   {
+    "name": "Eventide",
+    "count": 1
+   },
+   {
+    "name": "Dusk",
+    "count": 1
+   },
+   {
+    "name": "Midnight",
+    "count": 1
+   },
+   {
+    "name": "Relic from the Dark Years",
+    "count": 1
+   },
+   {
+    "name": "Shadow-man",
+    "count": 2
+   },
+   {
+    "name": "Restless Dead",
+    "count": 4
+   },
+   {
+    "name": "Whisperer",
+    "count": 3
+   },
+   {
+    "name": "Shadow Host Captain",
+    "count": 2
+   },
+   {
+    "name": "Regretful Shade",
+    "count": 3
+   },
+   {
+    "name": "Banks of Morthond",
+    "count": 2
+   },
+   {
+    "name": "Vale of Shadows",
+    "count": 2
+   },
+   {
+    "name": "Blackroot Graves",
+    "count": 3
+   },
+   {
+    "name": "Shadow of Dwimorberg",
+    "count": 2
+   },
+   {
+    "name": "Haunted Valley",
+    "count": 2
+   },
+   {
+    "name": "Midnight Throng",
+    "count": 2
+   },
+   {
+    "name": "Murmurs of Dread",
+    "count": 2
+   },
+   {
+    "name": "Groping Horror",
+    "count": 2
+   },
+   {
+    "name": "Driven by Fear",
+    "count": 2
+   },
+   {
+    "name": "The Dead Ride Behind",
+    "count": 2
+   },
+   {
+    "name": "The Gloaming",
+    "count": 1
+   }
+  ],
+  "21 - Standalone Scenarios/21 - Standalone Scenarios/03 - The Battle of Lake-Town/Encounter": [
+   {
+    "name": "Smaug the Mighty",
+    "count": 3
+   },
+   {
+    "name": "Smaug the Terrible",
+    "count": 3
+   },
+   {
+    "name": "Smaug the Magnificent",
+    "count": 3
+   },
+   {
+    "name": "Lake-town",
+    "count": 1
+   },
+   {
+    "name": "The Old Thrush",
+    "count": 1
+   },
+   {
+    "name": "Close to the Flame",
+    "count": 3
+   },
+   {
+    "name": "Scorching Blast",
+    "count": 3
+   },
+   {
+    "name": "Town-baiting",
+    "count": 3
+   },
+   {
+    "name": "Dire Magnificence",
+    "count": 3
+   },
+   {
+    "name": "Catching Fire",
+    "count": 2
+   },
+   {
+    "name": "Reckless in His Rage",
+    "count": 2
+   },
+   {
+    "name": "West Pier",
+    "count": 1
+   },
+   {
+    "name": "The Master's House",
+    "count": 1
+   },
+   {
+    "name": "South Pier",
+    "count": 1
+   },
+   {
+    "name": "North Pier",
+    "count": 1
+   },
+   {
+    "name": "Merchant's District",
+    "count": 4
+   },
+   {
+    "name": "East Pier",
+    "count": 1
+   },
+   {
+    "name": "Great House",
+    "count": 1
+   },
+   {
+    "name": "Great Bridge",
+    "count": 1
+   },
+   {
+    "name": "Fisherman's Dock",
+    "count": 4
+   },
+   {
+    "name": "Esgaroth Wharf",
+    "count": 4
+   }
+  ],
+  "21 - Standalone Scenarios/21 - Standalone Scenarios/04 - Fog on the Barrow-downs/Encounter": [
+   {
+    "name": "Ho! Tom Bombadil!",
+    "count": 1
+   },
+   {
+    "name": "Hollow Circle",
+    "count": 1
+   },
+   {
+    "name": "Standing Stones",
+    "count": 1
+   },
+   {
+    "name": "Great Barrow",
+    "count": 5
+   },
+   {
+    "name": "Ancient Barrow",
+    "count": 3
+   },
+   {
+    "name": "Stone Ring",
+    "count": 4
+   },
+   {
+    "name": "North Down",
+    "count": 4
+   },
+   {
+    "name": "Barrow-wight",
+    "count": 4
+   },
+   {
+    "name": "Cold-wight",
+    "count": 3
+   },
+   {
+    "name": "Dark-wight",
+    "count": 3
+   },
+   {
+    "name": "I'm Waiting For You!",
+    "count": 2
+   },
+   {
+    "name": "Long Groping Arm",
+    "count": 3
+   },
+   {
+    "name": "Chill Fog",
+    "count": 2
+   },
+   {
+    "name": "Frozen by Fear",
+    "count": 3
+   },
+   {
+    "name": "Dreadful Song",
+    "count": 2
+   },
+   {
+    "name": "Tom Bombadil",
+    "count": 1
+   }
+  ],
+  "21 - Standalone Scenarios/21 - Standalone Scenarios/05 - The Old Forest/Encounter": [
+   {
+    "name": "Old Man Willow",
+    "count": 1
+   },
+   {
+    "name": "Long Trailer",
+    "count": 4
+   },
+   {
+    "name": "Grasping Root",
+    "count": 4
+   },
+   {
+    "name": "Army of Flies",
+    "count": 3
+   },
+   {
+    "name": "Withywindle",
+    "count": 1
+   },
+   {
+    "name": "Misleading Path",
+    "count": 2
+   },
+   {
+    "name": "Deep Gulley",
+    "count": 4
+   },
+   {
+    "name": "Strange Woods",
+    "count": 3
+   },
+   {
+    "name": "Wall of Trees",
+    "count": 4
+   },
+   {
+    "name": "Oppressive Forest",
+    "count": 2
+   },
+   {
+    "name": "Swaying Without Wind",
+    "count": 2
+   },
+   {
+    "name": "Falling Branches",
+    "count": 3
+   },
+   {
+    "name": "Song of Sleep",
+    "count": 2
+   },
+   {
+    "name": "Lost and Witless",
+    "count": 2
+   },
+   {
+    "name": "Ending and Failing",
+    "count": 2
+   },
+   {
+    "name": "Tom Bombadil",
+    "count": 1
+   },
+   {
+    "name": "Old Bogey-stories",
+    "count": 1
+   }
+  ],
+  "21 - Standalone Scenarios/21 - Standalone Scenarios/06 - The Ruins of Belegost/Encounter": [
+   {
+    "name": "Stalking the Ruins",
+    "count": 1
+   },
+   {
+    "name": "Sword of Belegost",
+    "count": 1
+   },
+   {
+    "name": "Map of Ered Luin",
+    "count": 1
+   },
+   {
+    "name": "Keys of Belegost",
+    "count": 1
+   },
+   {
+    "name": "Book of Aule's Children",
+    "count": 1
+   },
+   {
+    "name": "Dwarven Torch",
+    "count": 1
+   },
+   {
+    "name": "Blue Mountain Gem",
+    "count": 1
+   },
+   {
+    "name": "Naurlhug",
+    "count": 1
+   },
+   {
+    "name": "Lurker of the Depths",
+    "count": 1
+   },
+   {
+    "name": "Nameless Cave Dweller",
+    "count": 4
+   },
+   {
+    "name": "Old Stone Troll",
+    "count": 2
+   },
+   {
+    "name": "Orc of Ered Luin",
+    "count": 3
+   },
+   {
+    "name": "Blue Mountain Goblin",
+    "count": 3
+   },
+   {
+    "name": "Naurlhug's Lair",
+    "count": 1
+   },
+   {
+    "name": "Abandoned Mine",
+    "count": 4
+   },
+   {
+    "name": "Flooded Hall",
+    "count": 2
+   },
+   {
+    "name": "Darkened Tunnel",
+    "count": 2
+   },
+   {
+    "name": "Sunken Treasury",
+    "count": 3
+   },
+   {
+    "name": "Secret Chamber",
+    "count": 3
+   },
+   {
+    "name": "Echoes in the Dark",
+    "count": 3
+   },
+   {
+    "name": "Spawn of Thangorodrim",
+    "count": 2
+   },
+   {
+    "name": "Concealed Spikes",
+    "count": 2
+   },
+   {
+    "name": "Covered Pit",
+    "count": 2
+   }
+  ],
+  "21 - Standalone Scenarios/21 - Standalone Scenarios/07 - Murder at the Prancing Pony/Encounter": [
+   {
+    "name": "Bill Fenry's House",
+    "count": 1
+   },
+   {
+    "name": "Staddle Hiding Hole",
+    "count": 1
+   },
+   {
+    "name": "Combe Storehouse",
+    "count": 1
+   },
+   {
+    "name": "Archet Trading Post",
+    "count": 1
+   },
+   {
+    "name": "Chetwood Campsite",
+    "count": 1
+   },
+   {
+    "name": "Todd the Troll",
+    "count": 1
+   },
+   {
+    "name": "Susie the Spider",
+    "count": 1
+   },
+   {
+    "name": "Wolf-pelt Jake",
+    "count": 1
+   },
+   {
+    "name": "Johnny Goblin-fingers",
+    "count": 1
+   },
+   {
+    "name": "Old Orc-eyes",
+    "count": 1
+   },
+   {
+    "name": "Taken by Surprise",
+    "count": 2
+   },
+   {
+    "name": "The Prancing Pony",
+    "count": 1
+   },
+   {
+    "name": "Ramshackle Manor",
+    "count": 4
+   },
+   {
+    "name": "Dark Alley",
+    "count": 3
+   },
+   {
+    "name": "Market Square",
+    "count": 3
+   },
+   {
+    "name": "Old Warehouse",
+    "count": 3
+   },
+   {
+    "name": "Village Stable",
+    "count": 2
+   },
+   {
+    "name": "Bill Fenry",
+    "count": 1
+   },
+   {
+    "name": "Bree-land Informant",
+    "count": 2
+   },
+   {
+    "name": "Lawless Ruffian",
+    "count": 3
+   },
+   {
+    "name": "Greenway Footpad",
+    "count": 4
+   },
+   {
+    "name": "Chetwood Outlaw",
+    "count": 3
+   },
+   {
+    "name": "Hired Muscle",
+    "count": 2
+   },
+   {
+    "name": "Smoke and Mirrors",
+    "count": 3
+   },
+   {
+    "name": "Rising Body Count",
+    "count": 2
+   },
+   {
+    "name": "Deadly Accusations",
+    "count": 2
+   }
+  ],
+  "21 - Standalone Scenarios/21 - Standalone Scenarios/08 - The Siege of Annuminas/Encounter": [
+   {
+    "name": "Annuminas",
+    "count": 1
+   },
+   {
+    "name": "Lieutenant of Angmar",
+    "count": 1
+   },
+   {
+    "name": "Battering Ram",
+    "count": 1
+   },
+   {
+    "name": "Enemy Camp",
+    "count": 1
+   },
+   {
+    "name": "Siege Tunnel",
+    "count": 1
+   },
+   {
+    "name": "Host of Angmar",
+    "count": 3
+   },
+   {
+    "name": "Dunedain of Annuminas",
+    "count": 3
+   },
+   {
+    "name": "Gate of Annuminas",
+    "count": 2
+   },
+   {
+    "name": "City Wall",
+    "count": 3
+   },
+   {
+    "name": "Arnor Battlefield",
+    "count": 3
+   },
+   {
+    "name": "Hills of Evendim",
+    "count": 2
+   },
+   {
+    "name": "Shores of Lake Nenuial",
+    "count": 2
+   },
+   {
+    "name": "Warg of Carn Dum",
+    "count": 3
+   },
+   {
+    "name": "Orc of Angmar",
+    "count": 3
+   },
+   {
+    "name": "Angmar Warg-rider",
+    "count": 3
+   },
+   {
+    "name": "Savage Werewolf",
+    "count": 2
+   },
+   {
+    "name": "Vanguard of Carn Dum",
+    "count": 2
+   },
+   {
+    "name": "The Hordes of Angmar",
+    "count": 2
+   },
+   {
+    "name": "Sorcery of Carn Dum",
+    "count": 2
+   },
+   {
+    "name": "Caught in the Press",
+    "count": 3
+   },
+   {
+    "name": "Weary Warriors",
+    "count": 3
+   }
+  ],
+  "21 - Standalone Scenarios/21 - Standalone Scenarios/09 - Attack on Dol Guldur/Encounter": [
+   {
+    "name": "Dol Guldur",
+    "count": 1
+   },
+   {
+    "name": "Power of Lorien",
+    "count": 1
+   },
+   {
+    "name": "Host of Lorien",
+    "count": 1
+   },
+   {
+    "name": "Bane of Amon Lanc",
+    "count": 1
+   },
+   {
+    "name": "Sorcerer of Amon Lanc",
+    "count": 1
+   },
+   {
+    "name": "Chieftain Morlug",
+    "count": 1
+   },
+   {
+    "name": "Dungeon Dweller",
+    "count": 1
+   },
+   {
+    "name": "Host of Dol Guldur",
+    "count": 2
+   },
+   {
+    "name": "Mirkwood Olog-hai",
+    "count": 2
+   },
+   {
+    "name": "Beast of Taur-nu-fuin",
+    "count": 2
+   },
+   {
+    "name": "Amon Lanc Archer",
+    "count": 3
+   },
+   {
+    "name": "Dol Guldur Marauder",
+    "count": 4
+   },
+   {
+    "name": "Battle Warg",
+    "count": 3
+   },
+   {
+    "name": "Servant of Sauron",
+    "count": 3
+   },
+   {
+    "name": "Gate of Dol Guldur",
+    "count": 2
+   },
+   {
+    "name": "The Sorcerer's Tower",
+    "count": 2
+   },
+   {
+    "name": "The Shadow Road",
+    "count": 2
+   },
+   {
+    "name": "Dungeon Door",
+    "count": 2
+   },
+   {
+    "name": "Forest Battleground",
+    "count": 2
+   },
+   {
+    "name": "Blackened Woods",
+    "count": 3
+   },
+   {
+    "name": "Power Sevenfold",
+    "count": 2
+   },
+   {
+    "name": "The Necromancer's Rage",
+    "count": 2
+   },
+   {
+    "name": "Fear and Despair",
+    "count": 2
+   },
+   {
+    "name": "Fastness of Mirkwood",
+    "count": 2
+   }
+  ]
  }
 }

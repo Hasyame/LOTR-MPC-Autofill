@@ -104,6 +104,7 @@ def _make_handler(root: Path, out_dir: Path):
                 c = _cat2(cache)
                 self._json({"cycles": c["cycles"], "sagas": c["sagas"],
                             "nightmare": c.get("nightmare", []),
+                            "standalone": c.get("standalone", []),
                             "root": c["root"]})
             elif path == "/api/unit-cards":
                 c = _cat2(cache)
