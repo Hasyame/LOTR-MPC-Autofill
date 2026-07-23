@@ -3,10 +3,13 @@
 Build [MakePlayingCards](https://www.makeplayingcards.com/) (MPC) proxy orders
 for **The Lord of the Rings LCG**, inspired from MPC Autofill (dedicated to Magic the Gathering).
 
-The tool reads a folder of card images (organised by set / scenario / category)
-plus the `cardlist.txt` quantity files, and produces a **build manifest**: the
-exact list of front images, back images and quantities to order. A later stage
-will drive the MPC website from that manifest.
+Point it at a folder of card images (organised by set / scenario / category)
+and it produces a **build manifest** — the exact list of front images, back
+images and quantities to order — then drives MakePlayingCards from it.
+
+The **card database ships inside the app**: the official card lists, copy
+counts and missing-card detection are bundled, so for the web GUI **you only
+need to drop in the card images** — no `cardlist.txt` bookkeeping required.
 
 Zero external dependencies pure Python standard library (3.10+).
 
@@ -20,12 +23,22 @@ With Python: `python -m lotrautofill <command>` (see commands below).
 python -m lotrautofill gui    # opens http://127.0.0.1:8765 in your browser
 ```
 
-A local web app (works on Windows and Linux) with a Middle-earth theme: browse
-the card library with **light card previews**, see **missing cards** per
-set/chapter (cross-referenced with Hall of Beorn), tick sets/chapters and
-generate their `order.xml` or **create the MPC project** directly (launches
-the autofill tool). A Manual List tab resolves a pasted card list against your
-local library. Sets you don't have are greyed out. Extras:
+A local web app (works on Windows and Linux) with a Middle-earth theme. Browse
+the whole game by **scenario type** using the tabs at the top:
+
+- **Cycles** every cycle as its real products — a deluxe **Expansion** (bought
+  whole, 3 scenarios) and its group of six **Adventure Packs** (one scenario
+  each). Add a whole cycle, an expansion, a single pack, or one card.
+- **Sagas** *The Lord of the Rings* and *The Hobbit* saga expansions.
+- **Nightmare** the optional harder-mode deck for each scenario.
+- **Standalone** self-contained scenarios that belong to no cycle.
+
+Every unit shows **light card previews** with the correct **copy counts**
+(×2, ×3 …) from the bundled database, and the exact **names of any cards
+missing** from your library. Products you don't own are greyed out. Add
+anything to your **list to print**, then generate its `order.xml` or **create
+the MPC project** directly (launches the autofill tool). A Manual List tab
+resolves a pasted card list against your local library. Extras:
 
 - **Interface in 4 languages** English, French, Spanish, Chinese. The GUI
   auto-detects your **browser language** (anything other than FR/ES/ZH falls
@@ -41,9 +54,9 @@ local library. Sets you don't have are greyed out. Extras:
 The only optional dependency is Pillow (for thumbnails; without it, full images
 are served). The CLI remains fully supported.
 
-![Shop the set grid uses Hall of Beorn box art, with per-set missing-card badges; sets you don't own are greyed out](docs/shop.png)
+![Browse by scenario type with tabs (Cycles, Sagas, Nightmare, Standalone); each cycle shows its expansion and adventure packs as tiles with box art, and products you don't own are greyed out](docs/shop.png)
 
-![List to print pick your card backs from thumbnails and see an estimated MakePlayingCards price in euros, dollars and yuan](docs/cart.png)
+![A scenario opened to its cards: light previews with per-card copy-count badges and a list of the exact cards missing from your library](docs/cart.png)
 
 ### Standalone executable easiest, no Python needed
 
@@ -77,8 +90,8 @@ by some malware, so thousands of legitimate PyInstaller apps get the same flag.
 
 Everything here is open source nothing is hidden. You can:
 
-- **See the scan:** [VirusTotal report for the released `.exe`](https://www.virustotal.com/gui/file/8063d8e62d05121f5178ace895e71439d6c2eb0e0ac1cb5b0ef7037c988c9af0)
-  (SHA-256 `8063d8e6…988c9af0`; typically only Defender's ML engine flags it).
+- **See the scan:** [VirusTotal report for the released `.exe`](https://www.virustotal.com/gui/file/2dcefdf4626b12347c202d6e209555c90523048c2686cb97679f0a41b5481866)
+  (SHA-256 `2dcefdf4…b5481866`; typically only Defender's ML engine flags it).
   Or **build it yourself**: `pip install -e .[build,gui]` then `python build_exe.py`.
 - **Run it anyway:** on the SmartScreen prompt click *More info → Run anyway*; if
   it was quarantined, open *Windows Security → Virus & threat protection →
@@ -104,6 +117,12 @@ Card_Backs/Card_Backs/     Encounter Card Back.jpg, Player Card Back.jpg
 
 Campaign boxes add a scenario level (`<Set>/<Set>/<Scenario>/<category>/…`);
 both layouts are detected automatically.
+
+**The `cardlist.txt` quantity files are optional for the web GUI** — the copy
+counts and missing-card lists ship inside the app (`catalog/data/cardlists.json`,
+regenerate with `python scripts/build_carddb.py`), so you only need the card
+images and `Card_Backs`. The CLI `build`/`pick` commands still read
+`cardlist.txt` from disk when present.
 
 ### Filename convention
 
@@ -256,6 +275,12 @@ RingsDB import has been removed.)
 
 ### Card library database
 
+The web GUI browses from the **bundled card database**
+(`catalog/data/cardlists.json`) — the authored cycle → expansion/pack → scenario
+hierarchy with the official copy counts, so missing-card detection works from
+your images alone. The CLI `db` command is a separate, Hall-of-Beorn-based
+audit of the raw library:
+
 `db` indexes the whole library into `MPC_XML/database.json` (sets → chapters →
 categories → cards, with counts) the data a UI reads to browse the collection:
 
@@ -318,10 +343,13 @@ python -m lotrautofill upload MPC_XML/hobbit.json       # drive MPC (headed)
 
 The GUI is a **shop-style flow**:
 
-- [x] **Shop homepage:** a grid of set tiles using **Hall of Beorn box art**
- (a deluxe box matches by name; a cycle uses its first adventure pack's image).
- *Add set to list* adds the whole set; opening a tile drills into chapters →
- cards, each with an add button.
+- [x] **Browse by scenario type:** tabs for **Cycles / Sagas / Nightmare /
+ Standalone**. Cycles show each real product — a deluxe **Expansion** (3
+ scenarios) and its six **Adventure Packs** — as tiles with Hall of Beorn box
+ art. Add a whole cycle, an expansion, one pack, or a single card; open a tile
+ to see its cards with **copy-count badges** and the **exact missing cards**.
+- [x] **Bundled card database:** official card lists + copy counts ship in the
+ app (`catalog/data/cardlists.json`), so the GUI needs only your card images.
 - [x] **List to print:** review the picked sets / chapters / cards, choose
  stock/backs, then **Export order.xml**, **Export PDF** (desktop tool), or
  **Create MPC project**. All items merge into one order; backs are auto-assigned
