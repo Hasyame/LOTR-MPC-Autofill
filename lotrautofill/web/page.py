@@ -32,6 +32,7 @@ PAGE = r"""<!doctype html>
     position:sticky; top:0; z-index:10; }
   header h1 { margin:0; font-size:20px; color:var(--gold); flex:1;
     text-shadow:0 1px 0 #000, 0 0 18px rgba(200,161,58,.25); cursor:pointer; }
+  header nav { display:flex; gap:8px; flex-wrap:wrap; }
   header nav button, .cartbtn { border:1px solid var(--border); background:var(--card);
     color:var(--muted); padding:7px 14px; border-radius:8px; cursor:pointer;
     font-family:inherit; font-size:14px; }
@@ -148,7 +149,10 @@ PAGE = r"""<!doctype html>
 <header>
   <h1 onclick="showView('shop')">⛰️ LOTRAutofill</h1>
   <nav>
-    <button id="nav-shop" class="active" onclick="showView('shop')" data-i18n="nav_sets">Sets</button>
+    <button id="tab-cycles" class="active" onclick="showSection('cycles')" data-i18n="nav_sets">Cycles</button>
+    <button id="tab-sagas" onclick="showSection('sagas')" data-i18n="nav_sagas">Sagas</button>
+    <button id="tab-nightmare" onclick="showSection('nightmare')" data-i18n="nav_nightmare">Nightmare</button>
+    <button id="tab-standalone" onclick="showSection('standalone')" data-i18n="nav_standalone">Standalone</button>
     <button id="nav-deck" onclick="showView('deck')" data-i18n="nav_manual">Manual List</button>
   </nav>
   <select id="lang" class="langsel" title="Language" onchange="setLang(this.value)">
@@ -170,8 +174,6 @@ PAGE = r"""<!doctype html>
         <button class="go mini" onclick="loadRoot()" data-i18n="lib_load">Load</button>
       </span>
       <span id="lib-msg"></span>
-      <label style="margin-left:auto"><input type="checkbox" id="nm-toggle" onchange="toggleNightmare()">
-        <span data-i18n="incl_nightmare">Include Nightmare cards</span></label>
     </div>
     <div id="shop" class="muted" data-i18n="loading_shop">Loading the archives of Middle-earth…</div>
   </div>
@@ -220,13 +222,14 @@ PAGE = r"""<!doctype html>
 /* ---------- i18n ---------- */
 const I18N = {
   en: {
-    nav_sets:"Cycles", nav_manual:"Manual List", cart:"List to print",
+    nav_sets:"Cycles", nav_sagas:"Sagas", nav_nightmare:"Nightmare", nav_standalone:"Standalone",
+    section_empty:"Nothing here in your library.",
+    nav_manual:"Manual List", cart:"List to print",
     loading_shop:"Loading the archives of Middle-earth…",
     lib_folder:"Library folder:", lib_change:"Change", lib_load:"Load",
     lib_loading:"Loading the new folder…",
     n_scenarios:"{n} scenarios", n_subcycles:"{n} sub-cycles",
     add_scenario:"Add scenario", all_cycles:"← all cycles", open:"Open",
-    incl_nightmare:"Include Nightmare cards",
     cycle_n:"Cycle {n}", sagas:"Sagas", add_cycle:"Add cycle",
     nightmare:"Nightmare decks", nightmare_sub:"Optional harder-mode cards, one deck per scenario.",
     standalone:"Standalone scenarios", standalone_sub:"Self-contained scenarios that belong to no cycle.",
@@ -262,13 +265,14 @@ const I18N = {
     over_max:"⚠️ Over MPC's {max}-card limit per project — this list must be split into {n} separate MPC projects.",
   },
   fr: {
-    nav_sets:"Cycles", nav_manual:"Liste manuelle", cart:"Liste à imprimer",
+    nav_sets:"Cycles", nav_sagas:"Sagas", nav_nightmare:"Nightmare", nav_standalone:"Indépendants",
+    section_empty:"Rien ici dans votre bibliothèque.",
+    nav_manual:"Liste manuelle", cart:"Liste à imprimer",
     loading_shop:"Chargement des archives de la Terre du Milieu…",
     lib_folder:"Dossier de la librairie :", lib_change:"Changer", lib_load:"Charger",
     lib_loading:"Chargement du nouveau dossier…",
     n_scenarios:"{n} scénarios", n_subcycles:"{n} sous-cycles",
     add_scenario:"Ajouter le scénario", all_cycles:"← tous les cycles", open:"Ouvrir",
-    incl_nightmare:"Inclure les cartes cauchemar",
     cycle_n:"Cycle {n}", sagas:"Sagas", add_cycle:"Ajouter le cycle",
     nightmare:"Decks Nightmare", nightmare_sub:"Cartes de mode difficile (optionnelles), un deck par scénario.",
     standalone:"Scénarios indépendants", standalone_sub:"Scénarios autonomes n'appartenant à aucun cycle.",
@@ -305,13 +309,14 @@ const I18N = {
     over_max:"⚠️ Au-delà de la limite MPC de {max} cartes par projet — cette liste devra être répartie en {n} projets MPC distincts.",
   },
   es: {
-    nav_sets:"Ciclos", nav_manual:"Lista manual", cart:"Lista para imprimir",
+    nav_sets:"Ciclos", nav_sagas:"Sagas", nav_nightmare:"Nightmare", nav_standalone:"Independientes",
+    section_empty:"Aquí no hay nada en tu biblioteca.",
+    nav_manual:"Lista manual", cart:"Lista para imprimir",
     loading_shop:"Cargando los archivos de la Tierra Media…",
     lib_folder:"Carpeta de la biblioteca:", lib_change:"Cambiar", lib_load:"Cargar",
     lib_loading:"Cargando la nueva carpeta…",
     n_scenarios:"{n} escenarios", n_subcycles:"{n} subciclos",
     add_scenario:"Añadir escenario", all_cycles:"← todos los ciclos", open:"Abrir",
-    incl_nightmare:"Incluir cartas de pesadilla",
     cycle_n:"Ciclo {n}", sagas:"Sagas", add_cycle:"Añadir ciclo",
     nightmare:"Mazos Nightmare", nightmare_sub:"Cartas de modo difícil (opcionales), un mazo por escenario.",
     standalone:"Escenarios independientes", standalone_sub:"Escenarios autónomos que no pertenecen a ningún ciclo.",
@@ -348,13 +353,14 @@ const I18N = {
     over_max:"⚠️ Supera el límite de MPC de {max} cartas por proyecto — esta lista debe dividirse en {n} proyectos MPC distintos.",
   },
   zh: {
-    nav_sets:"循环", nav_manual:"手动列表", cart:"打印清单",
+    nav_sets:"循环", nav_sagas:"传奇", nav_nightmare:"噩梦", nav_standalone:"独立场景",
+    section_empty:"你的库中这里没有内容。",
+    nav_manual:"手动列表", cart:"打印清单",
     loading_shop:"正在加载中土世界的档案…",
     lib_folder:"卡牌库文件夹：", lib_change:"更改", lib_load:"加载",
     lib_loading:"正在加载新文件夹…",
     n_scenarios:"{n} 个场景", n_subcycles:"{n} 个子循环",
     add_scenario:"添加场景", all_cycles:"← 所有循环", open:"打开",
-    incl_nightmare:"包含噩梦卡",
     cycle_n:"循环 {n}", sagas:"传奇", add_cycle:"添加整轮",
     nightmare:"噩梦牌组", nightmare_sub:"可选的高难度卡牌，每个场景一个牌组。",
     standalone:"独立场景", standalone_sub:"不属于任何循环的独立场景。",
@@ -426,9 +432,8 @@ function setLang(l) {
 
 /* ---------- state ---------- */
 let LIB = null, CART = [], VIEW = 'shop', DETAIL = null, BACKS = null;
-let NIGHTMARE = localStorage.getItem('lotr_nm') === '1';
+let SHOP_SEC = localStorage.getItem('lotr_sec') || 'cycles';
 const BACKS_SEL = { encounter:'', player:'' };
-function nmParam(){ return NIGHTMARE ? '1' : '0'; }
 try { CART = JSON.parse(localStorage.getItem('lotr_cart') || '[]'); } catch(e) {}
 
 async function load() {
@@ -440,11 +445,11 @@ async function load() {
   fillBacks(backs);
   renderShop(); renderCartCount(); renderLibBar();
 }
-function toggleNightmare() {
-  NIGHTMARE = document.getElementById('nm-toggle').checked;
-  localStorage.setItem('lotr_nm', NIGHTMARE ? '1' : '0');
-  document.getElementById('shop').innerHTML = '<span class="muted">'+T('loading')+'</span>';
-  load().then(() => { if (VIEW === 'detail' && DETAIL) renderDetail(); });
+function showSection(sec) {
+  SHOP_SEC = sec;
+  localStorage.setItem('lotr_sec', sec);
+  if (VIEW !== 'shop') showView('shop'); else updateNav();
+  if (LIB) renderShop();
 }
 
 /* ---------- library folder chooser ---------- */
@@ -519,23 +524,29 @@ function renderShop() {
   const el = document.getElementById('shop');
   el.className = '';
   let html = '';
-  (LIB.cycles || []).forEach((cy, ci) => {
-    html += `<div class="cyc-h"><span>${T('cycle_n',{n:cy.n})}</span>
-      <button class="go mini ghost" onclick="addCycle(${ci})">${T('add_cycle')}</button></div>
-      <div class="grid">` + cy.products.map((p, pi) => productTile(ci, pi, p)).join('') + `</div>`;
-  });
-  if ((LIB.sagas || []).length) {
-    html += `<div class="cyc-h"><span>${T('sagas')}</span></div><div class="grid">` +
-      LIB.sagas.map((s, si) => sagaTile(si, s)).join('') + `</div>`;
+  if (SHOP_SEC === 'cycles') {
+    (LIB.cycles || []).forEach((cy, ci) => {
+      html += `<div class="cyc-h"><span>${T('cycle_n',{n:cy.n})}</span>
+        <button class="go mini ghost" onclick="addCycle(${ci})">${T('add_cycle')}</button></div>
+        <div class="grid">` + cy.products.map((p, pi) => productTile(ci, pi, p)).join('') + `</div>`;
+    });
+  } else if (SHOP_SEC === 'sagas') {
+    html += (LIB.sagas || []).length
+      ? `<div class="grid">` + LIB.sagas.map((s, si) => sagaTile(si, s)).join('') + `</div>`
+      : emptySection();
+  } else if (SHOP_SEC === 'nightmare') {
+    html += grpSection('nightmare', LIB.nightmare, 'nm') || emptySection();
+  } else if (SHOP_SEC === 'standalone') {
+    html += grpSection('standalone', LIB.standalone, 'sa') || emptySection();
   }
-  html += grpSection('nightmare', LIB.nightmare, 'nm');
-  html += grpSection('standalone', LIB.standalone, 'sa');
   el.innerHTML = html;
+}
+function emptySection() {
+  return `<p class="muted" style="padding:20px 4px">${T('section_empty')}</p>`;
 }
 function grpSection(key, groups, pfx) {
   if (!(groups || []).length) return '';
-  let html = `<div class="cyc-h nm"><span>${T(key)}</span></div>
-    <div class="muted" style="margin:0 0 10px 2px">${T(key+'_sub')}</div>`;
+  let html = `<div class="muted" style="margin:2px 0 12px 2px">${T(key+'_sub')}</div>`;
   groups.forEach((g, gi) => {
     html += `<div class="nm-grp"><div class="nm-grp-h">
       <span class="grow">${esc(g.name)}</span>
@@ -777,9 +788,14 @@ function showView(v) {
   VIEW = v;
   ['shop','detail','cart','deck'].forEach(x =>
     document.getElementById('view-'+x).classList.toggle('hidden', x!==v));
-  document.getElementById('nav-shop').classList.toggle('active', v==='shop'||v==='detail');
-  document.getElementById('nav-deck').classList.toggle('active', v==='deck');
+  updateNav();
   if (v==='cart') { renderCart(); estimatePrice(); }
+}
+function updateNav() {
+  const inShop = VIEW==='shop' || VIEW==='detail';
+  ['cycles','sagas','nightmare','standalone'].forEach(s =>
+    document.getElementById('tab-'+s).classList.toggle('active', inShop && SHOP_SEC===s));
+  document.getElementById('nav-deck').classList.toggle('active', VIEW==='deck');
 }
 function refreshView() {
   if (VIEW==='detail' && DETAIL && LIB) renderDetail();
@@ -791,7 +807,7 @@ function cssid(s){ return s.replace(/[^A-Za-z0-9]/g,'_'); }
 
 document.documentElement.lang = LANG;
 document.getElementById('lang').value = LANG;
-document.getElementById('nm-toggle').checked = NIGHTMARE;
+updateNav();
 applyStatic();
 boot();
 </script>
